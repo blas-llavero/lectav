@@ -1,0 +1,15 @@
+.gradle/
+.idea/
+**/build/
+local.properties
+*.iml
+*.apk
+*.aab
+*.jks
+*.keystore
+.DS_Store
+# Media must never be committed before explicit owner approval.
+media/
+videos/
+audio/
+images/

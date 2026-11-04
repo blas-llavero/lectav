@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LECTAV</string>
+    <string name="tagline">Educação sem barreiras</string>
+    <string name="introduction">Selecione um percurso, ano e disciplina. Esta primeira versão é um protótipo de navegação e acessibilidade.</string>
+    <string name="about">Sobre</string>
+    <string name="help">Ajuda</string>
+    <string name="back">Voltar</string>
+    <string name="select_pathway">Percurso de ensino</string>
+    <string name="select_course">Ano / nível</string>
+    <string name="select_subject">Disciplina</string>
+    <string name="please_select">Escolha uma opção</string>
+    <string name="level_eso">ESO — ensino secundário obrigatório</string>
+    <string name="level_batx">Batxillerat — ensino secundário pós-obrigatório</string>
+    <string name="level_cfgm">CFGM — formação profissional intermédia</string>
+    <string name="level_cfgs">CFGS — formação profissional superior</string>
+    <string name="level_cert">Certificados profissionais</string>
+    <string name="eso_1">ESO — 1.º ano</string>
+    <string name="eso_2">ESO — 2.º ano</string>
+    <string name="eso_3">ESO — 3.º ano</string>
+    <string name="eso_4">ESO — 4.º ano</string>
+    <string name="batx_1">Batxillerat — 1.º ano</string>
+    <string name="batx_2">Batxillerat — 2.º ano</string>
+    <string name="sample_mathematics">Matemática (demonstração)</string>
+    <string name="catalogue_pending">O catálogo oficial verificado será adicionado posteriormente.</string>
+    <string name="demo_notice">Esta disciplina é apenas um exemplo, não o currículo oficial completo.</string>
+    <string name="future_features">Funcionalidades de ensino previstas</string>
+    <string name="generate_lesson_pdf">Gerar PDF da aula (planeado)</string>
+    <string name="generate_exercise_pdf">Gerar PDF de exercícios (planeado)</string>
+    <string name="start_avatar">Iniciar avatar docente (planeado)</string>
+    <string name="not_yet_available">Estas funções serão ativadas após a integração do currículo verificado e da IA de código aberto.</string>
+    <string name="calibrate_subtitles">Calibrar posição das legendas</string>
+    <string name="about_title">Sobre o LECTAV</string>
+    <string name="about_body">O LECTAV é um projeto educativo gratuito e de código aberto que visa reduzir barreiras económicas, linguísticas e de acessibilidade.</string>
+    <string name="author">Idealizado e programado por Blas Llavero.</string>
+    <string name="open_source_statement">Código fonte sob GNU GPL v3 ou posterior. Modificações e utilização beneficente permitidas nos termos da licença.</string>
+    <string name="help_title">Como usar o protótipo</string>
+    <string name="help_body">1. Escolha um percurso. 2. Escolha um ano disponível. 3. Selecione a disciplina de demonstração. Os conteúdos e o avatar serão adicionados depois.</string>
+    <string name="help_demo">Para mover as legendas, abra a calibração.</string>
+    <string name="calibration_title">Calibração das legendas</string>
+    <string name="calibration_instructions">Mova o controlo para ajustar a altura das legendas. A preferência fica guardada localmente.</string>
+    <string name="avatar_preview">Pré-visualização do avatar (planeada)</string>
+    <string name="subtitle_preview">Hola! Aprenem junts.</string>
+    <string name="calibration_saved">Posição das legendas guardada neste dispositivo.</string>
+</resources>

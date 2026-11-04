@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LECTAV</string>
+    <string name="tagline">Education without barriers</string>
+    <string name="introduction">Choose a learning pathway, course and subject. This first version is a navigation and accessibility prototype.</string>
+    <string name="about">About</string>
+    <string name="help">Help</string>
+    <string name="back">Back</string>
+    <string name="select_pathway">Learning pathway</string>
+    <string name="select_course">Course / year</string>
+    <string name="select_subject">Subject</string>
+    <string name="please_select">Choose an option</string>
+    <string name="level_eso">ESO — compulsory secondary education</string>
+    <string name="level_batx">Batxillerat — upper secondary education</string>
+    <string name="level_cfgm">CFGM — intermediate vocational training</string>
+    <string name="level_cfgs">CFGS — higher vocational training</string>
+    <string name="level_cert">Professional certificates</string>
+    <string name="eso_1">ESO — Year 1</string>
+    <string name="eso_2">ESO — Year 2</string>
+    <string name="eso_3">ESO — Year 3</string>
+    <string name="eso_4">ESO — Year 4</string>
+    <string name="batx_1">Batxillerat — Year 1</string>
+    <string name="batx_2">Batxillerat — Year 2</string>
+    <string name="sample_mathematics">Mathematics (demo only)</string>
+    <string name="catalogue_pending">The verified official programme catalogue will be added in a later phase.</string>
+    <string name="demo_notice">This is a sample subject, not the complete official curriculum.</string>
+    <string name="future_features">Planned teaching features</string>
+    <string name="generate_lesson_pdf">Generate lesson PDF (planned)</string>
+    <string name="generate_exercise_pdf">Generate exercise PDF (planned)</string>
+    <string name="start_avatar">Start teaching avatar (planned)</string>
+    <string name="not_yet_available">These actions are disabled until the verified curriculum and open-source AI components are integrated.</string>
+    <string name="calibrate_subtitles">Calibrate subtitle position</string>
+    <string name="about_title">About LECTAV</string>
+    <string name="about_body">LECTAV is a free and open-source educational project designed to reduce financial, language and accessibility barriers. The planned syllabus covers ESO, Batxillerat, vocational training and professional certificates.</string>
+    <string name="author">Conceived and programmed by Blas Llavero.</string>
+    <string name="open_source_statement">Source code licensed under GNU GPL v3 or later. Modification and charitable use are permitted under the licence.</string>
+    <string name="help_title">How to use this prototype</string>
+    <string name="help_body">1. Select a pathway. 2. Select a year where available. 3. Select the sample subject. Content generation and avatar teaching will be enabled in future versions.</string>
+    <string name="help_demo">To adjust the location of subtitles, open the calibration screen.</string>
+    <string name="calibration_title">Subtitle calibration</string>
+    <string name="calibration_instructions">Move the slider to change how high subtitles appear in the preview. Your setting is saved locally on this device.</string>
+    <string name="avatar_preview">Avatar preview (planned)</string>
+    <string name="subtitle_preview">Hola! Aprenem junts.</string>
+    <string name="calibration_saved">Subtitle position saved on this device.</string>
+</resources>

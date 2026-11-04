@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LECTAV</string>
+    <string name="tagline">बिना बाधाओं के शिक्षा</string>
+    <string name="introduction">शिक्षा मार्ग, कक्षा और विषय चुनें। यह पहला संस्करण नेविगेशन और सुगम्यता का प्रोटोटाइप है।</string>
+    <string name="about">परिचय</string>
+    <string name="help">सहायता</string>
+    <string name="back">वापस</string>
+    <string name="select_pathway">शिक्षा मार्ग</string>
+    <string name="select_course">कक्षा / वर्ष</string>
+    <string name="select_subject">विषय</string>
+    <string name="please_select">विकल्प चुनें</string>
+    <string name="level_eso">ESO — अनिवार्य माध्यमिक शिक्षा</string>
+    <string name="level_batx">Batxillerat — उच्च माध्यमिक शिक्षा</string>
+    <string name="level_cfgm">CFGM — मध्यम व्यावसायिक प्रशिक्षण</string>
+    <string name="level_cfgs">CFGS — उच्च व्यावसायिक प्रशिक्षण</string>
+    <string name="level_cert">व्यावसायिक प्रमाणपत्र</string>
+    <string name="eso_1">ESO — वर्ष 1</string>
+    <string name="eso_2">ESO — वर्ष 2</string>
+    <string name="eso_3">ESO — वर्ष 3</string>
+    <string name="eso_4">ESO — वर्ष 4</string>
+    <string name="batx_1">Batxillerat — वर्ष 1</string>
+    <string name="batx_2">Batxillerat — वर्ष 2</string>
+    <string name="sample_mathematics">गणित (डेमो)</string>
+    <string name="catalogue_pending">सत्यापित आधिकारिक पाठ्यक्रम सूची बाद के चरण में जोड़ी जाएगी।</string>
+    <string name="demo_notice">यह केवल नमूना विषय है, पूरा आधिकारिक पाठ्यक्रम नहीं।</string>
+    <string name="future_features">नियोजित शिक्षण सुविधाएँ</string>
+    <string name="generate_lesson_pdf">पाठ PDF बनाएँ (योजनाधीन)</string>
+    <string name="generate_exercise_pdf">अभ्यास PDF बनाएँ (योजनाधीन)</string>
+    <string name="start_avatar">शिक्षक अवतार शुरू करें (योजनाधीन)</string>
+    <string name="not_yet_available">सत्यापित पाठ्यक्रम और मुक्त-स्रोत AI जोड़ने के बाद ये सुविधाएँ सक्रिय होंगी।</string>
+    <string name="calibrate_subtitles">उपशीर्षक की स्थिति समायोजित करें</string>
+    <string name="about_title">LECTAV के बारे में</string>
+    <string name="about_body">LECTAV एक निःशुल्क, मुक्त-स्रोत शिक्षा परियोजना है जो आर्थिक, भाषाई और सुगम्यता संबंधी बाधाएँ कम करना चाहती है।</string>
+    <string name="author">Blas Llavero द्वारा परिकल्पित और प्रोग्राम किया गया।</string>
+    <string name="open_source_statement">स्रोत कोड GNU GPL v3 या बाद के लाइसेंस के अंतर्गत है। लाइसेंस के अनुसार संशोधन और परोपकारी उपयोग की अनुमति है।</string>
+    <string name="help_title">प्रोटोटाइप का उपयोग</string>
+    <string name="help_body">1. शिक्षा मार्ग चुनें। 2. उपलब्ध वर्ष चुनें। 3. नमूना विषय चुनें। सामग्री और अवतार बाद में जोड़े जाएँगे।</string>
+    <string name="help_demo">उपशीर्षक की जगह बदलने के लिए समायोजन स्क्रीन खोलें।</string>
+    <string name="calibration_title">उपशीर्षक समायोजन</string>
+    <string name="calibration_instructions">उपशीर्षक की ऊँचाई बदलने के लिए स्लाइडर खिसकाएँ। सेटिंग इसी डिवाइस पर सहेजी जाती है।</string>
+    <string name="avatar_preview">अवतार पूर्वावलोकन (योजनाधीन)</string>
+    <string name="subtitle_preview">Hola! Aprenem junts.</string>
+    <string name="calibration_saved">उपशीर्षक की स्थिति इस डिवाइस पर सहेज दी गई है।</string>
+</resources>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LECTAV</string>
+    <string name="tagline">让教育无障碍</string>
+    <string name="introduction">请选择学习路径、年级和科目。首个版本是导航与无障碍功能的原型。</string>
+    <string name="about">关于</string>
+    <string name="help">帮助</string>
+    <string name="back">返回</string>
+    <string name="select_pathway">学习路径</string>
+    <string name="select_course">课程 / 年级</string>
+    <string name="select_subject">科目</string>
+    <string name="please_select">请选择</string>
+    <string name="level_eso">ESO — 义务中等教育</string>
+    <string name="level_batx">Batxillerat — 高中阶段教育</string>
+    <string name="level_cfgm">CFGM — 中级职业教育</string>
+    <string name="level_cfgs">CFGS — 高级职业教育</string>
+    <string name="level_cert">职业资格证书</string>
+    <string name="eso_1">ESO — 一年级</string>
+    <string name="eso_2">ESO — 二年级</string>
+    <string name="eso_3">ESO — 三年级</string>
+    <string name="eso_4">ESO — 四年级</string>
+    <string name="batx_1">Batxillerat — 一年级</string>
+    <string name="batx_2">Batxillerat — 二年级</string>
+    <string name="sample_mathematics">数学（演示）</string>
+    <string name="catalogue_pending">经过核实的官方课程目录将在后续阶段加入。</string>
+    <string name="demo_notice">这只是示例科目，并非完整的官方课程。</string>
+    <string name="future_features">计划中的教学功能</string>
+    <string name="generate_lesson_pdf">生成课程 PDF（计划中）</string>
+    <string name="generate_exercise_pdf">生成练习 PDF（计划中）</string>
+    <string name="start_avatar">启动教学虚拟人（计划中）</string>
+    <string name="not_yet_available">完成官方课程核实及开源 AI 集成后，这些功能才会开放。</string>
+    <string name="calibrate_subtitles">调整字幕位置</string>
+    <string name="about_title">关于 LECTAV</string>
+    <string name="about_body">LECTAV 是一个免费的开源教育项目，致力于减少经济、语言和无障碍方面的限制。</string>
+    <string name="author">由 Blas Llavero 构思并编程。</string>
+    <string name="open_source_statement">源代码采用 GNU GPL v3 或更高版本许可。可按许可证条款修改及用于慈善目的。</string>
+    <string name="help_title">如何使用原型</string>
+    <string name="help_body">1. 选择学习路径。2. 选择可用年级。3. 选择演示科目。课程内容和虚拟人将在以后加入。</string>
+    <string name="help_demo">若要移动字幕，请打开校准页面。</string>
+    <string name="calibration_title">字幕位置校准</string>
+    <string name="calibration_instructions">拖动滑块可调整字幕高度。设置会保存在此设备上。</string>
+    <string name="avatar_preview">虚拟人预览（计划中）</string>
+    <string name="subtitle_preview">Hola! Aprenem junts.</string>
+    <string name="calibration_saved">字幕位置已保存在此设备。</string>
+</resources>

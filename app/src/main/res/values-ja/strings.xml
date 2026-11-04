@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LECTAV</string>
+    <string name="tagline">すべての人に開かれた教育</string>
+    <string name="introduction">学習課程、学年、科目を選択してください。この初期版は操作とアクセシビリティの試作品です。</string>
+    <string name="about">アプリについて</string>
+    <string name="help">ヘルプ</string>
+    <string name="back">戻る</string>
+    <string name="select_pathway">学習課程</string>
+    <string name="select_course">学年 / コース</string>
+    <string name="select_subject">科目</string>
+    <string name="please_select">選択してください</string>
+    <string name="level_eso">ESO — 義務中等教育</string>
+    <string name="level_batx">Batxillerat — 後期中等教育</string>
+    <string name="level_cfgm">CFGM — 中級職業教育</string>
+    <string name="level_cfgs">CFGS — 上級職業教育</string>
+    <string name="level_cert">職業資格証明</string>
+    <string name="eso_1">ESO — 1年</string>
+    <string name="eso_2">ESO — 2年</string>
+    <string name="eso_3">ESO — 3年</string>
+    <string name="eso_4">ESO — 4年</string>
+    <string name="batx_1">Batxillerat — 1年</string>
+    <string name="batx_2">Batxillerat — 2年</string>
+    <string name="sample_mathematics">数学（デモ）</string>
+    <string name="catalogue_pending">確認済みの公式カタログは今後の段階で追加します。</string>
+    <string name="demo_notice">これはサンプル科目であり、公式カリキュラムの全体ではありません。</string>
+    <string name="future_features">今後追加する学習機能</string>
+    <string name="generate_lesson_pdf">授業PDFを作成（予定）</string>
+    <string name="generate_exercise_pdf">演習PDFを作成（予定）</string>
+    <string name="start_avatar">学習アバターを起動（予定）</string>
+    <string name="not_yet_available">公式カリキュラムの確認とオープンソースAIの統合後に有効になります。</string>
+    <string name="calibrate_subtitles">字幕位置を調整</string>
+    <string name="about_title">LECTAVについて</string>
+    <string name="about_body">LECTAVは、経済的・言語的・アクセシビリティ上の障壁を減らすための無料オープンソース教育プロジェクトです。</string>
+    <string name="author">Blas Llavero が構想・開発しました。</string>
+    <string name="open_source_statement">ソースコードはGNU GPL v3以降のライセンスです。条件に従って変更や慈善目的で利用できます。</string>
+    <string name="help_title">試作品の使い方</string>
+    <string name="help_body">1. 学習課程を選択。2. 学年を選択。3. サンプル科目を選択。授業内容とアバターは後で追加します。</string>
+    <string name="help_demo">字幕の表示位置は調整画面で変更できます。</string>
+    <string name="calibration_title">字幕の位置調整</string>
+    <string name="calibration_instructions">スライダーで字幕の高さを変更できます。設定は端末内に保存されます。</string>
+    <string name="avatar_preview">アバターのプレビュー（予定）</string>
+    <string name="subtitle_preview">Hola! Aprenem junts.</string>
+    <string name="calibration_saved">字幕位置をこの端末に保存しました。</string>
+</resources>

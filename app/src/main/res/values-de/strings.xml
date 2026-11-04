@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LECTAV</string>
+    <string name="tagline">Bildung ohne Barrieren</string>
+    <string name="introduction">Wähle Bildungsweg, Jahrgang und Fach. Diese erste Version ist ein Prototyp für Navigation und Barrierefreiheit.</string>
+    <string name="about">Über die App</string>
+    <string name="help">Hilfe</string>
+    <string name="back">Zurück</string>
+    <string name="select_pathway">Bildungsweg</string>
+    <string name="select_course">Klasse / Jahrgang</string>
+    <string name="select_subject">Fach</string>
+    <string name="please_select">Option wählen</string>
+    <string name="level_eso">ESO — verpflichtende Sekundarstufe</string>
+    <string name="level_batx">Batxillerat — weiterführende Sekundarstufe</string>
+    <string name="level_cfgm">CFGM — mittlere Berufsausbildung</string>
+    <string name="level_cfgs">CFGS — höhere Berufsausbildung</string>
+    <string name="level_cert">Berufszertifikate</string>
+    <string name="eso_1">ESO — Jahr 1</string>
+    <string name="eso_2">ESO — Jahr 2</string>
+    <string name="eso_3">ESO — Jahr 3</string>
+    <string name="eso_4">ESO — Jahr 4</string>
+    <string name="batx_1">Batxillerat — Jahr 1</string>
+    <string name="batx_2">Batxillerat — Jahr 2</string>
+    <string name="sample_mathematics">Mathematik (Demo)</string>
+    <string name="catalogue_pending">Der geprüfte offizielle Katalog wird später ergänzt.</string>
+    <string name="demo_notice">Dies ist nur ein Beispielfach, nicht der vollständige amtliche Lehrplan.</string>
+    <string name="future_features">Geplante Lernfunktionen</string>
+    <string name="generate_lesson_pdf">Unterrichts-PDF erstellen (geplant)</string>
+    <string name="generate_exercise_pdf">Übungs-PDF erstellen (geplant)</string>
+    <string name="start_avatar">Lernavatar starten (geplant)</string>
+    <string name="not_yet_available">Diese Funktionen folgen nach Einbindung geprüfter Lehrpläne und quelloffener KI.</string>
+    <string name="calibrate_subtitles">Untertitelposition einstellen</string>
+    <string name="about_title">Über LECTAV</string>
+    <string name="about_body">LECTAV ist ein kostenloses Open-Source-Bildungsprojekt zum Abbau finanzieller, sprachlicher und barrierebedingter Hürden.</string>
+    <string name="author">Konzipiert und programmiert von Blas Llavero.</string>
+    <string name="open_source_statement">Quellcode unter GNU GPL v3 oder neuer. Änderungen und gemeinnützige Nutzung sind gemäß der Lizenz gestattet.</string>
+    <string name="help_title">So funktioniert der Prototyp</string>
+    <string name="help_body">1. Bildungsweg wählen. 2. Jahrgang wählen. 3. Beispielfach wählen. Inhalte und Avatar folgen in späteren Versionen.</string>
+    <string name="help_demo">Die Untertitelposition lässt sich unter Kalibrierung einstellen.</string>
+    <string name="calibration_title">Untertitel kalibrieren</string>
+    <string name="calibration_instructions">Mit dem Schieberegler die Untertitelhöhe ändern. Die Einstellung wird auf dem Gerät gespeichert.</string>
+    <string name="avatar_preview">Avatar-Vorschau (geplant)</string>
+    <string name="subtitle_preview">Hola! Aprenem junts.</string>
+    <string name="calibration_saved">Untertitelposition auf diesem Gerät gespeichert.</string>
+</resources>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LECTAV</string>
+    <string name="tagline">تعليم بلا حواجز</string>
+    <string name="introduction">اختر المسار التعليمي والسنة والمادة. هذا الإصدار الأول نموذج تجريبي للتنقل وإمكانية الوصول.</string>
+    <string name="about">حول التطبيق</string>
+    <string name="help">مساعدة</string>
+    <string name="back">رجوع</string>
+    <string name="select_pathway">المسار التعليمي</string>
+    <string name="select_course">السنة / المستوى</string>
+    <string name="select_subject">المادة</string>
+    <string name="please_select">اختر خيارًا</string>
+    <string name="level_eso">ESO — التعليم الثانوي الإلزامي</string>
+    <string name="level_batx">Batxillerat — التعليم الثانوي ما بعد الإلزامي</string>
+    <string name="level_cfgm">CFGM — التدريب المهني المتوسط</string>
+    <string name="level_cfgs">CFGS — التدريب المهني العالي</string>
+    <string name="level_cert">الشهادات المهنية</string>
+    <string name="eso_1">ESO — السنة الأولى</string>
+    <string name="eso_2">ESO — السنة الثانية</string>
+    <string name="eso_3">ESO — السنة الثالثة</string>
+    <string name="eso_4">ESO — السنة الرابعة</string>
+    <string name="batx_1">Batxillerat — السنة الأولى</string>
+    <string name="batx_2">Batxillerat — السنة الثانية</string>
+    <string name="sample_mathematics">الرياضيات (تجريبي)</string>
+    <string name="catalogue_pending">ستتم إضافة القائمة الرسمية الموثقة في مرحلة لاحقة.</string>
+    <string name="demo_notice">هذه مادة تجريبية وليست المنهج الرسمي الكامل.</string>
+    <string name="future_features">وظائف التدريس المخطط لها</string>
+    <string name="generate_lesson_pdf">إنشاء ملف PDF للدرس (قريبًا)</string>
+    <string name="generate_exercise_pdf">إنشاء ملف PDF للتمارين (قريبًا)</string>
+    <string name="start_avatar">بدء المعلّم الافتراضي (قريبًا)</string>
+    <string name="not_yet_available">ستُفعّل هذه الميزات بعد دمج المناهج الموثقة والذكاء الاصطناعي مفتوح المصدر.</string>
+    <string name="calibrate_subtitles">ضبط موضع الترجمة</string>
+    <string name="about_title">حول LECTAV</string>
+    <string name="about_body">LECTAV مشروع تعليمي مجاني ومفتوح المصدر يهدف إلى إزالة العوائق المالية واللغوية وعوائق إمكانية الوصول.</string>
+    <string name="author">تصوّر التطبيق وبرمجه Blas Llavero.</string>
+    <string name="open_source_statement">الشيفرة متاحة بموجب رخصة GNU GPL v3 أو أحدث، ويُسمح بتعديلها واستخدامها لأغراض خيرية وفقًا للرخصة.</string>
+    <string name="help_title">كيفية استخدام النموذج</string>
+    <string name="help_body">1. اختر المسار. 2. اختر السنة المتاحة. 3. اختر المادة التجريبية. ستُضاف الدروس والمعلّم الافتراضي لاحقًا.</string>
+    <string name="help_demo">لتغيير موضع الترجمة، افتح شاشة المعايرة.</string>
+    <string name="calibration_title">معايرة الترجمة</string>
+    <string name="calibration_instructions">حرّك شريط التمرير لتغيير ارتفاع الترجمة. يُحفظ الإعداد محليًا.</string>
+    <string name="avatar_preview">معاينة المعلّم الافتراضي (قريبًا)</string>
+    <string name="subtitle_preview">Hola! Aprenem junts.</string>
+    <string name="calibration_saved">تم حفظ موضع الترجمة على هذا الجهاز.</string>
+</resources>

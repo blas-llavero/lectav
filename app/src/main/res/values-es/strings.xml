@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LECTAV</string>
+    <string name="tagline">Educación sin barreras</string>
+    <string name="introduction">Selecciona un itinerario, curso y asignatura. Esta primera versión es un prototipo de navegación y accesibilidad.</string>
+    <string name="about">Descripción</string>
+    <string name="help">Ayuda</string>
+    <string name="back">Volver</string>
+    <string name="select_pathway">Itinerario educativo</string>
+    <string name="select_course">Curso / nivel</string>
+    <string name="select_subject">Asignatura</string>
+    <string name="please_select">Elige una opción</string>
+    <string name="level_eso">ESO — educación secundaria obligatoria</string>
+    <string name="level_batx">Bachillerato</string>
+    <string name="level_cfgm">CFGM — formación profesional de grado medio</string>
+    <string name="level_cfgs">CFGS — formación profesional de grado superior</string>
+    <string name="level_cert">Certificados profesionales</string>
+    <string name="eso_1">1.º de ESO</string>
+    <string name="eso_2">2.º de ESO</string>
+    <string name="eso_3">3.º de ESO</string>
+    <string name="eso_4">4.º de ESO</string>
+    <string name="batx_1">1.º de bachillerato</string>
+    <string name="batx_2">2.º de bachillerato</string>
+    <string name="sample_mathematics">Matemáticas (demostración)</string>
+    <string name="catalogue_pending">El catálogo oficial verificado se añadirá más adelante.</string>
+    <string name="demo_notice">Esta asignatura es una muestra, no el currículo oficial completo.</string>
+    <string name="future_features">Funciones previstas</string>
+    <string name="generate_lesson_pdf">Generar PDF de teoría (pendiente)</string>
+    <string name="generate_exercise_pdf">Generar PDF de ejercicios (pendiente)</string>
+    <string name="start_avatar">Iniciar avatar docente (pendiente)</string>
+    <string name="not_yet_available">Estas acciones están desactivadas hasta integrar el currículo verificado y la IA de código abierto.</string>
+    <string name="calibrate_subtitles">Calibrar posición de subtítulos</string>
+    <string name="about_title">Acerca de LECTAV</string>
+    <string name="about_body">LECTAV es un proyecto educativo gratuito y de código abierto que busca reducir las barreras económicas, lingüísticas y de accesibilidad.</string>
+    <string name="author">Ideado y programado por Blas Llavero.</string>
+    <string name="open_source_statement">Código fuente bajo GNU GPL v3 o posterior. La modificación y el uso benéfico están permitidos según la licencia.</string>
+    <string name="help_title">Cómo usar el prototipo</string>
+    <string name="help_body">1. Elige un itinerario. 2. Selecciona un curso disponible. 3. Elige la asignatura de muestra. La generación de contenido y el avatar llegarán más adelante.</string>
+    <string name="help_demo">Para ajustar la ubicación de los subtítulos, abre la pantalla de calibración.</string>
+    <string name="calibration_title">Calibración de subtítulos</string>
+    <string name="calibration_instructions">Mueve el control deslizante para ajustar la altura de los subtítulos. La opción se guarda localmente.</string>
+    <string name="avatar_preview">Vista previa del avatar (pendiente)</string>
+    <string name="subtitle_preview">Hola! Aprenem junts.</string>
+    <string name="calibration_saved">Posición de subtítulos guardada en este dispositivo.</string>
+</resources>

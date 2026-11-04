@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LECTAV</string>
+    <string name="tagline">Une éducation sans barrières</string>
+    <string name="introduction">Choisissez un parcours, une année et une matière. Cette première version est un prototype de navigation et d’accessibilité.</string>
+    <string name="about">À propos</string>
+    <string name="help">Aide</string>
+    <string name="back">Retour</string>
+    <string name="select_pathway">Parcours de formation</string>
+    <string name="select_course">Année / niveau</string>
+    <string name="select_subject">Matière</string>
+    <string name="please_select">Choisissez une option</string>
+    <string name="level_eso">ESO — enseignement secondaire obligatoire</string>
+    <string name="level_batx">Batxillerat — deuxième cycle du secondaire</string>
+    <string name="level_cfgm">CFGM — formation professionnelle intermédiaire</string>
+    <string name="level_cfgs">CFGS — formation professionnelle supérieure</string>
+    <string name="level_cert">Certificats professionnels</string>
+    <string name="eso_1">ESO — 1re année</string>
+    <string name="eso_2">ESO — 2e année</string>
+    <string name="eso_3">ESO — 3e année</string>
+    <string name="eso_4">ESO — 4e année</string>
+    <string name="batx_1">Batxillerat — 1re année</string>
+    <string name="batx_2">Batxillerat — 2e année</string>
+    <string name="sample_mathematics">Mathématiques (démo)</string>
+    <string name="catalogue_pending">Le catalogue officiel vérifié sera ajouté ultérieurement.</string>
+    <string name="demo_notice">Il s’agit d’un exemple de matière, pas du programme officiel complet.</string>
+    <string name="future_features">Fonctions pédagogiques prévues</string>
+    <string name="generate_lesson_pdf">Créer le PDF du cours (prévu)</string>
+    <string name="generate_exercise_pdf">Créer le PDF des exercices (prévu)</string>
+    <string name="start_avatar">Démarrer l’avatar (prévu)</string>
+    <string name="not_yet_available">Ces fonctions seront disponibles après intégration des programmes vérifiés et de l’IA libre.</string>
+    <string name="calibrate_subtitles">Régler la position des sous-titres</string>
+    <string name="about_title">À propos de LECTAV</string>
+    <string name="about_body">LECTAV est un projet éducatif gratuit et libre visant à réduire les obstacles financiers, linguistiques et d’accessibilité.</string>
+    <string name="author">Conçu et programmé par Blas Llavero.</string>
+    <string name="open_source_statement">Code source sous licence GNU GPL v3 ou ultérieure. Modifications et usages caritatifs autorisés selon la licence.</string>
+    <string name="help_title">Utiliser le prototype</string>
+    <string name="help_body">1. Choisissez un parcours. 2. Sélectionnez une année disponible. 3. Choisissez la matière de démonstration. Les cours et l’avatar arriveront plus tard.</string>
+    <string name="help_demo">Pour déplacer les sous-titres, ouvrez l’écran de réglage.</string>
+    <string name="calibration_title">Réglage des sous-titres</string>
+    <string name="calibration_instructions">Déplacez le curseur pour régler la hauteur des sous-titres. Le réglage est enregistré sur cet appareil.</string>
+    <string name="avatar_preview">Aperçu de l’avatar (prévu)</string>
+    <string name="subtitle_preview">Hola! Aprenem junts.</string>
+    <string name="calibration_saved">Position des sous-titres enregistrée sur cet appareil.</string>
+</resources>

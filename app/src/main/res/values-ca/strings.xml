@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LECTAV</string>
+    <string name="tagline">Educació sense barreres</string>
+    <string name="introduction">Selecciona un itinerari formatiu, un curs i una matèria. Aquesta primera versió és un prototip de navegació i accessibilitat.</string>
+    <string name="about">Descripció</string>
+    <string name="help">Ajuda</string>
+    <string name="back">Torna</string>
+    <string name="select_pathway">Itinerari formatiu</string>
+    <string name="select_course">Curs / nivell</string>
+    <string name="select_subject">Matèria</string>
+    <string name="please_select">Selecciona una opció</string>
+    <string name="level_eso">ESO — educació secundària obligatòria</string>
+    <string name="level_batx">Batxillerat</string>
+    <string name="level_cfgm">CFGM — grau mitjà</string>
+    <string name="level_cfgs">CFGS — grau superior</string>
+    <string name="level_cert">Certificats professionals</string>
+    <string name="eso_1">1r d’ESO</string>
+    <string name="eso_2">2n d’ESO</string>
+    <string name="eso_3">3r d’ESO</string>
+    <string name="eso_4">4t d’ESO</string>
+    <string name="batx_1">1r de batxillerat</string>
+    <string name="batx_2">2n de batxillerat</string>
+    <string name="sample_mathematics">Matemàtiques (demostració)</string>
+    <string name="catalogue_pending">El catàleg oficial verificat s’incorporarà en una fase posterior.</string>
+    <string name="demo_notice">Aquesta és una matèria de mostra, no el currículum oficial complet.</string>
+    <string name="future_features">Funcions docents previstes</string>
+    <string name="generate_lesson_pdf">Genera PDF de teoria (pendent)</string>
+    <string name="generate_exercise_pdf">Genera PDF d’exercicis (pendent)</string>
+    <string name="start_avatar">Inicia l’avatar docent (pendent)</string>
+    <string name="not_yet_available">Aquestes funcions estan desactivades fins que s’integrin el currículum verificat i la IA de codi obert.</string>
+    <string name="calibrate_subtitles">Calibra la posició dels subtítols</string>
+    <string name="about_title">Sobre LECTAV</string>
+    <string name="about_body">LECTAV és un projecte educatiu gratuït i de codi obert que vol reduir les barreres econòmiques, lingüístiques i d’accessibilitat.</string>
+    <string name="author">Ideat i programat per Blas Llavero.</string>
+    <string name="open_source_statement">Codi font sota la llicència GNU GPL v3 o posterior. Se’n permet la modificació i l’ús benèfic segons la llicència.</string>
+    <string name="help_title">Com utilitzar el prototip</string>
+    <string name="help_body">1. Tria un itinerari. 2. Selecciona un curs disponible. 3. Escull la matèria de mostra. La generació de contingut i l’avatar arribaran en versions futures.</string>
+    <string name="help_demo">Per ajustar la ubicació dels subtítols, obre la pantalla de calibratge.</string>
+    <string name="calibration_title">Calibratge dels subtítols</string>
+    <string name="calibration_instructions">Mou el control lliscant per canviar l’alçada dels subtítols. La configuració es desa localment.</string>
+    <string name="avatar_preview">Vista prèvia de l’avatar (pendent)</string>
+    <string name="subtitle_preview">Hola! Aprenem junts.</string>
+    <string name="calibration_saved">La posició dels subtítols s’ha desat en aquest dispositiu.</string>
+</resources>
