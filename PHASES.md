@@ -41,8 +41,10 @@ Catalogues should use durable IDs rather than translated strings as keys, with j
 
 ## Web and online-course platform (future)
 
-- [ ] A **responsive web platform** alongside the Android app, sharing verified catalogue data and educational content through a documented, open-source API.
-- [ ] Teacher course authoring, lesson publishing, self-paced and scheduled sessions, interactive exercises/quizzes and downloadable PDFs/subtitled video.
+- [ ] A **responsive web platform** alongside the Android app (smartphones and tablets), sharing verified catalogue data, accounts where needed and educational content through a documented, open-source API. The **same core functions** must be available on web and Android with layouts tailored to each device.
+- [ ] **Teachers on both Android tablets/app and web:** create, prepare, edit, publish and manage courses, lessons and learning materials; schedule sessions; set assignments and quizzes; review learner progress.
+- [ ] **Learners on both Android tablets/app and web:** find and enrol in courses, study lessons with the avatar, practise with exercises/quizzes, submit assignments, follow progress and download PDFs and subtitled videos.
+- [ ] Support equivalent user journeys across clients; do not make the web teacher-only or the tablet learner-only. Consider offline study/authoring on Android with optional consent-based sync when internet is available.
 - [ ] Learner enrolment and optional progress tracking, assignments, feedback and certificates of completion **clearly distinguished from official accredited qualifications**.
 - [ ] Shared student progress between Android and the website **only with explicit consent and appropriate account security**; offer anonymous browsing and useful offline download/caching where possible.
 - [ ] 10 initially supported UI languages (English, Catalan, Spanish, French, Portuguese, German, Arabic, Hindi, Simplified Chinese and Japanese) with modular localisation for more.
