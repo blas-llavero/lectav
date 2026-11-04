@@ -11,7 +11,9 @@
 
 ## Short-term phases — initial Catalonia rollout
 
-- [ ] 1. Import **verified and versioned official** Catalonian ESO, Batxillerat, CFGM, CFGS and professional-certificate catalogues, including learning outcomes, modules/subjects, official source links and validity dates.
+- [x] 1A. Initial, explicitly partial and source-attributed 2026–2027 subject selection for ESO and Batxillerat: common, school-dependent, optional and modality distinctions; user-visible official source links.
+- [ ] 1B. Complete and verify all officially defined subjects and subject availability by year, modality, school and academic version; add curricula, learning outcomes, module/subject codes, versioning and update tests.
+- [ ] 1C. Import the official CFGM, CFGS and professional-certificate catalogues, including official source links, versioning, learning outcomes and subject/module codes.
 - [ ] 2. Generate teacher-reviewable lesson and exercise PDFs with references, level, syllabus version and separate answer materials where relevant.
 - [ ] 3. Integrate an auditable open-source AI model (on-device where feasible or explicitly self-hosted), interactive educational avatar, quizzes, natural FOSS speech and repositionable Catalan subtitles.
 - [ ] 4. Enable downloadable, one-hour teaching video sessions; distinguish these from the <=30-second promotional and tutorial videos.

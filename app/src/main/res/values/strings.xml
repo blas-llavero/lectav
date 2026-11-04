@@ -42,4 +42,12 @@
     <string name="avatar_preview">Avatar preview (planned)</string>
     <string name="subtitle_preview">Hola! Aprenem junts.</string>
     <string name="calibration_saved">Subtitle position saved on this device.</string>
+    <string name="catalogue_region">Spain · Catalonia · 2026–2027</string>
+    <string name="catalogue_scope_note">Official Catalan subject names. This is a verified starter selection, not a complete subject catalogue. School schedules, optional subjects and modalities may vary.</string>
+    <string name="catalogue_batx2_note">Some changes to the second year of Batxillerat take effect in 2027–2028. Check the official source.</string>
+    <string name="catalogue_source_button">View official curriculum source</string>
+    <string name="catalogue_kind_common">Common subject</string>
+    <string name="catalogue_kind_variable">School-dependent year</string>
+    <string name="catalogue_kind_optional">Optional / school offer</string>
+    <string name="catalogue_kind_modality">Modality subject</string>
 </resources>

@@ -42,4 +42,12 @@
     <string name="avatar_preview">Pré-visualização do avatar (planeada)</string>
     <string name="subtitle_preview">Hola! Aprenem junts.</string>
     <string name="calibration_saved">Posição das legendas guardada neste dispositivo.</string>
+    <string name="catalogue_region">Espanha · Catalunha · 2026–2027</string>
+    <string name="catalogue_scope_note">Nomes oficiais em catalão. Seleção inicial verificada, não exaustiva. As disciplinas e opções variam segundo a escola.</string>
+    <string name="catalogue_batx2_note">Algumas alterações do segundo ano entram em vigor em 2027–2028. Consulte a fonte oficial.</string>
+    <string name="catalogue_source_button">Ver fonte curricular oficial</string>
+    <string name="catalogue_kind_common">Disciplina comum</string>
+    <string name="catalogue_kind_variable">Ano conforme a escola</string>
+    <string name="catalogue_kind_optional">Opcional / oferta da escola</string>
+    <string name="catalogue_kind_modality">Disciplina de modalidade</string>
 </resources>

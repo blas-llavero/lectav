@@ -12,7 +12,7 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
-- Year selectors for ESO and Batxillerat; a **Mathematics demo choice only**, deliberately not presented as an official complete list.
+- Year selectors for ESO and Batxillerat; a **first, incomplete, source-attributed 2026–2027 subject selection** for ESO and Batxillerat, labelled by common subjects, optional choices, school-dependent distribution and modality. Official names are displayed in Catalan across interface languages.
 - The official vocational and certificate programme catalogues are **not yet loaded**.
 - Main-screen **About** and **Help** buttons.
 - Subtitle-position calibration preview with a slider; the value is stored locally and will be used by the future avatar player.
@@ -21,6 +21,12 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## Catalonia starter catalogue — first working selection (v0.2.0)
+
+The **subject selector now includes a reviewed but incomplete catalogue** of ESO years 1–4 and Batxillerat years 1–2. Its course/subject lists live in `app/src/main/java/com/blasllavero/lectav/CurriculumCatalogue.kt`; see [sources and limitations](docs/CATALONIA_CATALOGUE.md). The interface separates common, modality, optional and school-dependent offerings. An **official curriculum source** link opens the relevant Generalitat curriculum overview in the device browser. The app does not download, scrape, or send student data.
+
+The underlying sources are **Decret 175/2022 and Decret 480/2024 (ESO)** and **Decret 171/2022 and Decret 103/2026 (Batxillerat)**. The 2026 amendment is introduced in year 1 of Batxillerat in 2026–2027; further year-2 implementation is scheduled for 2027–2028. The catalogue is intentionally not a declaration of an individual school's timetable. AI teaching and PDF creation remain disabled.
 
 ## Future learning functions (not yet implemented)
 
@@ -56,7 +62,7 @@ See [PHASES.md](PHASES.md) for the expanded roadmap. These global, university an
 ## Run and use the prototype
 
 1. Open **LECTAV** on Android. The interface follows the device language if that language is supported; otherwise English is the fallback.
-2. Choose a learning pathway. For ESO and Batxillerat, choose a school year and the Mathematics demo subject.
+2. Choose a learning pathway. For ESO and Batxillerat, choose a school year and one of the initially verified subjects; consult the category label and official source. School-specific offerings must be confirmed with the centre.
 3. CFGM, CFGS and professional certificates visibly indicate that the official catalogue is pending. No fabricated programmes appear.
 4. Use **About** to read the app's purpose and authorship, or **Help** for guidance.
 5. The PDF and avatar buttons are disabled by design in v0.1.0; no content-generation services have yet been connected.

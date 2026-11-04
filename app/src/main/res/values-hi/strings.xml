@@ -42,4 +42,12 @@
     <string name="avatar_preview">अवतार पूर्वावलोकन (योजनाधीन)</string>
     <string name="subtitle_preview">Hola! Aprenem junts.</string>
     <string name="calibration_saved">उपशीर्षक की स्थिति इस डिवाइस पर सहेज दी गई है।</string>
+    <string name="catalogue_region">स्पेन · कैटालोनिया · 2026–2027</string>
+    <string name="catalogue_scope_note">विषयों के आधिकारिक नाम कैटलन में हैं। यह सत्यापित प्रारंभिक सूची है, पूरी सूची नहीं। विकल्प और कक्षा के अनुसार उपलब्धता विद्यालय पर निर्भर करती है।</string>
+    <string name="catalogue_batx2_note">दूसरे वर्ष के कुछ बदलाव 2027–2028 से लागू होंगे। आधिकारिक स्रोत देखें।</string>
+    <string name="catalogue_source_button">आधिकारिक पाठ्यक्रम स्रोत खोलें</string>
+    <string name="catalogue_kind_common">सामान्य विषय</string>
+    <string name="catalogue_kind_variable">विद्यालय के अनुसार वर्ष</string>
+    <string name="catalogue_kind_optional">वैकल्पिक विषय</string>
+    <string name="catalogue_kind_modality">विशेषज्ञता विषय</string>
 </resources>

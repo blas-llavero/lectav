@@ -6,6 +6,8 @@
 package com.blasllavero.lectav
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -46,12 +48,6 @@ private fun coursesFor(pathway: String): List<Choice> = when (pathway) {
     else -> emptyList() // Will be loaded from the verified official catalogue.
 }
 
-private fun sampleSubjectsFor(course: String): List<Choice> = when {
-    course.startsWith("eso") || course.startsWith("batx") ->
-        listOf(Choice("math", R.string.sample_mathematics))
-    else -> emptyList()
-}
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,7 +69,7 @@ private fun LectavApp() {
     var subject by rememberSaveable { mutableStateOf("") }
     var subtitleHeight by remember { mutableFloatStateOf(preferences.getFloat("subtitle_height", 0.25f)) }
     val courses = coursesFor(pathway)
-    val subjects = sampleSubjectsFor(course)
+    val subjects = catalogueSubjectsFor(course)
 
     MaterialTheme {
         Scaffold(
@@ -125,6 +121,7 @@ private fun LectavApp() {
                             fontWeight = FontWeight.Bold
                         )
                         Text(stringResource(R.string.introduction))
+                        Text(stringResource(R.string.catalogue_region), style = MaterialTheme.typography.labelMedium)
                         ChoiceDropdown(
                             label = stringResource(R.string.select_pathway),
                             choices = pathways,
@@ -138,7 +135,7 @@ private fun LectavApp() {
                             enabled = courses.isNotEmpty(),
                             onChoose = { course = it; subject = "" }
                         )
-                        ChoiceDropdown(
+                        SubjectDropdown(
                             label = stringResource(R.string.select_subject),
                             choices = subjects,
                             selectedId = subject,
@@ -150,8 +147,28 @@ private fun LectavApp() {
                                 stringResource(R.string.catalogue_pending),
                                 color = MaterialTheme.colorScheme.primary
                             )
-                        } else if (subject.isNotEmpty()) {
-                            Text(stringResource(R.string.demo_notice))
+                        } else {
+                            Text(
+                                stringResource(R.string.catalogue_scope_note),
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            if (course == "batx2") {
+                                Text(stringResource(R.string.catalogue_batx2_note), style = MaterialTheme.typography.bodySmall)
+                            }
+                            val chosen = subjects.find { it.id == subject }
+                            if (chosen != null) {
+                                Text(
+                                    "${chosen.officialNameCa} · ${stringResource(chosen.kind.labelRes)}",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                TextButton(onClick = {
+                                    runCatching {
+                                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(chosen.sourceUrl)))
+                                    }
+                                }) {
+                                    Text(stringResource(R.string.catalogue_source_button))
+                                }
+                            }
                         }
                         HorizontalDivider()
                         Text(stringResource(R.string.future_features), fontWeight = FontWeight.SemiBold)
@@ -203,6 +220,47 @@ private fun ChoiceDropdown(
                 choices.forEach { item ->
                     DropdownMenuItem(
                         text = { Text(stringResource(item.label)) },
+                        onClick = { onChoose(item.id); expanded = false }
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun SubjectDropdown(
+    label: String,
+    choices: List<SubjectOption>,
+    selectedId: String,
+    enabled: Boolean = true,
+    onChoose: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selected = choices.find { it.id == selectedId }
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(label, style = MaterialTheme.typography.labelLarge)
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(
+                modifier = Modifier.fillMaxWidth(),
+                enabled = enabled,
+                onClick = { expanded = true }
+            ) {
+                Text(selected?.officialNameCa ?: stringResource(R.string.please_select))
+            }
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                choices.forEach { item ->
+                    DropdownMenuItem(
+                        text = {
+                            Column {
+                                Text(item.officialNameCa)
+                                Text(
+                                    stringResource(item.kind.labelRes),
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
+                        },
                         onClick = { onChoose(item.id); expanded = false }
                     )
                 }

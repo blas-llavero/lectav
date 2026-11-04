@@ -42,4 +42,12 @@
     <string name="avatar_preview">アバターのプレビュー（予定）</string>
     <string name="subtitle_preview">Hola! Aprenem junts.</string>
     <string name="calibration_saved">字幕位置をこの端末に保存しました。</string>
+    <string name="catalogue_region">スペイン · カタルーニャ · 2026–2027</string>
+    <string name="catalogue_scope_note">科目名は公式のカタルーニャ語です。これは確認済みの初期リストであり、全科目ではありません。開講学年や選択科目は学校により異なります。</string>
+    <string name="catalogue_batx2_note">2年次の一部の変更は2027–2028年度から適用されます。公式資料をご確認ください。</string>
+    <string name="catalogue_source_button">公式カリキュラム資料を見る</string>
+    <string name="catalogue_kind_common">共通科目</string>
+    <string name="catalogue_kind_variable">学校により学年が異なる</string>
+    <string name="catalogue_kind_optional">選択科目</string>
+    <string name="catalogue_kind_modality">専門課程科目</string>
 </resources>

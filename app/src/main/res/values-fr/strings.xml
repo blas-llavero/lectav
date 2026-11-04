@@ -42,4 +42,12 @@
     <string name="avatar_preview">Aperçu de l’avatar (prévu)</string>
     <string name="subtitle_preview">Hola! Aprenem junts.</string>
     <string name="calibration_saved">Position des sous-titres enregistrée sur cet appareil.</string>
+    <string name="catalogue_region">Espagne · Catalogne · 2026–2027</string>
+    <string name="catalogue_scope_note">Les noms officiels sont en catalan. Sélection initiale vérifiée, non exhaustive. Les matières et options varient selon les établissements.</string>
+    <string name="catalogue_batx2_note">Certains changements de deuxième année entreront en vigueur en 2027–2028. Consultez la source officielle.</string>
+    <string name="catalogue_source_button">Voir la source officielle du programme</string>
+    <string name="catalogue_kind_common">Matière commune</string>
+    <string name="catalogue_kind_variable">Année selon établissement</string>
+    <string name="catalogue_kind_optional">Option / offre locale</string>
+    <string name="catalogue_kind_modality">Matière de spécialité</string>
 </resources>

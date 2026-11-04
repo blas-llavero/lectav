@@ -42,4 +42,12 @@
     <string name="avatar_preview">معاينة المعلّم الافتراضي (قريبًا)</string>
     <string name="subtitle_preview">Hola! Aprenem junts.</string>
     <string name="calibration_saved">تم حفظ موضع الترجمة على هذا الجهاز.</string>
+    <string name="catalogue_region">إسبانيا · كتالونيا · 2026–2027</string>
+    <string name="catalogue_scope_note">أسماء المواد الرسمية باللغة الكتالونية. هذه قائمة أولية موثقة وليست شاملة. قد تختلف المواد الاختيارية وتوزيعها حسب المدرسة.</string>
+    <string name="catalogue_batx2_note">تدخل بعض تغييرات السنة الثانية حيز التنفيذ في 2027–2028. راجع المصدر الرسمي.</string>
+    <string name="catalogue_source_button">عرض المصدر الرسمي للمنهج</string>
+    <string name="catalogue_kind_common">مادة مشتركة</string>
+    <string name="catalogue_kind_variable">الصف بحسب المدرسة</string>
+    <string name="catalogue_kind_optional">مادة اختيارية</string>
+    <string name="catalogue_kind_modality">مادة تخصصية</string>
 </resources>

@@ -42,4 +42,12 @@
     <string name="avatar_preview">Vista previa del avatar (pendiente)</string>
     <string name="subtitle_preview">Hola! Aprenem junts.</string>
     <string name="calibration_saved">Posición de subtítulos guardada en este dispositivo.</string>
+    <string name="catalogue_region">España · Cataluña · 2026–2027</string>
+    <string name="catalogue_scope_note">Nombres oficiales en catalán. Esta es una selección inicial verificada, no un catálogo completo. Los cursos, las optativas y las modalidades dependen del centro.</string>
+    <string name="catalogue_batx2_note">Algunos cambios de segundo de Bachillerato entran en vigor en 2027–2028. Consulta la fuente oficial.</string>
+    <string name="catalogue_source_button">Consultar la fuente curricular oficial</string>
+    <string name="catalogue_kind_common">Asignatura común</string>
+    <string name="catalogue_kind_variable">Curso según el centro</string>
+    <string name="catalogue_kind_optional">Optativa / oferta del centro</string>
+    <string name="catalogue_kind_modality">Asignatura de modalidad</string>
 </resources>

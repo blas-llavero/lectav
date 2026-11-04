@@ -42,4 +42,12 @@
     <string name="avatar_preview">Avatar-Vorschau (geplant)</string>
     <string name="subtitle_preview">Hola! Aprenem junts.</string>
     <string name="calibration_saved">Untertitelposition auf diesem Gerät gespeichert.</string>
+    <string name="catalogue_region">Spanien · Katalonien · 2026–2027</string>
+    <string name="catalogue_scope_note">Offizielle Fachnamen auf Katalanisch. Geprüfte, unvollständige Erstauswahl. Fächer und Wahlangebote können je nach Schule variieren.</string>
+    <string name="catalogue_batx2_note">Einige Änderungen im zweiten Jahr gelten ab 2027–2028. Bitte die amtliche Quelle prüfen.</string>
+    <string name="catalogue_source_button">Offizielle Lehrplanquelle öffnen</string>
+    <string name="catalogue_kind_common">Gemeinsames Fach</string>
+    <string name="catalogue_kind_variable">Jahrgang je nach Schule</string>
+    <string name="catalogue_kind_optional">Wahlfach / Schulangebot</string>
+    <string name="catalogue_kind_modality">Profilfach</string>
 </resources>

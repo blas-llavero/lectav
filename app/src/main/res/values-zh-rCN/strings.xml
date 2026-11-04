@@ -42,4 +42,12 @@
     <string name="avatar_preview">虚拟人预览（计划中）</string>
     <string name="subtitle_preview">Hola! Aprenem junts.</string>
     <string name="calibration_saved">字幕位置已保存在此设备。</string>
+    <string name="catalogue_region">西班牙 · 加泰罗尼亚 · 2026–2027</string>
+    <string name="catalogue_scope_note">科目使用加泰罗尼亚语官方名称。这是经核实的初步清单，并非完整目录。年级安排和选修科目因学校而异。</string>
+    <string name="catalogue_batx2_note">高中第二学年的部分调整将于2027–2028学年生效。请核对官方来源。</string>
+    <string name="catalogue_source_button">查看官方课程资料</string>
+    <string name="catalogue_kind_common">公共科目</string>
+    <string name="catalogue_kind_variable">年级由学校安排</string>
+    <string name="catalogue_kind_optional">选修科目</string>
+    <string name="catalogue_kind_modality">方向科目</string>
 </resources>
