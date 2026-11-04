@@ -2,7 +2,7 @@
 
 **Education without barriers.** LECTAV is a free, open-source Android educational application under development. Its goal is to offer official Catalonian curricula (ESO, Batxillerat, CFGM, CFGS and professional certificates) through accessible AI-assisted lessons, exercises and an educational avatar. This repository initially contains a **navigation and subtitle-calibration prototype**, not the finished AI application.
 
-**APK installation location (immediately below the description):** After the first successful GitHub Actions build, open **Actions → Build Android debug APK → latest successful run → Artifacts → `lectav-debug-apk`** and unzip the downloaded artifact to obtain `app-debug.apk`. The local build output is `app/build/outputs/apk/debug/app-debug.apk`. **No APK has been compiled or published with this starter archive.** A future approved release may provide `lectav.apk` under GitHub **Releases**.
+**APK installation location (immediately below the description):** After the first successful GitHub Actions build, open **Actions → Build Android debug APK → latest successful run → Artifacts → `lectav-debug-apk`** and unzip the downloaded artifact to obtain `app-debug.apk`. The local build output is `app/build/outputs/apk/debug/app-debug.apk`. **The first debug APK was successfully compiled on 4 November 2026** ([successful GitHub Actions run](https://github.com/blas-llavero/lectav/actions/runs/41831051287)); a production release has not yet been published. A future approved release may provide `lectav.apk` under GitHub **Releases**.
 
 **Conceived and programmed by Blas Llavero.** Further information: [blasllavero.com](https://blasllavero.com).
 
@@ -31,6 +31,18 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 5. Generate downloadable educational videos in **60-minute teaching sessions**. Intensive rendering may require a separately installed local or self-hosted pipeline rather than on-device video creation.
 6. Create a **30-second maximum** introductory video and a **30-second maximum** app tutorial in each supported language. Each version should use an appropriate natural-sounding voiceover. Every image, audio asset and video must be approved by Blas Llavero **before** it is included in the application or pushed to GitHub.
 7. Consider text alternatives, TalkBack navigation, enlarged text, contrast, and accessibility preferences for people with different disabilities.
+
+## Long-term global learning and university platform (planned)
+
+LECTAV is intended to expand beyond Catalonia to **all countries and their curriculum jurisdictions** (for example, Spain's autonomous communities; elsewhere, states, provinces or other education authorities). The future picker will follow **Country → Territory/Curriculum authority (if applicable) → Education level → Institution (where relevant) → Programme/qualification/degree → Year/semester → Subject/module → Topic**. A curriculum may be national, regional or institution-specific; the app must not present generated subjects as official without verified public sources.
+
+The platform will also support university-level learning. Prioritised disciplines are **mathematics, computer science, cybersecurity, medicine, biotechnology and bioinformatics**, with scope to expand to other degrees. University curricula need institution/programme/year attribution, not a presumed global standard.
+
+The planned **online-course platform** will be accessible through both a responsive **website** and the **Android app**, reusing a documented open-source backend and shared curriculum catalogue. Teaching features may include course authoring, exercises, quizzes, enrolment, self-paced sessions, learning progress, accessible subtitles, transcripts and downloaded materials. Any completion certificate will be distinguished from an official qualification unless formally accredited. Personal accounts/sync should be optional when possible, with consent, data minimisation, secure storage, safeguarding for minors and applicable privacy obligations.
+
+Initial deployment will remain focused on verified **Catalonian curricula**, while the data model will be designed for later jurisdictions and additional languages. Only open-source components are planned; running online infrastructure still entails hosting and compute costs. The ten initial UI languages remain English, Catalan, Spanish, French, Portuguese, German, Arabic, Hindi, Simplified Chinese and Japanese.
+
+See [PHASES.md](PHASES.md) for the expanded roadmap. These global, university and web capabilities are **future requirements**, not features of the current APK.
 
 ## Install the debug APK on Android (once a build exists)
 
@@ -76,4 +88,4 @@ Requirements: Android Studio with Android SDK Platform 36, JDK 17, Gradle **8.13
 5. Or with Gradle 8.13 installed, run `gradle :app:assembleDebug` from the project root.
 6. Install the APK locally using the instructions above. No signing keys, user files, model weights or media are included in the source archive.
 
-**Build verification status:** The source and XML structure were checked when the starter archive was generated, but an Android SDK/Gradle build was not available in the creation environment. The first CI build must be treated as the initial compilation test and errors, if any, resolved before distribution.
+**Build verification status:** The Android debug APK compiled successfully in GitHub Actions on 4 November 2026; see the linked build above. This does not replace testing installation, UI behaviour and accessibility on real devices.
