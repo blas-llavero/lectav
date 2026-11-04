@@ -1,12 +1,56 @@
-# LECTAV — proposed development stages
+# LECTAV — development roadmap
 
-- [x] Phase 1: Name approved: LECTAV
-- [x] Phase 2A: Initial Android source prototype, translated user interface, subtitle position calibration, help/about and documentation
-- [ ] Phase 2B: User creates `lectav` GitHub repository and verifies first debug APK build
-- [ ] Phase 3: Official Catalonian educational catalogue, provenance, updates, validation
-- [ ] Phase 4: Teaching content generation, separate lesson/exercise PDFs and evaluation
-- [ ] Phase 5: Locally controlled FOSS language model, interactive tutor/avatar and natural FOSS speech
-- [ ] Phase 6: One-hour video sessions, output size/compute/accessibility validation
-- [ ] Phase 7: Four-scene introductory promo and screenshot-based tutorial (<=30s each), localized videos, accessibility voiceover
-- [ ] Phase 8: Owner review and approval of all images, sounds and videos BEFORE upload or incorporation
-- [ ] Phase 9: Signed APK release, reproducible builds, tests, licence audit, accessibility testing
+**Mission:** Free, open-source, accessible learning without geographical, language, disability or economic barriers. LECTAV starts in Catalonia and is designed to expand worldwide across Android, tablets and the web.
+
+## Implemented
+
+- [x] Official name approved: LECTAV — Open Learning Avatar
+- [x] Public source repository: https://github.com/blas-llavero/lectav
+- [x] First Android Compose prototype with translated interface, About/Help, navigation-safe layout and subtitle-position calibration
+- [x] First GitHub Actions debug APK build succeeded: https://github.com/blas-llavero/lectav/actions/runs/41831051287
+
+## Short-term phases — initial Catalonia rollout
+
+- [ ] 1. Import **verified and versioned official** Catalonian ESO, Batxillerat, CFGM, CFGS and professional-certificate catalogues, including learning outcomes, modules/subjects, official source links and validity dates.
+- [ ] 2. Generate teacher-reviewable lesson and exercise PDFs with references, level, syllabus version and separate answer materials where relevant.
+- [ ] 3. Integrate an auditable open-source AI model (on-device where feasible or explicitly self-hosted), interactive educational avatar, quizzes, natural FOSS speech and repositionable Catalan subtitles.
+- [ ] 4. Enable downloadable, one-hour teaching video sessions; distinguish these from the <=30-second promotional and tutorial videos.
+- [ ] 5. Prepare introductory and screen-recorded tutorial videos in the ten initial app languages, with accessible natural FOSS voiceover. **No image, sound or video is to be published or added to GitHub/app before Blas Llavero explicitly approves it.**
+- [ ] 6. Test accessibility, reliability, curriculum accuracy, source licensing, Android navigation-bar insets, release signing and reproducible builds.
+
+## Worldwide academic catalogue (future)
+
+**Important:** Every country can define its own levels, curriculum authority, regional subdivisions, academic calendar and professional qualifications; do not assume that every country uses Spain's autonomous-community structure.
+
+Proposed selection hierarchy:
+
+1. **Country**
+2. **Territory / curriculum jurisdiction** — autonomous community, state, province, region, devolved nation or national curriculum, as applicable; optional where not relevant
+3. **Education level / type** — primary, lower/upper secondary, vocational, professional certificate, university, continuing education and relevant local levels
+4. **Education provider** — optional for school programmes, but institution + campus/faculty should be selectable for universities
+5. **Programme / qualification / degree**
+6. **Academic year / semester / stage**
+7. **Subject / module**
+8. **Topic / learning outcome / lesson session**
+
+University priority subject areas: **mathematics, computer science, cybersecurity, medicine, biotechnology and bioinformatics**, followed by the wider officially documented academic catalogue. University modules are often institution- and programme-specific and must not be conflated with a single nationwide syllabus.
+
+Catalogues should use durable IDs rather than translated strings as keys, with jurisdiction, authority, source URL, source licence, language, institution, academic year, version, effective dates, qualification code and programme/module codes. Keep original official names while offering clearly labelled translations; identify withdrawn/expired courses; provide review workflows rather than treating AI-generated lists as official facts.
+
+**Start with Catalonia/Spain as a test case** for the new multi-jurisdiction data model, before adding other countries. Community-maintained curriculum contributions must cite verifiable primary sources and pass editorial review.
+
+## Web and online-course platform (future)
+
+- [ ] A **responsive web platform** alongside the Android app, sharing verified catalogue data and educational content through a documented, open-source API.
+- [ ] Teacher course authoring, lesson publishing, self-paced and scheduled sessions, interactive exercises/quizzes and downloadable PDFs/subtitled video.
+- [ ] Learner enrolment and optional progress tracking, assignments, feedback and certificates of completion **clearly distinguished from official accredited qualifications**.
+- [ ] Shared student progress between Android and the website **only with explicit consent and appropriate account security**; offer anonymous browsing and useful offline download/caching where possible.
+- [ ] 10 initially supported UI languages (English, Catalan, Spanish, French, Portuguese, German, Arabic, Hindi, Simplified Chinese and Japanese) with modular localisation for more.
+- [ ] Free/open-source, independently hostable components; plan for the real operating cost of hosting and rendering without making paid proprietary AI a mandatory dependency.
+- [ ] Accessibility by design (subtitles, transcripts, screen readers, keyboard navigation, subtitle calibration), privacy/GDPR, child safeguarding, audit logs, teacher moderation, and secure handling of educational records.
+
+## Engineering guidance
+
+Aim for a modular architecture: native Android client + responsive web client + versioned curriculum service + content/assessment engine + optional local/self-hosted AI/voice/video workers. Keep curriculum metadata and source attributions independent of presentation language. Defer implementation of the global catalogue and web learning-management system until the Catalonia prototype has passed its core tests.
+
+**Current status:** Only the small Android UI/calibration prototype is implemented. No worldwide catalogues, university teaching modules, AI lessons, user accounts, online-class platform, avatar or video generator exist yet.
