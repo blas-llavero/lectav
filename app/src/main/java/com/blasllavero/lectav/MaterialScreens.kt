@@ -140,10 +140,10 @@ internal fun MaterialViewer(file: LocalMaterial) {
             val result=runCatching {
                 withContext(Dispatchers.IO){
                     val fd=context.contentResolver.openFileDescriptor(Uri.parse(file.uri),"r")
-                        ?:error("No PDF")
+                        ?:kotlin.error("No PDF")
                     fd.use { descriptor ->
                         PdfRenderer(descriptor).use { renderer ->
-                            if(renderer.pageCount<=0) error("Empty PDF")
+                            if(renderer.pageCount<=0) kotlin.error("Empty PDF")
                             val index=pageIndex.coerceIn(0,renderer.pageCount-1)
                             renderer.openPage(index).use { pdfPage ->
                                 val w=900
