@@ -66,6 +66,10 @@ private fun LectavApp() {
     val repository = remember(context.applicationContext) { SettingsRepository(context.applicationContext) }
     val saved by repository.settings.collectAsState(initial = null)
     val scope = rememberCoroutineScope()
+    val fileRepository = remember(context.applicationContext) { MaterialLibrary(context.applicationContext) }
+    val files by fileRepository.files.collectAsState(initial=emptyList())
+    var selectedCourseId by rememberSaveable { mutableStateOf("") }
+    var selectedFileId by rememberSaveable { mutableStateOf("") }
     var screen by rememberSaveable { mutableStateOf("home") }
     var subtitleHeight by remember { mutableFloatStateOf(0.25f) }
     LaunchedEffect(saved?.subtitleHeight) {
@@ -96,7 +100,13 @@ private fun LectavApp() {
                                 Text(stringResource(R.string.settings))
                             }
                         } else {
-                            TextButton(onClick = { screen = "home" }) {
+                            TextButton(onClick = {
+                                screen = when(screen) {
+                                    "viewer" -> "materials"
+                                    "materials" -> "library"
+                                    else -> "home"
+                                }
+                            }) {
                                 Text(stringResource(R.string.back))
                             }
                         }
@@ -119,6 +129,11 @@ private fun LectavApp() {
                     "library" -> saved?.let {
                         SavedCoursesScreen(
                             settings = it,
+                            files = files,
+                            onMaterials = { id ->
+                                selectedCourseId = id
+                                screen = "materials"
+                            },
                             onRoleChange = { role ->
                                 scope.launch { repository.setActiveRole(role) }
                             },
@@ -133,6 +148,30 @@ private fun LectavApp() {
                             },
                             onPickCourse = { screen = "home" }
                         )
+                    }
+                    "materials" -> saved?.let { state ->
+                        val chosen = state.savedCourses.firstOrNull { it.id == selectedCourseId }
+                        if(chosen != null) MaterialsScreen(
+                            course = chosen,
+                            files = files.filter { it.courseKey == courseKey(chosen) },
+                            onAdd = { uri,name,kind ->
+                                scope.launch { fileRepository.add(chosen,uri,name,kind) }
+                            },
+                            onOpen = { id ->
+                                selectedFileId = id
+                                screen = "viewer"
+                                scope.launch { fileRepository.update(id,opened=true) }
+                            },
+                            onUpdate = { id,value ->
+                                scope.launch { fileRepository.update(id,completed=value) }
+                            },
+                            onRemove = { id -> scope.launch { fileRepository.remove(id) } }
+                        ) else Text(stringResource(R.string.material_unavailable))
+                    }
+                    "viewer" -> {
+                        val file = files.firstOrNull { it.id == selectedFileId }
+                        if(file != null) MaterialViewer(file)
+                        else Text(stringResource(R.string.material_unavailable))
                     }
                     "settings" -> saved?.let {
                         SettingsScreen(
@@ -334,17 +373,21 @@ private fun SubjectDropdown(
 @Composable
 private fun SavedCoursesScreen(
     settings: SavedSettings,
+    files: List<LocalMaterial>,
+    onMaterials: (String) -> Unit,
     onRoleChange: (String) -> Unit,
     onOpen: (String) -> Unit,
     onRemove: (String) -> Unit,
     onPickCourse: () -> Unit
 ) {
     var pendingRemoval by remember { mutableStateOf<SavedCourse?>(null) }
-    // No materials can be generated yet, so every material count is zero.
-    // Real generated-file counts will replace the fallback ordering later.
     val entries = settings.savedCourses.filter { it.role == settings.activeRole }
         .sortedWith(
-            compareByDescending<SavedCourse> { it.lastOpenedAt }
+            compareByDescending<SavedCourse> { entry ->
+                if(settings.activeRole=="teacher") files.count {
+                    it.courseKey==courseKey(entry)
+                } else 0
+            }.thenByDescending { it.lastOpenedAt }
                 .thenBy { it.course }
                 .thenBy { it.subject }
         )
@@ -373,7 +416,8 @@ private fun SavedCoursesScreen(
         Text(stringResource(R.string.library_empty))
     } else {
         Text(
-            stringResource(R.string.library_sort_note),
+            stringResource(if(settings.activeRole=="teacher")
+                R.string.material_sort_note else R.string.library_sort_note),
             style = MaterialTheme.typography.bodySmall
         )
         entries.forEach { entry ->
@@ -383,6 +427,7 @@ private fun SavedCoursesScreen(
             val level = coursesFor(entry.pathway)
                 .firstOrNull { it.id == entry.course }?.let { stringResource(it.label) }
                 ?: entry.course
+            val related = files.filter { it.courseKey==courseKey(entry) }
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -391,13 +436,16 @@ private fun SavedCoursesScreen(
                     Text(title, style = MaterialTheme.typography.titleMedium)
                     Text(level, style = MaterialTheme.typography.bodyMedium)
                     Text(
-                        if (settings.activeRole == "teacher")
-                            stringResource(R.string.library_no_generated)
-                        else stringResource(R.string.library_no_learning),
+                        stringResource(R.string.material_counts,
+                            related.count { it.type != "video" },
+                            related.count { it.type == "video" }),
                         style = MaterialTheme.typography.bodySmall
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Button(onClick = { onOpen(entry.id) }) {
+                        Button(onClick = { onMaterials(entry.id) }) {
+                            Text(stringResource(R.string.materials_title))
+                        }
+                        OutlinedButton(onClick = { onOpen(entry.id) }) {
                             Text(stringResource(R.string.library_open))
                         }
                         OutlinedButton(onClick = { pendingRemoval = entry }) {
