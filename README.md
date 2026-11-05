@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current Android prototype (v0.4.0)
+## Current Android prototype (v0.5.0)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -21,6 +21,20 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## v0.5.0 — offline import and viewing of existing educational files
+
+From **My courses → Materials**, LECTAV can now import an existing **lesson PDF, exercise PDF or MP4 video** using Android's system document picker. The source may be internal storage or a supported removable SD card. Importing is not content generation; source documents and movies are **not added to GitHub, sent to any server, or bundled in the APK**.
+
+- The app stores persistent read access to each selected file and a local metadata record; source files remain in their original folder.
+- PDFs render page by page within LECTAV using Android PdfRenderer; MP4s play with Android VideoView when codecs are supported.
+- Teacher library courses are ordered by number of **imported** materials (not generated content), and list imported PDFs/MP4s separately.
+- Learners can record that a file was opened and separately mark PDFs and exercises completed, or undo completion. Opening a file never automatically means it is completed.
+- Removing a record from LECTAV does not delete the original file. If a removable SD card becomes unavailable, opening the document will show an error while the saved library record remains.
+- Works offline and requests no broad storage or network permission.
+- Not yet available: generation of new PDFs/MP4s, copying/exporting files to a new device/SD location, a searchable PDF viewer, detailed video progress, web sync and student accounts. Media bundled with the project still requires explicit author approval.
+
+**Test:** save an ESO subject under My courses; tap Materials; import PDF/MP4; open PDF and try pages; test video playback; switch to Learner mode and mark an exercise as completed; close and reopen; check that the list and statuses persist.
 
 ## v0.4.0 — My courses (Android)
 
