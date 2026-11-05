@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current prototype (v0.1.0)
+## Current Android prototype (v0.2.0)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -37,6 +37,18 @@ The underlying sources are **Decret 175/2022 and Decret 480/2024 (ESO)** and **D
 5. Generate downloadable educational videos in **60-minute teaching sessions**. Intensive rendering may require a separately installed local or self-hosted pipeline rather than on-device video creation.
 6. Create a **30-second maximum** introductory video and a **30-second maximum** app tutorial in each supported language. Each version should use an appropriate natural-sounding voiceover. Every image, audio asset and video must be approved by Blas Llavero **before** it is included in the application or pushed to GitHub.
 7. Consider text alternatives, TalkBack navigation, enlarged text, contrast, and accessibility preferences for people with different disabilities.
+
+## Saved preferences and offline learning library (planned)
+
+LECTAV will preserve **each user's course selection and accessibility preferences**, including country, curriculum jurisdiction, educational pathway, programme, course/year/level, subject/module, interface language, subtitle positioning and optional content language. Users may resume where they stopped, switch between their saved courses and change the selection without losing existing study records.
+
+**Teacher workflow (Android tablet/phone and web):** a personal **My courses** library showing each course with counts of independently generated lessons, PDFs, exercise sets and avatar video sessions. Default ordering will prioritise courses with the **most generated teaching material**; alternative sorting by name or most recent activity will be available. Teachers can reopen content within LECTAV or export PDFs and MP4 videos to a user-selected device folder or supported removable SD card.
+
+**Student workflow (Android tablet/phone and web):** a personal **My learning** library listing courses and their available PDFs, lesson/video access history, exercises opened, exercises started, exercises completed and optional self-marked reading completion. Show last access date and resume position where supported. **Opening a PDF will not count as having read or completed it**, and merely opening an exercise will not count as completing it. Students can reopen downloaded files and study offline.
+
+All exported files should remain accessible after app uninstallation, where the selected storage provider supports it. Android will use the system **Storage Access Framework**, not broad storage permissions or fixed filesystem paths, for PDF/MP4 exports and removable SD access. A removed or revoked SD folder must show a recoverable error; the app must never silently delete course records.
+
+Initially, profile and study data will be **stored locally**. Future Android–web synchronisation will require a properly designed account and explicit user choice, encrypted connections and privacy protections for minors. The web interface must provide equivalent workflows for both teachers and students. The present APK **does not yet implement** these features; see [the storage and learning-library specification](docs/USER_PROFILES_AND_LIBRARY.md).
 
 ## Long-term global learning and university platform (planned)
 

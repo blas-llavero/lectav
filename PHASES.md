@@ -20,6 +20,19 @@
 - [ ] 5. Prepare introductory and screen-recorded tutorial videos in the ten initial app languages, with accessible natural FOSS voiceover. **No image, sound or video is to be published or added to GitHub/app before Blas Llavero explicitly approves it.**
 - [ ] 6. Test accessibility, reliability, curriculum accuracy, source licensing, Android navigation-bar insets, release signing and reproducible builds.
 
+## Saved configuration, content library and offline use (new requirements)
+
+- [ ] **Persistent user profile:** save and restore selected country, educational territory, pathway, programme, course/year, level, subject, app language, content language where supported, and subtitle/accessibility calibration. Allow deliberate clearing or switching between profiles and courses.
+- [ ] **Teacher's My courses:** manage multiple courses; show number of uniquely generated lessons, theory PDFs, exercises, answer keys and avatar video sessions per course, ordered by amount generated (default), last updated or title. Do not double-count repeated exports.
+- [ ] **Teacher's downloads and playback:** save generated PDFs and MP4s to internal device storage or a removable SD folder selected with Android's file picker; reopen and view PDF/video directly in the Android app, with the same core features on the web.
+- [ ] **Student's My learning:** saved enrolled/selected courses and accessible learning materials, history of PDFs opened, PDFs self-marked as read/completed, videos watched/resumed, and exercises opened, started, submitted or completed; bookmarks and last-visited topic.
+- [ ] **Offline-first:** course index/progress and already downloaded materials work without an internet connection. Warn clearly when AI generation or website sync is unavailable offline.
+- [ ] **Storage reliability and privacy:** use Android DataStore for small preferences, Room for relational progress/asset metadata, and Storage Access Framework for user-selected export folders and SD cards; avoid blanket storage permissions. Recover from missing SD cards, deleted documents, ungranted URIs or duplicate names gracefully.
+- [ ] **Cross-platform parity:** teachers and students can perform these same essential tasks in Android and on the web. Any automatic account sync or cloud storage needs opt-in, authentication, secure transport, appropriate EU data handling and extra protections for children.
+- [ ] **Automated testing:** restart restores preferences, changed selection doesn't erase previously saved course records, generated-material sorting is deterministic, file exports survive restart, SD removal is handled, read/completion statuses are distinguished, and privacy controls work.
+
+[Technical and UX specification](docs/USER_PROFILES_AND_LIBRARY.md).
+
 ## Worldwide academic catalogue (future)
 
 **Important:** Every country can define its own levels, curriculum authority, regional subdivisions, academic calendar and professional qualifications; do not assume that every country uses Spain's autonomous-community structure.
