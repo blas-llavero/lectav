@@ -5,11 +5,12 @@
  */
 package com.blasllavero.lectav
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.StringRes
@@ -24,6 +25,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
+import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -48,7 +51,7 @@ private fun coursesFor(pathway: String): List<Choice> = when (pathway) {
     else -> emptyList() // Will be loaded from the verified official catalogue.
 }
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -60,14 +63,17 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun LectavApp() {
     val context = LocalContext.current
-    val preferences = remember(context) {
-        context.getSharedPreferences("lectav_preferences", Context.MODE_PRIVATE)
-    }
+    val repository = remember(context.applicationContext) { SettingsRepository(context.applicationContext) }
+    val saved by repository.settings.collectAsState(initial = null)
+    val scope = rememberCoroutineScope()
     var screen by rememberSaveable { mutableStateOf("home") }
-    var pathway by rememberSaveable { mutableStateOf("") }
-    var course by rememberSaveable { mutableStateOf("") }
-    var subject by rememberSaveable { mutableStateOf("") }
-    var subtitleHeight by remember { mutableFloatStateOf(preferences.getFloat("subtitle_height", 0.25f)) }
+    var subtitleHeight by remember { mutableFloatStateOf(0.25f) }
+    LaunchedEffect(saved?.subtitleHeight) {
+        saved?.let { subtitleHeight = it.subtitleHeight }
+    }
+    val pathway = saved?.pathway ?: ""
+    val course = saved?.course ?: ""
+    val subject = saved?.subject ?: ""
     val courses = coursesFor(pathway)
     val subjects = catalogueSubjectsFor(course)
 
@@ -85,6 +91,9 @@ private fun LectavApp() {
                             }
                             TextButton(onClick = { screen = "help" }) {
                                 Text(stringResource(R.string.help))
+                            }
+                            TextButton(onClick = { screen = "settings" }) {
+                                Text(stringResource(R.string.settings))
                             }
                         } else {
                             TextButton(onClick = { screen = "home" }) {
@@ -107,14 +116,22 @@ private fun LectavApp() {
                 when (screen) {
                     "about" -> AboutScreen()
                     "help" -> HelpScreen(onCalibration = { screen = "calibration" })
+                    "settings" -> saved?.let {
+                        SettingsScreen(
+                            settings = it,
+                            onClear = { scope.launch { repository.clearSelection() } },
+                            onCalibration = { screen = "calibration" }
+                        )
+                    }
                     "calibration" -> CalibrationScreen(
                         subtitleHeight = subtitleHeight,
-                        onSubtitleHeight = { height ->
-                            subtitleHeight = height
-                            preferences.edit().putFloat("subtitle_height", height).apply()
-                        }
+                        onSubtitleHeight = { subtitleHeight = it },
+                        onFinish = { scope.launch { repository.saveSubtitleHeight(subtitleHeight) } }
                     )
                     else -> {
+                        if (saved == null) {
+                            CircularProgressIndicator()
+                        } else {
                         Text(
                             stringResource(R.string.tagline),
                             style = MaterialTheme.typography.titleLarge,
@@ -126,21 +143,21 @@ private fun LectavApp() {
                             label = stringResource(R.string.select_pathway),
                             choices = pathways,
                             selectedId = pathway,
-                            onChoose = { pathway = it; course = ""; subject = "" }
+                            onChoose = { value -> scope.launch { repository.choosePathway(value) } }
                         )
                         ChoiceDropdown(
                             label = stringResource(R.string.select_course),
                             choices = courses,
                             selectedId = course,
                             enabled = courses.isNotEmpty(),
-                            onChoose = { course = it; subject = "" }
+                            onChoose = { value -> scope.launch { repository.chooseCourse(value) } }
                         )
                         SubjectDropdown(
                             label = stringResource(R.string.select_subject),
                             choices = subjects,
                             selectedId = subject,
                             enabled = subjects.isNotEmpty(),
-                            onChoose = { subject = it }
+                            onChoose = { value -> scope.launch { repository.chooseSubject(value) } }
                         )
                         if (pathway in listOf("cfgm", "cfgs", "cert")) {
                             Text(
@@ -186,6 +203,8 @@ private fun LectavApp() {
                             onClick = { screen = "calibration" },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text(stringResource(R.string.calibrate_subtitles)) }
+                        Text(stringResource(R.string.saved_selection_message), style = MaterialTheme.typography.bodySmall)
+                        }
                     }
                 }
             }
@@ -269,6 +288,90 @@ private fun SubjectDropdown(
     }
 }
 
+
+private data class AppLanguage(val code: String, val name: String)
+private val appLanguages = listOf(
+    AppLanguage("en", "English"),
+    AppLanguage("ca", "Català"),
+    AppLanguage("es", "Español"),
+    AppLanguage("fr", "Français"),
+    AppLanguage("pt", "Português"),
+    AppLanguage("de", "Deutsch"),
+    AppLanguage("ar", "العربية"),
+    AppLanguage("hi", "हिन्दी"),
+    AppLanguage("zh-CN", "简体中文"),
+    AppLanguage("ja", "日本語")
+)
+
+@Composable
+private fun SettingsScreen(
+    settings: SavedSettings,
+    onClear: () -> Unit,
+    onCalibration: () -> Unit
+) {
+    // Subscribe to configuration changes so the picker refreshes after locale changes.
+    val config = LocalConfiguration.current
+    val currentTag = AppCompatDelegate.getApplicationLocales()
+        .toLanguageTags().substringBefore(",")
+    val activeLanguage = if (currentTag.startsWith("zh", ignoreCase = true)) "zh-CN"
+        else appLanguages.firstOrNull { it.code.equals(currentTag, ignoreCase = true) }?.code
+            ?: "system"
+    var expanded by remember { mutableStateOf(false) }
+
+    Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.titleLarge)
+    Text(stringResource(R.string.settings_saved_note))
+    Text(stringResource(R.string.interface_language), style = MaterialTheme.typography.labelLarge)
+    Box(modifier = Modifier.fillMaxWidth()) {
+        OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = { expanded = true }) {
+            Text(appLanguages.firstOrNull { it.code == activeLanguage }?.name
+                ?: stringResource(R.string.language_system))
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.language_system)) },
+                onClick = {
+                    expanded = false
+                    AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
+                }
+            )
+            appLanguages.forEach { item ->
+                DropdownMenuItem(
+                    text = { Text(item.name) },
+                    onClick = {
+                        expanded = false
+                        AppCompatDelegate.setApplicationLocales(
+                            LocaleListCompat.forLanguageTags(item.code)
+                        )
+                    }
+                )
+            }
+        }
+    }
+    Text(stringResource(R.string.language_help), style = MaterialTheme.typography.bodySmall)
+    HorizontalDivider()
+    Text(stringResource(R.string.saved_education), style = MaterialTheme.typography.titleMedium)
+    Text("${stringResource(R.string.settings_country)}: ${stringResource(R.string.settings_spain)}")
+    Text("${stringResource(R.string.settings_territory)}: ${stringResource(R.string.settings_catalonia)}")
+    Text(stringResource(R.string.settings_jurisdiction_note), style = MaterialTheme.typography.bodySmall)
+    val p = pathways.firstOrNull { it.id == settings.pathway }?.let { stringResource(it.label) }
+        ?: stringResource(R.string.please_select)
+    val c = coursesFor(settings.pathway).firstOrNull { it.id == settings.course }
+        ?.let { stringResource(it.label) } ?: stringResource(R.string.please_select)
+    val s = catalogueSubjectsFor(settings.course).firstOrNull { it.id == settings.subject }
+        ?.officialNameCa ?: stringResource(R.string.please_select)
+    Text("${stringResource(R.string.select_pathway)}: $p")
+    Text("${stringResource(R.string.select_course)}: $c")
+    Text("${stringResource(R.string.select_subject)}: $s")
+    OutlinedButton(
+        onClick = onClear, enabled = settings.pathway.isNotEmpty(),
+        modifier = Modifier.fillMaxWidth()
+    ) { Text(stringResource(R.string.clear_selection)) }
+    OutlinedButton(onClick = onCalibration, modifier = Modifier.fillMaxWidth()) {
+        Text(stringResource(R.string.calibrate_subtitles))
+    }
+    Text(stringResource(R.string.settings_local_only), style = MaterialTheme.typography.bodySmall)
+}
+
 @Composable
 private fun AboutScreen() {
     Text(stringResource(R.string.about_title), style = MaterialTheme.typography.titleLarge)
@@ -289,7 +392,11 @@ private fun HelpScreen(onCalibration: () -> Unit) {
 }
 
 @Composable
-private fun CalibrationScreen(subtitleHeight: Float, onSubtitleHeight: (Float) -> Unit) {
+private fun CalibrationScreen(
+    subtitleHeight: Float,
+    onSubtitleHeight: (Float) -> Unit,
+    onFinish: () -> Unit
+) {
     Text(stringResource(R.string.calibration_title), style = MaterialTheme.typography.titleLarge)
     Text(stringResource(R.string.calibration_instructions))
     Box(
@@ -319,6 +426,11 @@ private fun CalibrationScreen(subtitleHeight: Float, onSubtitleHeight: (Float) -
             )
         }
     }
-    Slider(value = subtitleHeight, onValueChange = onSubtitleHeight, valueRange = 0f..1f)
+    Slider(
+        value = subtitleHeight,
+        onValueChange = onSubtitleHeight,
+        onValueChangeFinished = onFinish,
+        valueRange = 0f..1f
+    )
     Text(stringResource(R.string.calibration_saved), style = MaterialTheme.typography.bodySmall)
 }

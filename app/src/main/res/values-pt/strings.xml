@@ -50,4 +50,19 @@
     <string name="catalogue_kind_variable">Ano conforme a escola</string>
     <string name="catalogue_kind_optional">Opcional / oferta da escola</string>
     <string name="catalogue_kind_modality">Disciplina de modalidade</string>
+    <string name="settings">Definições</string>
+    <string name="settings_title">Definições guardadas</string>
+    <string name="settings_saved_note">A sua seleção é guardada e restaurada quando reabre o LECTAV.</string>
+    <string name="interface_language">Idioma da aplicação</string>
+    <string name="language_system">Idioma do dispositivo</string>
+    <string name="language_help">Escolha um idioma suportado ou siga a configuração do Android.</string>
+    <string name="saved_education">Seleção educativa guardada</string>
+    <string name="settings_country">País</string>
+    <string name="settings_territory">Região</string>
+    <string name="settings_spain">Espanha</string>
+    <string name="settings_catalonia">Catalunha</string>
+    <string name="settings_jurisdiction_note">De momento só está disponível o currículo da Catalunha.</string>
+    <string name="clear_selection">Limpar seleção do curso</string>
+    <string name="settings_local_only">Definições locais; a sincronização ainda não está disponível.</string>
+    <string name="saved_selection_message">A seleção é guardada neste dispositivo.</string>
 </resources>

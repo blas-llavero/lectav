@@ -50,4 +50,19 @@
     <string name="catalogue_kind_variable">年级由学校安排</string>
     <string name="catalogue_kind_optional">选修科目</string>
     <string name="catalogue_kind_modality">方向科目</string>
+    <string name="settings">设置</string>
+    <string name="settings_title">已保存的设置</string>
+    <string name="settings_saved_note">选择会自动保存，下次打开 LECTAV 时恢复。</string>
+    <string name="interface_language">应用语言</string>
+    <string name="language_system">使用设备语言</string>
+    <string name="language_help">选择支持的语言或跟随 Android 的语言设置。</string>
+    <string name="saved_education">已保存的教育选择</string>
+    <string name="settings_country">国家</string>
+    <string name="settings_territory">地区</string>
+    <string name="settings_spain">西班牙</string>
+    <string name="settings_catalonia">加泰罗尼亚</string>
+    <string name="settings_jurisdiction_note">目前仅提供加泰罗尼亚地区的课程目录。</string>
+    <string name="clear_selection">清除课程选择</string>
+    <string name="settings_local_only">设置保存在设备上，目前不支持在线同步。</string>
+    <string name="saved_selection_message">所选课程和科目会保存在此设备上。</string>
 </resources>

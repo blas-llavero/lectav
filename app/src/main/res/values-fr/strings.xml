@@ -50,4 +50,19 @@
     <string name="catalogue_kind_variable">Année selon établissement</string>
     <string name="catalogue_kind_optional">Option / offre locale</string>
     <string name="catalogue_kind_modality">Matière de spécialité</string>
+    <string name="settings">Paramètres</string>
+    <string name="settings_title">Paramètres enregistrés</string>
+    <string name="settings_saved_note">Vos choix sont enregistrés et restaurés au prochain lancement.</string>
+    <string name="interface_language">Langue de l’application</string>
+    <string name="language_system">Langue de l’appareil</string>
+    <string name="language_help">Choisissez une langue ou suivez la langue Android.</string>
+    <string name="saved_education">Parcours enregistré</string>
+    <string name="settings_country">Pays</string>
+    <string name="settings_territory">Région</string>
+    <string name="settings_spain">Espagne</string>
+    <string name="settings_catalonia">Catalogne</string>
+    <string name="settings_jurisdiction_note">Seul le programme de Catalogne est disponible actuellement.</string>
+    <string name="clear_selection">Effacer le cours choisi</string>
+    <string name="settings_local_only">Paramètres locaux; aucune synchronisation en ligne pour le moment.</string>
+    <string name="saved_selection_message">Votre sélection est enregistrée sur cet appareil.</string>
 </resources>

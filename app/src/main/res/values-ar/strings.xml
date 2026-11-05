@@ -50,4 +50,19 @@
     <string name="catalogue_kind_variable">الصف بحسب المدرسة</string>
     <string name="catalogue_kind_optional">مادة اختيارية</string>
     <string name="catalogue_kind_modality">مادة تخصصية</string>
+    <string name="settings">الإعدادات</string>
+    <string name="settings_title">الإعدادات المحفوظة</string>
+    <string name="settings_saved_note">يُحفظ اختيارك تلقائياً ويُستعاد عند فتح LECTAV مجدداً.</string>
+    <string name="interface_language">لغة التطبيق</string>
+    <string name="language_system">لغة الجهاز</string>
+    <string name="language_help">اختر لغة مدعومة أو استخدم لغة Android.</string>
+    <string name="saved_education">الاختيار التعليمي المحفوظ</string>
+    <string name="settings_country">الدولة</string>
+    <string name="settings_territory">المنطقة</string>
+    <string name="settings_spain">إسبانيا</string>
+    <string name="settings_catalonia">كتالونيا</string>
+    <string name="settings_jurisdiction_note">المنهج المتاح حالياً هو منهج كتالونيا فقط.</string>
+    <string name="clear_selection">مسح اختيار الدورة</string>
+    <string name="settings_local_only">تُحفظ الإعدادات على الجهاز دون مزامنة عبر الإنترنت.</string>
+    <string name="saved_selection_message">سيُحفظ اختيارك على هذا الجهاز.</string>
 </resources>

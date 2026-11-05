@@ -50,4 +50,19 @@
     <string name="catalogue_kind_variable">Jahrgang je nach Schule</string>
     <string name="catalogue_kind_optional">Wahlfach / Schulangebot</string>
     <string name="catalogue_kind_modality">Profilfach</string>
+    <string name="settings">Einstellungen</string>
+    <string name="settings_title">Gespeicherte Einstellungen</string>
+    <string name="settings_saved_note">Die Auswahl wird automatisch gespeichert und beim Neustart wiederhergestellt.</string>
+    <string name="interface_language">App-Sprache</string>
+    <string name="language_system">Gerätesprache</string>
+    <string name="language_help">Unterstützte Sprache wählen oder Android-Systemsprache verwenden.</string>
+    <string name="saved_education">Gespeicherte Kursauswahl</string>
+    <string name="settings_country">Land</string>
+    <string name="settings_territory">Region</string>
+    <string name="settings_spain">Spanien</string>
+    <string name="settings_catalonia">Katalonien</string>
+    <string name="settings_jurisdiction_note">Zurzeit ist nur der Lehrplan von Katalonien verfügbar.</string>
+    <string name="clear_selection">Kursauswahl löschen</string>
+    <string name="settings_local_only">Daten bleiben auf diesem Gerät. Online-Synchronisierung ist noch nicht verfügbar.</string>
+    <string name="saved_selection_message">Die Auswahl wird auf diesem Gerät gespeichert.</string>
 </resources>

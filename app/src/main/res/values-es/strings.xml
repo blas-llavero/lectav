@@ -50,4 +50,19 @@
     <string name="catalogue_kind_variable">Curso según el centro</string>
     <string name="catalogue_kind_optional">Optativa / oferta del centro</string>
     <string name="catalogue_kind_modality">Asignatura de modalidad</string>
+    <string name="settings">Configuración</string>
+    <string name="settings_title">Configuración guardada</string>
+    <string name="settings_saved_note">Las selecciones se guardan automáticamente y se recuperan al abrir LECTAV.</string>
+    <string name="interface_language">Idioma de la aplicación</string>
+    <string name="language_system">Idioma del dispositivo</string>
+    <string name="language_help">Elige un idioma compatible o sigue los ajustes de Android.</string>
+    <string name="saved_education">Selección educativa guardada</string>
+    <string name="settings_country">País</string>
+    <string name="settings_territory">Territorio</string>
+    <string name="settings_spain">España</string>
+    <string name="settings_catalonia">Cataluña</string>
+    <string name="settings_jurisdiction_note">Por ahora solo está disponible Cataluña; se añadirán más territorios.</string>
+    <string name="clear_selection">Borrar selección del curso</string>
+    <string name="settings_local_only">La configuración se guarda en el dispositivo; no hay sincronización todavía.</string>
+    <string name="saved_selection_message">La selección se guarda automáticamente en este dispositivo.</string>
 </resources>

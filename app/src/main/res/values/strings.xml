@@ -50,4 +50,19 @@
     <string name="catalogue_kind_variable">School-dependent year</string>
     <string name="catalogue_kind_optional">Optional / school offer</string>
     <string name="catalogue_kind_modality">Modality subject</string>
+    <string name="settings">Settings</string>
+    <string name="settings_title">Saved settings</string>
+    <string name="settings_saved_note">Selections are saved automatically and restored on reopening LECTAV.</string>
+    <string name="interface_language">App language</string>
+    <string name="language_system">Follow device language</string>
+    <string name="language_help">Choose a supported language or follow the Android device setting.</string>
+    <string name="saved_education">Saved education selection</string>
+    <string name="settings_country">Country</string>
+    <string name="settings_territory">Territory</string>
+    <string name="settings_spain">Spain</string>
+    <string name="settings_catalonia">Catalonia</string>
+    <string name="settings_jurisdiction_note">Only Catalonia is supported for now; international curricula will follow.</string>
+    <string name="clear_selection">Clear course selection</string>
+    <string name="settings_local_only">Settings are stored on this device; online sync is not active.</string>
+    <string name="saved_selection_message">Your selection is automatically saved on this device.</string>
 </resources>

@@ -50,4 +50,19 @@
     <string name="catalogue_kind_variable">विद्यालय के अनुसार वर्ष</string>
     <string name="catalogue_kind_optional">वैकल्पिक विषय</string>
     <string name="catalogue_kind_modality">विशेषज्ञता विषय</string>
+    <string name="settings">सेटिंग</string>
+    <string name="settings_title">सहेजी गई सेटिंग</string>
+    <string name="settings_saved_note">आपका चयन स्वतः सहेजा जाता है और दोबारा खोलने पर लौट आता है।</string>
+    <string name="interface_language">ऐप की भाषा</string>
+    <string name="language_system">डिवाइस की भाषा</string>
+    <string name="language_help">समर्थित भाषा चुनें या Android की भाषा का उपयोग करें।</string>
+    <string name="saved_education">सहेजा गया शैक्षिक चयन</string>
+    <string name="settings_country">देश</string>
+    <string name="settings_territory">क्षेत्र</string>
+    <string name="settings_spain">स्पेन</string>
+    <string name="settings_catalonia">कैटालोनिया</string>
+    <string name="settings_jurisdiction_note">अभी केवल कैटालोनिया का पाठ्यक्रम उपलब्ध है।</string>
+    <string name="clear_selection">पाठ्यक्रम चयन हटाएँ</string>
+    <string name="settings_local_only">सेटिंग इसी डिवाइस पर रहती हैं; ऑनलाइन सिंक अभी नहीं है।</string>
+    <string name="saved_selection_message">चयन इस डिवाइस पर सहेजा जाता है।</string>
 </resources>

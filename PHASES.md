@@ -9,6 +9,8 @@
 - [x] First Android Compose prototype with translated interface, About/Help, navigation-safe layout and subtitle-position calibration
 - [x] First GitHub Actions debug APK build succeeded: https://github.com/blas-llavero/lectav/actions/runs/41831051287
 
+- [x] v0.3.0 — DataStore for last educational selection, subtitle-calibration migration, saved country/region identifiers and a 10-language Android picker.
+
 ## Short-term phases — initial Catalonia rollout
 
 - [x] 1A. Initial, explicitly partial and source-attributed 2026–2027 subject selection for ESO and Batxillerat: common, school-dependent, optional and modality distinctions; user-visible official source links.

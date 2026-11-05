@@ -50,4 +50,19 @@
     <string name="catalogue_kind_variable">学校により学年が異なる</string>
     <string name="catalogue_kind_optional">選択科目</string>
     <string name="catalogue_kind_modality">専門課程科目</string>
+    <string name="settings">設定</string>
+    <string name="settings_title">保存された設定</string>
+    <string name="settings_saved_note">選択は自動保存され、次回の起動時に復元されます。</string>
+    <string name="interface_language">アプリの言語</string>
+    <string name="language_system">端末の言語を使用</string>
+    <string name="language_help">対応言語を選ぶか Android の言語設定を使用します。</string>
+    <string name="saved_education">保存された学習設定</string>
+    <string name="settings_country">国</string>
+    <string name="settings_territory">地域</string>
+    <string name="settings_spain">スペイン</string>
+    <string name="settings_catalonia">カタルーニャ</string>
+    <string name="settings_jurisdiction_note">現在利用できるのはカタルーニャのカリキュラムのみです。</string>
+    <string name="clear_selection">コース選択を消去</string>
+    <string name="settings_local_only">設定は端末に保存され、オンライン同期はまだありません。</string>
+    <string name="saved_selection_message">選択は端末に保存されます。</string>
 </resources>

@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current Android prototype (v0.2.0)
+## Current Android prototype (v0.3.0)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -21,6 +21,15 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## v0.3.0 — saved preferences and language controls
+
+- **Saved automatically:** last pathway, ESO/Batx course/year, subject, and the stable country/territory identifiers `ES` / `ES-CT` (only Catalonia is selectable at present).
+- **Settings** shows the current selection and includes a reset action. Selecting a new pathway clears its previous course/subject; selecting a new course clears its previous subject.
+- **10 app languages:** Settings includes a picker for English, Catalan, Spanish, French, Portuguese, German, Arabic, Hindi, Simplified Chinese and Japanese, plus Follow device language. AppCompat persists the choice on supported Android devices.
+- **Existing users:** the previous subtitle calibration is migrated to AndroidX DataStore automatically when upgrading in place. Calibration saves when the slider is released.
+- **Local storage only:** no online synchronisation or account. A future release will implement multiple saved courses, teacher and learner libraries, downloadable PDF/MP4, SD access and website sync.
+- **Check:** select 3r ESO/Matemàtiques, choose Catalan in Settings, adjust subtitle calibration, close/reopen the app and verify all values remain. Clear course selection and confirm language/calibration stay unchanged.
 
 ## Catalonia starter catalogue — first working selection (v0.2.0)
 
