@@ -11,6 +11,9 @@
 
 - [x] v0.3.0 — DataStore for last educational selection, subtitle-calibration migration, saved country/region identifiers and a 10-language Android picker.
 
+- [x] v0.4.0 — first working My courses library: locally saved multiple course selections, independent teacher/learner lists, reopen/remove/role switch and no invented learning records.
+- [ ] v0.5+ — actual generated material indexing and counts, automatic sorting by content amount, read/exercise/video progress, offline PDF/MP4 viewers and SD exports.
+
 ## Short-term phases — initial Catalonia rollout
 
 - [x] 1A. Initial, explicitly partial and source-attributed 2026–2027 subject selection for ESO and Batxillerat: common, school-dependent, optional and modality distinctions; user-visible official source links.
@@ -25,9 +28,11 @@
 ## Saved configuration, content library and offline use (new requirements)
 
 - [ ] **Persistent user profile:** save and restore selected country, educational territory, pathway, programme, course/year, level, subject, app language, content language where supported, and subtitle/accessibility calibration. Allow deliberate clearing or switching between profiles and courses.
-- [ ] **Teacher's My courses:** manage multiple courses; show number of uniquely generated lessons, theory PDFs, exercises, answer keys and avatar video sessions per course, ordered by amount generated (default), last updated or title. Do not double-count repeated exports.
+- [x] **Teacher's My courses — first step:** save several official course/subject selections, reopen and remove entries, persist across restarts.
+- [ ] **Teacher's My courses — later:** real generated-file counts, sort by amount of generated content, last updated or title; do not double-count repeated exports.
 - [ ] **Teacher's downloads and playback:** save generated PDFs and MP4s to internal device storage or a removable SD folder selected with Android's file picker; reopen and view PDF/video directly in the Android app, with the same core features on the web.
-- [ ] **Student's My learning:** saved enrolled/selected courses and accessible learning materials, history of PDFs opened, PDFs self-marked as read/completed, videos watched/resumed, and exercises opened, started, submitted or completed; bookmarks and last-visited topic.
+- [x] **Learner library — first step:** independently save, reopen and remove course/subject selections, with no fabricated access/progress records.
+- [ ] **Student's My learning — later:** materials and history of PDFs opened, PDFs marked as read, videos watched/resumed, exercises opened/started/submitted/completed, bookmarks and last visited topic.
 - [ ] **Offline-first:** course index/progress and already downloaded materials work without an internet connection. Warn clearly when AI generation or website sync is unavailable offline.
 - [ ] **Storage reliability and privacy:** use Android DataStore for small preferences, Room for relational progress/asset metadata, and Storage Access Framework for user-selected export folders and SD cards; avoid blanket storage permissions. Recover from missing SD cards, deleted documents, ungranted URIs or duplicate names gracefully.
 - [ ] **Cross-platform parity:** teachers and students can perform these same essential tasks in Android and on the web. Any automatic account sync or cloud storage needs opt-in, authentication, secure transport, appropriate EU data handling and extra protections for children.

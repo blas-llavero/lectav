@@ -65,4 +65,21 @@
     <string name="clear_selection">コース選択を消去</string>
     <string name="settings_local_only">設定は端末に保存され、オンライン同期はまだありません。</string>
     <string name="saved_selection_message">選択は端末に保存されます。</string>
+    <string name="library_title">マイコース</string>
+    <string name="library_teacher">教師</string>
+    <string name="library_student">学習者</string>
+    <string name="library_intro">複数のコースを保存し、後から選び直せます。</string>
+    <string name="library_choose_course">別の科目を選択</string>
+    <string name="library_empty">このモードには保存済みのコースがありません。科目を選んで保存してください。</string>
+    <string name="library_sort_note">最近開いた順です。教材生成後に教材数での並べ替えを追加します。</string>
+    <string name="library_no_generated">生成済みのPDFや動画はまだありません。</string>
+    <string name="library_no_learning">PDF・動画・学習活動の記録はまだありません。</string>
+    <string name="library_open">開く</string>
+    <string name="library_remove">削除</string>
+    <string name="library_save">このコースを保存</string>
+    <string name="library_saved">マイコースに保存済み</string>
+    <string name="library_remove_title">保存したコースを削除しますか？</string>
+    <string name="library_remove_confirm">一覧から削除しますか？現在の選択は保持されます。</string>
+    <string name="library_cancel">キャンセル</string>
+    <string name="library_offline_note">保存した選択は端末でオフライン利用できます。同期機能はまだありません。</string>
 </resources>

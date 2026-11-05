@@ -65,4 +65,21 @@
     <string name="clear_selection">Esborra la selecció del curs</string>
     <string name="settings_local_only">La configuració es desa al dispositiu; encara no hi ha sincronització.</string>
     <string name="saved_selection_message">La selecció es desa automàticament en aquest dispositiu.</string>
+    <string name="library_title">Els meus cursos</string>
+    <string name="library_teacher">Professorat</string>
+    <string name="library_student">Alumnat</string>
+    <string name="library_intro">Desa diversos cursos i torna-hi sense perdre les seleccions anteriors.</string>
+    <string name="library_choose_course">Selecciona una altra matèria</string>
+    <string name="library_empty">Encara no tens cursos desats en aquest mode. Tria itinerari, curs i matèria i desa\'ls.</string>
+    <string name="library_sort_note">Primer els més recents; l\'ordenació per contingut s\'activarà quan es puguin generar materials.</string>
+    <string name="library_no_generated">Encara no hi ha PDF ni vídeos generats.</string>
+    <string name="library_no_learning">Encara no hi ha PDF, vídeos ni activitats registrades.</string>
+    <string name="library_open">Obre</string>
+    <string name="library_remove">Elimina</string>
+    <string name="library_save">Desa aquest curs</string>
+    <string name="library_saved">Desat a Els meus cursos</string>
+    <string name="library_remove_title">Vols eliminar el curs desat?</string>
+    <string name="library_remove_confirm">Vols treure aquest curs de la llista? La selecció educativa actual es conservarà.</string>
+    <string name="library_cancel">Cancel·la</string>
+    <string name="library_offline_note">Les seleccions desades funcionen sense connexió en aquest dispositiu. Encara no hi ha comptes ni sincronització.</string>
 </resources>

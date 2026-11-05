@@ -65,4 +65,21 @@
     <string name="clear_selection">पाठ्यक्रम चयन हटाएँ</string>
     <string name="settings_local_only">सेटिंग इसी डिवाइस पर रहती हैं; ऑनलाइन सिंक अभी नहीं है।</string>
     <string name="saved_selection_message">चयन इस डिवाइस पर सहेजा जाता है।</string>
+    <string name="library_title">मेरे पाठ्यक्रम</string>
+    <string name="library_teacher">शिक्षक</string>
+    <string name="library_student">विद्यार्थी</string>
+    <string name="library_intro">अलग-अलग पाठ्यक्रम सहेजें और बाद में फिर खोलें।</string>
+    <string name="library_choose_course">दूसरा विषय चुनें</string>
+    <string name="library_empty">इस मोड में कोई पाठ्यक्रम सहेजा नहीं गया है। स्तर और विषय चुनकर सहेजें।</string>
+    <string name="library_sort_note">हाल ही में खोले गए पहले; सामग्री बनने पर उसके अनुसार क्रम उपलब्ध होगा।</string>
+    <string name="library_no_generated">अभी कोई PDF या वीडियो तैयार नहीं है।</string>
+    <string name="library_no_learning">अभी कोई PDF, वीडियो या गतिविधि रिकॉर्ड नहीं है।</string>
+    <string name="library_open">खोलें</string>
+    <string name="library_remove">हटाएँ</string>
+    <string name="library_save">यह पाठ्यक्रम सहेजें</string>
+    <string name="library_saved">मेरे पाठ्यक्रम में सहेजा गया</string>
+    <string name="library_remove_title">सहेजा पाठ्यक्रम हटाएँ?</string>
+    <string name="library_remove_confirm">इसे सूची से हटाएँ? वर्तमान चयन बना रहेगा।</string>
+    <string name="library_cancel">रद्द करें</string>
+    <string name="library_offline_note">सहेजे गए चयन बिना इंटरनेट इस डिवाइस पर उपलब्ध हैं। अभी सिंक नहीं है।</string>
 </resources>

@@ -65,4 +65,21 @@
     <string name="clear_selection">Kursauswahl löschen</string>
     <string name="settings_local_only">Daten bleiben auf diesem Gerät. Online-Synchronisierung ist noch nicht verfügbar.</string>
     <string name="saved_selection_message">Die Auswahl wird auf diesem Gerät gespeichert.</string>
+    <string name="library_title">Meine Kurse</string>
+    <string name="library_teacher">Lehrkraft</string>
+    <string name="library_student">Lernende</string>
+    <string name="library_intro">Mehrere Kurse speichern und später erneut auswählen.</string>
+    <string name="library_choose_course">Anderes Fach wählen</string>
+    <string name="library_empty">In dieser Ansicht sind noch keine Kurse gespeichert. Fach auswählen und speichern.</string>
+    <string name="library_sort_note">Zuletzt geöffnet zuerst; Sortierung nach Materialien folgt später.</string>
+    <string name="library_no_generated">Noch keine PDFs oder Videos erstellt.</string>
+    <string name="library_no_learning">Noch keine PDFs, Videos oder Übungen erfasst.</string>
+    <string name="library_open">Öffnen</string>
+    <string name="library_remove">Entfernen</string>
+    <string name="library_save">Diesen Kurs speichern</string>
+    <string name="library_saved">In Meine Kurse gespeichert</string>
+    <string name="library_remove_title">Gespeicherten Kurs entfernen?</string>
+    <string name="library_remove_confirm">Kurs aus der Liste entfernen? Die aktuelle Auswahl bleibt erhalten.</string>
+    <string name="library_cancel">Abbrechen</string>
+    <string name="library_offline_note">Gespeicherte Kurse sind hier offline verfügbar. Keine Konten oder Synchronisierung.</string>
 </resources>

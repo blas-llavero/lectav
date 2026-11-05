@@ -65,4 +65,21 @@
     <string name="clear_selection">مسح اختيار الدورة</string>
     <string name="settings_local_only">تُحفظ الإعدادات على الجهاز دون مزامنة عبر الإنترنت.</string>
     <string name="saved_selection_message">سيُحفظ اختيارك على هذا الجهاز.</string>
+    <string name="library_title">دوراتي</string>
+    <string name="library_teacher">المعلم</string>
+    <string name="library_student">المتعلم</string>
+    <string name="library_intro">احفظ أكثر من دورة للعودة إليها دون فقد اختياراتك السابقة.</string>
+    <string name="library_choose_course">اختيار مادة أخرى</string>
+    <string name="library_empty">لا توجد دورات محفوظة في هذا الوضع. اختر الدورة والمادة واحفظهما.</string>
+    <string name="library_sort_note">الأحدث أولاً؛ سيتوفر الفرز بحسب المحتوى بعد إنشاء المواد.</string>
+    <string name="library_no_generated">لا توجد ملفات PDF أو فيديوهات منشأة بعد.</string>
+    <string name="library_no_learning">لا توجد ملفات أو أنشطة مسجلة بعد.</string>
+    <string name="library_open">فتح</string>
+    <string name="library_remove">إزالة</string>
+    <string name="library_save">حفظ هذه الدورة</string>
+    <string name="library_saved">محفوظ في دوراتي</string>
+    <string name="library_remove_title">إزالة الدورة المحفوظة؟</string>
+    <string name="library_remove_confirm">إزالة هذه الدورة من القائمة؟ سيبقى الاختيار الحالي.</string>
+    <string name="library_cancel">إلغاء</string>
+    <string name="library_offline_note">تتوفر اختياراتك المحفوظة دون اتصال على هذا الجهاز؛ لا توجد مزامنة حالياً.</string>
 </resources>

@@ -65,4 +65,21 @@
     <string name="clear_selection">Limpar seleção do curso</string>
     <string name="settings_local_only">Definições locais; a sincronização ainda não está disponível.</string>
     <string name="saved_selection_message">A seleção é guardada neste dispositivo.</string>
+    <string name="library_title">Os meus cursos</string>
+    <string name="library_teacher">Professor</string>
+    <string name="library_student">Aluno</string>
+    <string name="library_intro">Guarde vários cursos e volte a abri-los sem perder as escolhas anteriores.</string>
+    <string name="library_choose_course">Escolher outra disciplina</string>
+    <string name="library_empty">Ainda não tem cursos guardados neste modo. Escolha o nível e a disciplina e guarde.</string>
+    <string name="library_sort_note">Os mais recentes primeiro; ordenação por conteúdo quando houver materiais.</string>
+    <string name="library_no_generated">Ainda não foram gerados PDFs nem vídeos.</string>
+    <string name="library_no_learning">Ainda não existem PDFs, vídeos ou atividades registadas.</string>
+    <string name="library_open">Abrir</string>
+    <string name="library_remove">Remover</string>
+    <string name="library_save">Guardar este curso</string>
+    <string name="library_saved">Guardado nos meus cursos</string>
+    <string name="library_remove_title">Remover curso guardado?</string>
+    <string name="library_remove_confirm">Remover este curso da lista? A escolha atual será preservada.</string>
+    <string name="library_cancel">Cancelar</string>
+    <string name="library_offline_note">As escolhas guardadas funcionam offline neste dispositivo. Ainda não existe conta nem sincronização.</string>
 </resources>

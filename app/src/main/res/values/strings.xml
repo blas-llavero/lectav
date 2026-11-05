@@ -65,4 +65,21 @@
     <string name="clear_selection">Clear course selection</string>
     <string name="settings_local_only">Settings are stored on this device; online sync is not active.</string>
     <string name="saved_selection_message">Your selection is automatically saved on this device.</string>
+    <string name="library_title">My courses</string>
+    <string name="library_teacher">Teacher</string>
+    <string name="library_student">Learner</string>
+    <string name="library_intro">Save several course selections and reopen them without losing your previous choices.</string>
+    <string name="library_choose_course">Choose another subject</string>
+    <string name="library_empty">No courses saved in this role. Select a pathway, year and subject, then save it.</string>
+    <string name="library_sort_note">Recently opened first; material-count sorting will be enabled when content generation is available.</string>
+    <string name="library_no_generated">No generated PDFs or videos yet.</string>
+    <string name="library_no_learning">No PDFs, videos or exercise activity yet.</string>
+    <string name="library_open">Open</string>
+    <string name="library_remove">Remove</string>
+    <string name="library_save">Save this course</string>
+    <string name="library_saved">Saved in My courses</string>
+    <string name="library_remove_title">Remove saved course?</string>
+    <string name="library_remove_confirm">Remove this course from your list? Your current educational selection will remain.</string>
+    <string name="library_cancel">Cancel</string>
+    <string name="library_offline_note">Saved course selections are available offline on this device. There is no account or synchronisation yet.</string>
 </resources>

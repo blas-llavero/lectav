@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current Android prototype (v0.3.0)
+## Current Android prototype (v0.4.0)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -21,6 +21,21 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## v0.4.0 — My courses (Android)
+
+**Now implemented:** Android users can save more than one course/subject selection and reopen it later using **My courses**. A saved entry is a curriculum selection, **not** a generated lesson or an enrollment. Open My courses from the home screen, switch between **Teacher** and **Learner**, and save the currently selected ESO/Batx subject into the chosen role's list. Reopen and remove entries individually; removal requires confirmation and leaves the current learning selection unchanged. Records are saved locally with DataStore, preserved on app restarts, and work offline.
+
+The teacher and learner lists are separate on this device. Each is ordered by **last opened** until real teaching files exist; future ordering by number of generated PDFs and MP4s will only be meaningful after content generation. Teacher cards explicitly show that **no PDFs or videos have yet been generated**; learner cards explicitly show that **no PDFs, videos or activities are tracked**. The app does not fabricate progress, files or completion status. Full document management, activity history, PDF/MP4 viewing, SD-card export, website, accounts and sync are still planned.
+
+### Test My courses
+
+1. Open LECTAV, select ESO → 3rd year → Mathematics, then tap **Save this course**.
+2. Choose a second course/subject and save that too. Open **My courses** to see both entries.
+3. Tap **Open** on the first entry and verify the education selectors are restored.
+4. In **My courses**, switch to **Learner** and verify the independent list. Save a course in learner mode; switch back to Teacher.
+5. Remove a saved course using the confirmation dialog and verify other saved courses and the current selection remain.
+6. Close/reopen the app and repeat. Prior language and subtitle calibration preferences should remain unchanged.
 
 ## v0.3.0 — saved preferences and language controls
 

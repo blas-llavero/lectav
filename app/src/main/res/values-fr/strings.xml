@@ -65,4 +65,21 @@
     <string name="clear_selection">Effacer le cours choisi</string>
     <string name="settings_local_only">Paramètres locaux; aucune synchronisation en ligne pour le moment.</string>
     <string name="saved_selection_message">Votre sélection est enregistrée sur cet appareil.</string>
+    <string name="library_title">Mes cours</string>
+    <string name="library_teacher">Enseignant</string>
+    <string name="library_student">Apprenant</string>
+    <string name="library_intro">Enregistrez plusieurs cours et retrouvez-les sans perdre vos choix.</string>
+    <string name="library_choose_course">Choisir une autre matière</string>
+    <string name="library_empty">Aucun cours enregistré dans ce mode. Sélectionnez un niveau et une matière, puis enregistrez.</string>
+    <string name="library_sort_note">Les derniers ouverts d’abord; tri par contenu dès que les documents seront disponibles.</string>
+    <string name="library_no_generated">Aucun PDF ou vidéo généré pour l’instant.</string>
+    <string name="library_no_learning">Aucun PDF, vidéo ou exercice suivi pour l’instant.</string>
+    <string name="library_open">Ouvrir</string>
+    <string name="library_remove">Supprimer</string>
+    <string name="library_save">Enregistrer ce cours</string>
+    <string name="library_saved">Enregistré dans Mes cours</string>
+    <string name="library_remove_title">Supprimer ce cours ?</string>
+    <string name="library_remove_confirm">Retirer ce cours de votre liste ? Votre sélection actuelle restera.</string>
+    <string name="library_cancel">Annuler</string>
+    <string name="library_offline_note">Vos cours restent accessibles hors ligne sur cet appareil. Pas encore de compte ni de synchronisation.</string>
 </resources>

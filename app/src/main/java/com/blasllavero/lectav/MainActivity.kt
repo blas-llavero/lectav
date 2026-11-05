@@ -116,6 +116,24 @@ private fun LectavApp() {
                 when (screen) {
                     "about" -> AboutScreen()
                     "help" -> HelpScreen(onCalibration = { screen = "calibration" })
+                    "library" -> saved?.let {
+                        SavedCoursesScreen(
+                            settings = it,
+                            onRoleChange = { role ->
+                                scope.launch { repository.setActiveRole(role) }
+                            },
+                            onOpen = { id ->
+                                scope.launch {
+                                    repository.openSavedCourse(id)
+                                    screen = "home"
+                                }
+                            },
+                            onRemove = { id ->
+                                scope.launch { repository.removeSavedCourse(id) }
+                            },
+                            onPickCourse = { screen = "home" }
+                        )
+                    }
                     "settings" -> saved?.let {
                         SettingsScreen(
                             settings = it,
@@ -139,6 +157,11 @@ private fun LectavApp() {
                         )
                         Text(stringResource(R.string.introduction))
                         Text(stringResource(R.string.catalogue_region), style = MaterialTheme.typography.labelMedium)
+                        Button(
+                            onClick = { screen = "library" },
+                            modifier = Modifier.fillMaxWidth()
+                        ) { Text(stringResource(R.string.library_title)) }
+
                         ChoiceDropdown(
                             label = stringResource(R.string.select_pathway),
                             choices = pathways,
@@ -184,6 +207,24 @@ private fun LectavApp() {
                                     }
                                 }) {
                                     Text(stringResource(R.string.catalogue_source_button))
+                                }
+                                val alreadySaved = saved?.savedCourses?.any { entry ->
+                                    entry.role == saved?.activeRole &&
+                                    entry.pathway == pathway &&
+                                    entry.course == course &&
+                                    entry.subject == subject
+                                } == true
+                                OutlinedButton(
+                                    enabled = !alreadySaved,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    onClick = { scope.launch { repository.saveCurrentCourse() } }
+                                ) {
+                                    Text(
+                                        stringResource(
+                                            if (alreadySaved) R.string.library_saved
+                                            else R.string.library_save
+                                        )
+                                    )
                                 }
                             }
                         }
@@ -288,6 +329,105 @@ private fun SubjectDropdown(
     }
 }
 
+
+
+@Composable
+private fun SavedCoursesScreen(
+    settings: SavedSettings,
+    onRoleChange: (String) -> Unit,
+    onOpen: (String) -> Unit,
+    onRemove: (String) -> Unit,
+    onPickCourse: () -> Unit
+) {
+    var pendingRemoval by remember { mutableStateOf<SavedCourse?>(null) }
+    // No materials can be generated yet, so every material count is zero.
+    // Real generated-file counts will replace the fallback ordering later.
+    val entries = settings.savedCourses.filter { it.role == settings.activeRole }
+        .sortedWith(
+            compareByDescending<SavedCourse> { it.lastOpenedAt }
+                .thenBy { it.course }
+                .thenBy { it.subject }
+        )
+
+    Text(stringResource(R.string.library_title), style = MaterialTheme.typography.titleLarge)
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        FilterChip(
+            selected = settings.activeRole == "teacher",
+            onClick = { onRoleChange("teacher") },
+            label = { Text(stringResource(R.string.library_teacher)) }
+        )
+        FilterChip(
+            selected = settings.activeRole == "student",
+            onClick = { onRoleChange("student") },
+            label = { Text(stringResource(R.string.library_student)) }
+        )
+    }
+    Text(
+        stringResource(R.string.library_intro),
+        style = MaterialTheme.typography.bodySmall
+    )
+    Button(onClick = onPickCourse, modifier = Modifier.fillMaxWidth()) {
+        Text(stringResource(R.string.library_choose_course))
+    }
+    if (entries.isEmpty()) {
+        Text(stringResource(R.string.library_empty))
+    } else {
+        Text(
+            stringResource(R.string.library_sort_note),
+            style = MaterialTheme.typography.bodySmall
+        )
+        entries.forEach { entry ->
+            val title = catalogueSubjectsFor(entry.course)
+                .firstOrNull { it.id == entry.subject }?.officialNameCa
+                ?: entry.subject
+            val level = coursesFor(entry.pathway)
+                .firstOrNull { it.id == entry.course }?.let { stringResource(it.label) }
+                ?: entry.course
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(title, style = MaterialTheme.typography.titleMedium)
+                    Text(level, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        if (settings.activeRole == "teacher")
+                            stringResource(R.string.library_no_generated)
+                        else stringResource(R.string.library_no_learning),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Button(onClick = { onOpen(entry.id) }) {
+                            Text(stringResource(R.string.library_open))
+                        }
+                        OutlinedButton(onClick = { pendingRemoval = entry }) {
+                            Text(stringResource(R.string.library_remove))
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Text(stringResource(R.string.library_offline_note), style = MaterialTheme.typography.bodySmall)
+    pendingRemoval?.let { entry ->
+        AlertDialog(
+            onDismissRequest = { pendingRemoval = null },
+            title = { Text(stringResource(R.string.library_remove_title)) },
+            text = { Text(stringResource(R.string.library_remove_confirm)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    onRemove(entry.id)
+                    pendingRemoval = null
+                }) { Text(stringResource(R.string.library_remove)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingRemoval = null }) {
+                    Text(stringResource(R.string.library_cancel))
+                }
+            }
+        )
+    }
+}
 
 private data class AppLanguage(val code: String, val name: String)
 private val appLanguages = listOf(

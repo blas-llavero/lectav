@@ -65,4 +65,21 @@
     <string name="clear_selection">清除课程选择</string>
     <string name="settings_local_only">设置保存在设备上，目前不支持在线同步。</string>
     <string name="saved_selection_message">所选课程和科目会保存在此设备上。</string>
+    <string name="library_title">我的课程</string>
+    <string name="library_teacher">教师</string>
+    <string name="library_student">学生</string>
+    <string name="library_intro">保存多个课程选择，稍后可以重新打开。</string>
+    <string name="library_choose_course">选择其他科目</string>
+    <string name="library_empty">此模式尚无保存的课程。选择年级和科目并保存。</string>
+    <string name="library_sort_note">按最近打开排序；生成学习材料后会提供按数量排序。</string>
+    <string name="library_no_generated">尚未生成 PDF 或视频。</string>
+    <string name="library_no_learning">尚无 PDF、视频或练习记录。</string>
+    <string name="library_open">打开</string>
+    <string name="library_remove">移除</string>
+    <string name="library_save">保存本课程</string>
+    <string name="library_saved">已保存到我的课程</string>
+    <string name="library_remove_title">移除已保存的课程？</string>
+    <string name="library_remove_confirm">从列表中移除该课程吗？当前选择会保留。</string>
+    <string name="library_cancel">取消</string>
+    <string name="library_offline_note">保存的课程可在此设备上离线查看，目前没有账号或同步功能。</string>
 </resources>
