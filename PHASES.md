@@ -14,6 +14,9 @@
 - [x] v0.4.0 — first working My courses library: locally saved multiple course selections, independent teacher/learner lists, reopen/remove/role switch and no invented learning records.
 - [ ] v0.5+ — actual generated material indexing and counts, automatic sorting by content amount, read/exercise/video progress, offline PDF/MP4 viewers and SD exports.
 
+- [x] v0.5.0 — user-selected existing PDF/MP4 import via Android Storage Access Framework, offline in-app display, per-course imported-file counts, learner opened/manual completion states.
+- [ ] v0.6+ — actual content generation, new-file export to internal/SD destination, richer reader/playback features and course progress database.
+
 ## Short-term phases — initial Catalonia rollout
 
 - [x] 1A. Initial, explicitly partial and source-attributed 2026–2027 subject selection for ESO and Batxillerat: common, school-dependent, optional and modality distinctions; user-visible official source links.
