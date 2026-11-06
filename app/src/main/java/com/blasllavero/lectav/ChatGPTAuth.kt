@@ -207,44 +207,51 @@ internal object ChatGPTAuth {
             } catch (_: SocketTimeoutException) {
                 break
             }
-            client.use { incoming ->
+            val callback: Callback? = client.use { incoming ->
                 incoming.soTimeout = 5_000
                 val line = runCatching {
                     incoming.getInputStream().bufferedReader(Charsets.US_ASCII).readLine()
                 }.getOrNull().orEmpty()
                 val target = line.split(" ").getOrNull(1).orEmpty()
-                if (!line.startsWith("GET ") || !target.startsWith("/auth/callback?") ||
+                if (!line.startsWith("GET ") ||
+                    !target.startsWith("/auth/callback?") ||
                     target.length > 8192
                 ) {
                     reply(incoming, 404, "Aquest enllaç no és vàlid.")
-                    continue
+                    null
+                } else {
+                    val uri = runCatching {
+                        Uri.parse("http://127.0.0.1${target}")
+                    }.getOrNull()
+                    val receivedState = uri?.getQueryParameter("state").orEmpty()
+                    if (!fixedEquals(expectedState, receivedState)) {
+                        reply(incoming, 400, "La verificació de la sessió ha fallat.")
+                        null
+                    } else {
+                        val failure = uri?.getQueryParameter("error").orEmpty()
+                        if (failure.isNotBlank()) {
+                            reply(incoming, 200, "Autorització cancel·lada. Torna a LECTAV.")
+                            Callback("", expectedClient, failure)
+                        } else {
+                            val code = uri?.getQueryParameter("code").orEmpty()
+                            val issuedClient = uri?.getQueryParameter("client_id").orEmpty()
+                            val actualClient = if (isNew) issuedClient else expectedClient
+                            if (code.isBlank() || actualClient.isBlank() ||
+                                actualClient == "dynamic_agent_client" ||
+                                (!isNew && issuedClient.isNotBlank() &&
+                                    issuedClient != expectedClient)
+                            ) {
+                                reply(incoming, 400, "No s'ha completat l'autorització.")
+                                null
+                            } else {
+                                reply(incoming, 200, "Autorització rebuda. Torna a LECTAV.")
+                                Callback(code, actualClient)
+                            }
+                        }
+                    }
                 }
-                val uri = runCatching {
-                    Uri.parse("http://127.0.0.1${target}")
-                }.getOrNull()
-                val receivedState = uri?.getQueryParameter("state").orEmpty()
-                if (!fixedEquals(expectedState, receivedState)) {
-                    reply(incoming, 400, "La verificació de la sessió ha fallat.")
-                    continue
-                }
-                val error = uri?.getQueryParameter("error").orEmpty()
-                if (error.isNotEmpty()) {
-                    reply(incoming, 200, "Autorització cancel·lada. Torna a LECTAV.")
-                    return Callback("", expectedClient, error)
-                }
-                val code = uri?.getQueryParameter("code").orEmpty()
-                val callbackClient = uri?.getQueryParameter("client_id").orEmpty()
-                val actualClient = if (isNew) callbackClient else expectedClient
-                if (code.isBlank() || actualClient.isBlank() ||
-                    actualClient == "dynamic_agent_client" ||
-                    (!isNew && callbackClient.isNotBlank() && callbackClient != expectedClient)
-                ) {
-                    reply(incoming, 400, "No s'ha completat l'autorització.")
-                    continue
-                }
-                reply(incoming, 200, "Autorització rebuda. Torna a LECTAV.")
-                return Callback(code, actualClient)
             }
+            if (callback != null) return callback
         }
         error("La connexió ha caducat. Torna-ho a provar des de LECTAV.")
     }
