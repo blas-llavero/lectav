@@ -26,20 +26,9 @@ internal data class TopicPlan(
     val sessionTitles: List<String> = emptyList()
 )
 
-// The decree defines competences/sabers, NOT one mandated first topic.
-// These are proposed teacher-editable didactic units, never an official order.
-internal fun starterTopicsFor(course: SavedCourse): List<TopicPlan> {
-    if (course.pathway != "eso" || course.course != "eso3" ||
-        course.subject != "matematiques") return emptyList()
-    return listOf(
-        TopicPlan("numeros", "Nombres racionals, reals i operacions", 6, "proposal"),
-        TopicPlan("proporcions", "Proporcionalitat, percentatges i situacions quotidianes", 6, "proposal"),
-        TopicPlan("algebra", "Expressions algebraiques, equacions i problemes", 8, "proposal"),
-        TopicPlan("funcions", "Relacions, funcions i representació gràfica", 8, "proposal"),
-        TopicPlan("geometria", "Geometria, mesura i semblança", 8, "proposal"),
-        TopicPlan("estadistica", "Estadística, probabilitat i interpretació de dades", 8, "proposal")
-    )
-}
+// No predefined thematic content is bundled in new releases. Existing
+// historical plans in DataStore remain readable after an upgrade.
+internal fun starterTopicsFor(course: SavedCourse): List<TopicPlan> = emptyList()
 
 internal data class CoursePlan(
     val courseKey: String,
