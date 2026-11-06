@@ -127,6 +127,13 @@ internal object ChatGPTInference {
                                 val err = event.optJSONObject("response")
                                     ?.optJSONObject("error")
                                 val code = err?.optString("code").orEmpty()
+                                if (code == "subscription_sharing_usage_limit_exceeded") {
+                                    error("Has arribat al límit de ChatGPT. " +
+                                        "Consulta Configuració → Ús.")
+                                }
+                                if (code == "subscription_sharing_usage_unavailable") {
+                                    error("La consulta de quota no està disponible. Petició aturada.")
+                                }
                                 throw IllegalStateException(
                                     "La generació s'ha interromput: " +
                                     if (code.isNotBlank()) code else "error del model."
