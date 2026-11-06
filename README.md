@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current Android prototype (v0.6.0)
+## Current Android prototype (v0.7.0)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -21,6 +21,14 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## v0.7.0 — teacher course plan and learner session tracking pilot
+
+**Initial supported pilot: Catalunya / 3r ESO / Matemàtiques.** Open **My courses → Temari**. LECTAV seeds a proposed order of six topic units and their sessions (44 in total). Catalan regulations prescribe competences, assessment criteria and knowledge but **not a mandatory first unit**, so the initial order is a teaching proposal, not a legislated sequence. Teachers can rename units and choose a session, which pre-fills the v0.6 PDF draft generator. Learners can see sessions and check them complete, with progress persisted locally across restarts.
+
+**Not implemented:** verified complete syllabus ingestion for every country/region, AI analysis of new legal curriculum documents, full didactic programme export, per-session full exercise generation with validated solutions, MP4 avatar video rendering, individual learner accounts or securely separated personal progress. The prototype shares progress within the device profile and must not be treated as real student assessment evidence.
+
+See [scope, regulatory caveats and detailed roadmap](docs/COURSE_PLANNING_V0_7.md).
 
 ## v0.6.0 — on-demand content draft generation (Android)
 
