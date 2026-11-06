@@ -30,7 +30,8 @@ internal fun MaterialsScreen(
     onOpen: (String) -> Unit,
     onUpdate: (String,Boolean) -> Unit,
     onRemove: (String) -> Unit,
-    onGenerate: () -> Unit
+    onGenerate: () -> Unit,
+    onExported: (String, String) -> Unit
 ) {
     val context=LocalContext.current
     var kind by remember { mutableStateOf("lesson") }
@@ -55,6 +56,12 @@ internal fun MaterialsScreen(
         }
     }
     Text(stringResource(R.string.materials_title),style=MaterialTheme.typography.titleLarge)
+    Text(
+        "Els PDF generats es guarden primer a la memòria privada de LECTAV. " +
+        "Per veure'ls a CX File Explorer o guardar-los a la targeta SD, " +
+        "prem «Desa una còpia a una carpeta…» i escull on vols conservar-los.",
+        style=MaterialTheme.typography.bodySmall
+    )
     Button(onClick = onGenerate, modifier = Modifier.fillMaxWidth()) {
         Text("Genera teoria, exercicis o solucionari")
     }
@@ -89,6 +96,17 @@ internal fun MaterialsScreen(
                 if (file.origin == "generated") {
                     Text("PDF creat amb LECTAV · esborrany")
                 }
+                Text(
+                    MaterialLocation.source(context, file),
+                    style=MaterialTheme.typography.bodySmall
+                )
+                if (file.lastExportUri.isNotBlank()) {
+                    Text(
+                        "Darrera còpia exportada: " +
+                            MaterialLocation.selectedLocation(file.lastExportUri),
+                        style=MaterialTheme.typography.bodySmall
+                    )
+                }
                 Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
                     Button(onClick={onOpen(file.id)}) {Text(stringResource(R.string.library_open))}
                     OutlinedButton(onClick={
@@ -105,6 +123,12 @@ internal fun MaterialsScreen(
                         Text(stringResource(R.string.library_remove))
                     }
                 }
+                ExportDocumentButton(
+                    sourceUri = file.uri,
+                    displayName = file.name,
+                    mime = materialMime(file.type),
+                    onExported = { destination -> onExported(file.id, destination) }
+                )
                 if(course.role=="student" && file.type!="video") OutlinedButton(
                     onClick={onUpdate(file.id,!file.completed)}
                 ) {
