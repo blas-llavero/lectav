@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current Android prototype (v0.8.5)
+## Current Android prototype (v0.8.6)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -21,6 +21,29 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## v0.8.6 — emergency fix for unresponsive PDF export (ANR)
+
+An Android tablet reported repeated **"LECTAV is not responding"** prompts
+after generating exercises and exporting PDF materials with v0.8.5. A code
+inspection found expensive PDF serialization and PDF validation performed
+on the Android **main/UI thread**, as well as repeated whole-document
+WebView drawing and an expanded large Compose text editor.
+
+This revision moves PDF file writing and post-export verification to
+`Dispatchers.IO`, yields between UI-thread WebView page drawing calls,
+prevents overlapping PDF exports, initializes whole-document draw once,
+limits a single PDF to 18 pages, and collapses the long draft editor
+after saving. The PDF screen has a progress message and a **Cancel PDF**
+button; previously saved/exported PDFs and SD copy behavior remain.
+
+**CI compilation is not proof that every ANR is resolved:** long individual
+WebView draws can still block Android. First test a short 1–2-page PDF,
+then longer exercises, and preserve important results with
+**Save a copy to…** on shared internal storage or an SD card. If the
+problem recurs, collect an Android ANR trace; do not include personal
+records or authentication tokens. See
+[incident analysis and tablet test checklist](docs/ANDROID_ANR_PDF_FIX_V0_8_6.md).
 
 ## v0.8.5 — visible file location and Save As to any Android-accessible folder
 
