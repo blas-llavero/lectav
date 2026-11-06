@@ -13,7 +13,8 @@ private val Context.lectavFiles by preferencesDataStore("lectav_files")
 
 internal data class LocalMaterial(
     val id: String, val courseKey: String, val uri: String,
-    val name: String, val type: String, val opened: Boolean, val completed: Boolean
+    val name: String, val type: String, val opened: Boolean, val completed: Boolean,
+    val origin: String = "imported"
 )
 
 internal fun courseKey(course: SavedCourse) =
@@ -30,7 +31,8 @@ internal class MaterialLibrary(context: Context) {
             if (!uri.startsWith("content://")) return@mapNotNull null
             LocalMaterial(j.optString("id"), j.optString("courseKey"), uri,
                 j.optString("name"), j.optString("type"),
-                j.optBoolean("opened"), j.optBoolean("completed"))
+                j.optBoolean("opened"), j.optBoolean("completed"),
+                j.optString("origin", "imported"))
         }
     }.getOrDefault(emptyList())
     private fun encode(items: List<LocalMaterial>): String {
@@ -40,13 +42,16 @@ internal class MaterialLibrary(context: Context) {
                 put("id", m.id); put("courseKey",m.courseKey)
                 put("uri",m.uri); put("name",m.name); put("type",m.type)
                 put("opened",m.opened); put("completed",m.completed)
+                put("origin",m.origin)
             })
         }
         return arr.toString()
     }
     val files = store.data.map { decode(it[key] ?: "[]") }
-    suspend fun add(course: SavedCourse, uri: String, name: String, type: String) {
-        require(type in listOf("lesson","exercise","video"))
+    suspend fun add(course: SavedCourse, uri: String, name: String, type: String,
+        origin: String = "imported") {
+        require(origin in listOf("imported","generated"))
+        require(type in listOf("lesson","exercise","solutions","video"))
         require(uri.startsWith("content://"))
         store.edit { p ->
             val items=decode(p[key] ?: "[]")
@@ -54,7 +59,7 @@ internal class MaterialLibrary(context: Context) {
                 it.courseKey==courseKey(course) && it.uri==uri && it.type==type
             }) return@edit
             p[key]=encode(items+LocalMaterial(UUID.randomUUID().toString(),
-                courseKey(course),uri,name.take(160),type,false,false))
+                courseKey(course),uri,name.take(160),type,false,false,origin))
         }
     }
     suspend fun update(id: String, opened: Boolean? = null, completed: Boolean? = null) {
