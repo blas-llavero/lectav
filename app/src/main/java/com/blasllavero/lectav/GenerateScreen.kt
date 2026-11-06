@@ -23,11 +23,12 @@ internal fun GenerateScreen(
     course: SavedCourse,
     subjectTitle: String,
     courseTitle: String,
+    suggestedTopic: String,
     onSaved: (String, String, String, String) -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var topic by rememberSaveable { mutableStateOf("") }
+    var topic by rememberSaveable(course.id, suggestedTopic) { mutableStateOf(suggestedTopic) }
     var language by rememberSaveable { mutableStateOf("Català") }
     var kind by rememberSaveable { mutableStateOf("lesson") }
     var mode by rememberSaveable { mutableStateOf("demo") }
