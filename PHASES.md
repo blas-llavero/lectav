@@ -60,6 +60,10 @@
 - [ ] Fix persistent signing across GitHub Actions builds using a secure private keystore stored as encrypted CI secrets, allowing future APK updates without uninstalling and losing application-private data.
 - [ ] Device-test backup corruption/wrong password, user-selected SD backup, all restored PDF/MP4 contents, account reauthorization and consistent usage limits.
 
+- [x] v0.9.0 — on-demand ChatGPT trimester programming for any selectable ESO/Batxillerat subject: 2–8 units per trimester, 8–40 individually named sessions, editable teacher approval, and preserved independent term records; one-time first-session topic autofill into materials generator.
+- [x] v0.9.0 — official Biology & Geology ESO XTEC PDF link on-demand alongside Mathematics; no embedded subject topic order and explicit warning if no verified source.
+- [ ] Visually and functionally validate trimester planner, PDF-based source extraction, costs/usage confirmation and backup upgrade on an actual Android tablet; add validated full programme export (competences, criteria, assessment, inclusion) in a subsequent phase.
+
 ## Short-term phases — initial Catalonia rollout
 
 - [x] 1A. Initial, explicitly partial and source-attributed 2026–2027 subject selection for ESO and Batxillerat: common, school-dependent, optional and modality distinctions; user-visible official source links.
