@@ -131,6 +131,24 @@ internal object LectavBackup {
         check(changes.commit()) { "No s'ha desat la informació curricular." }
     }
 
+    private fun generatorPrefs(context: Context): JSONObject {
+        val prefs=context.getSharedPreferences("lectav_generator",Context.MODE_PRIVATE)
+        val names=listOf("language","kind","mode","endpoint","ollamaModel","chatgptModel")
+        val result=JSONObject()
+        names.forEach { name ->
+            result.put(name,prefs.getString(name,"").orEmpty().take(120))
+        }
+        return result
+    }
+
+    private fun restoreGeneratorPrefs(context: Context, values: JSONObject) {
+        val prefs=context.getSharedPreferences("lectav_generator",Context.MODE_PRIVATE)
+        val edit=prefs.edit().clear()
+        listOf("language","kind","mode","endpoint","ollamaModel","chatgptModel")
+            .forEach { name -> edit.putString(name,values.optString(name).take(120)) }
+        check(edit.commit()) { "No s'han restaurat les preferències del generador." }
+    }
+
     suspend fun export(
         context: Context, destination: Uri, password: String,
         settingsRepo: SettingsRepository, plansRepo: CoursePlanningRepository,
@@ -155,6 +173,7 @@ internal object LectavBackup {
             .put("settings",settingsToJson(settings))
             .put("plans",plansRepo.snapshotRaw())
             .put("locale",language.take(80))
+            .put("generator",generatorPrefs(context))
             .put("curriculum",curricularSources(context))
             .put("usage",JSONObject().put("limit",quota.weeklyLimit)
                 .put("attempts",quota.attempts).put("week",quota.weekStart))
@@ -331,6 +350,7 @@ internal object LectavBackup {
                 settingsRepo.restoreBackup(restoredSettings)
                 library.restoreBackup(restored)
                 restoreSources(context,curriculum)
+                restoreGeneratorPrefs(context,manifest.optJSONObject("generator") ?: JSONObject())
                 val q=manifest.getJSONObject("usage")
                 usage.restoreBackupLimit(
                     q.optInt("limit",3),q.optInt("attempts"),q.optString("week"))
