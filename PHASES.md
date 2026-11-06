@@ -15,7 +15,11 @@
 - [ ] v0.5+ — actual generated material indexing and counts, automatic sorting by content amount, read/exercise/video progress, offline PDF/MP4 viewers and SD exports.
 
 - [x] v0.5.0 — user-selected existing PDF/MP4 import via Android Storage Access Framework, offline in-app display, per-course imported-file counts, learner opened/manual completion states.
-- [ ] v0.6+ — actual content generation, new-file export to internal/SD destination, richer reader/playback features and course progress database.
+- [x] v0.6 — optional private LAN AI draft generation with teacher review, local PDF creation and manual share.
+- [ ] v0.7+ — direct SAF save-to-SD, on-device inference, richer reader/playback features and course progress database.
+
+- [x] v0.6.0 — user-initiated PDF draft generation UI, offline demonstration with honest labelling, optional LAN-only FOSS Ollama generation, editable preview, privately saved generated PDFs, teacher sort by genuine generated-file counts and manual Android sharing.
+- [ ] v0.7+ — direct PDF export to user-selected SD/internal folder, real on-device FOSS LLM options, reviewed per-topic content/assessment rubrics, opt-in moderated community sharing and role-based access.
 
 ## Short-term phases — initial Catalonia rollout
 
