@@ -50,9 +50,23 @@ internal class MaterialLibrary(context: Context) {
         return arr.toString()
     }
     val files = store.data.map { decode(it[key] ?: "[]") }
+    suspend fun restoreBackup(items: List<LocalMaterial>) {
+        require(items.size <= 500)
+        require(items.all {
+            it.id.isNotBlank() && it.courseKey.length in 1..200 &&
+                it.uri.startsWith("content://") &&
+                it.name.length in 1..160 &&
+                it.type in listOf("lesson", "exercise", "solutions", "video") &&
+                it.origin in listOf("generated", "restored")
+        }) { "La biblioteca restaurada conté elements invàlids." }
+        store.edit { p ->
+            p[key] = encode(items.distinctBy { it.id })
+        }
+    }
+
     suspend fun add(course: SavedCourse, uri: String, name: String, type: String,
         origin: String = "imported") {
-        require(origin in listOf("imported","generated"))
+        require(origin in listOf("imported","generated","restored"))
         require(type in listOf("lesson","exercise","solutions","video"))
         require(uri.startsWith("content://"))
         store.edit { p ->
