@@ -321,8 +321,11 @@ private fun LectavApp() {
                                 },
                                 suggestedTopic = suggestedSessionTopic.ifBlank {
                                     allPlans.firstOrNull { it.courseKey==courseKey(chosen) }
-                                        ?.topics?.firstOrNull()?.title
-                                        .orEmpty()
+                                        ?.topics?.sortedBy { it.trimester }?.firstOrNull()
+                                        ?.let { unit ->
+                                            unit.sessionTitles.firstOrNull()
+                                                ?.takeIf { it.isNotBlank() } ?: unit.title
+                                        }.orEmpty()
                                 },
                                 onSaved = { uri, name, kind, origin ->
                                     scope.launch {
