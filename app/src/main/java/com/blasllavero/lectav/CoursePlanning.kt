@@ -80,7 +80,7 @@ private fun encodePlans(plans: List<CoursePlan>): String {
                 put("title", topic.title)
                 put("sessions", topic.sessions)
                 put("source", topic.source)
-                put("done", JSONArray().apply { topic.completedSessions.sorted().forEach(::put) })
+                put("done", JSONArray().apply { topic.completedSessions.sorted().forEach { put(it) } })
             })
         }
         arr.put(JSONObject().put("key", plan.courseKey).put("topics", topics))
