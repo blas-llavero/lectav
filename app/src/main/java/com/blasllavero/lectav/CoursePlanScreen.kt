@@ -1,7 +1,6 @@
 /*
- * LECTAV — first course planning and study progress screens.
- * Copyright (C) 2026 Blas Llavero
- * SPDX-License-Identifier: GPL-3.0-or-later
+ * LECTAV — indexed three-term, teacher-editable lessons and learner progress.
+ * Copyright (C) 2026 Blas Llavero. SPDX-License-Identifier: GPL-3.0-or-later
  */
 package com.blasllavero.lectav
 
@@ -15,73 +14,139 @@ import androidx.compose.ui.unit.dp
 internal fun CoursePlanScreen(
     course: SavedCourse,
     plan: CoursePlan?,
-    onCreate: () -> Unit,
     onRename: (String, String) -> Unit,
+    onRenameSession: (String, Int, String) -> Unit,
     onDone: (String, Int, Boolean) -> Unit,
     onGenerate: (String) -> Unit,
-    onCurriculum: () -> Unit
+    onCurriculum: () -> Unit,
+    onAiProgramme: () -> Unit
 ) {
-    Text("Programació i sessions", style=MaterialTheme.typography.titleLarge)
-    OutlinedButton(onClick=onCurriculum,modifier=Modifier.fillMaxWidth()) {
-        Text("Consulta el currículum oficial i prepara temari amb IA")
-    }
+    Text("Programació didàctica · Índex de sessions",
+        style = MaterialTheme.typography.titleLarge)
     Text(
-        "Proposta didàctica editable. La normativa estableix competències i sabers; " +
-        "aquest ordre dels temes no és obligatori ni oficial.",
-        style=MaterialTheme.typography.bodySmall
+        "Tres trimestres, unitats i títol concret de cada sessió. " +
+        "És una seqüenciació editable, no l'ordre obligatori d'una llei.",
+        style = MaterialTheme.typography.bodySmall
     )
-    if(plan==null) {
-        if(starterTopicsFor(course).isEmpty()) {
-            Text("Encara no hi ha una proposta curricular revisada per a aquesta assignatura. " +
-                 "No generarem automàticament un temari suposadament oficial.")
-        } else {
-            Button(onClick=onCreate, modifier=Modifier.fillMaxWidth()) {
-                Text("Crea la proposta inicial de temari")
-            }
+    if (course.role == "teacher") {
+        Button(onClick = onAiProgramme, modifier = Modifier.fillMaxWidth()) {
+            Text("Genera una programació trimestral amb ChatGPT")
         }
-    } else {
-        val total=plan.topics.sumOf { it.sessions }
-        val done=plan.topics.sumOf { it.completedSessions.size }
-        Text("Progrés registrat en aquest dispositiu: $done de $total sessions",
-            style=MaterialTheme.typography.titleMedium)
-        LinearProgressIndicator(
-            progress={if(total==0) 0f else done.toFloat()/total},
-            modifier=Modifier.fillMaxWidth()
+    }
+    OutlinedButton(onClick = onCurriculum, modifier = Modifier.fillMaxWidth()) {
+        Text("Consulta el currículum oficial de la matèria")
+    }
+    if (plan == null || plan.topics.isEmpty()) {
+        Text(
+            if (course.role == "teacher")
+                "Encara no hi ha cap programació. Selecciona un trimestre i " +
+                "demana a ChatGPT que proposi les unitats i les sessions, " +
+                "sense continguts precarregats."
+            else "Aquest curs encara no té cap programació desada en " +
+                "aquest dispositiu.",
+            style = MaterialTheme.typography.bodyMedium
         )
-        plan.topics.forEachIndexed { index, topic ->
-            var editTitle by remember(topic.id, topic.title) { mutableStateOf(topic.title) }
-            var expanded by remember(topic.id) { mutableStateOf(false) }
-            Card(modifier=Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(12.dp), verticalArrangement=Arrangement.spacedBy(8.dp)) {
-                    Text("Unitat ${index+1}", style=MaterialTheme.typography.labelMedium)
-                    if(course.role=="teacher") {
+        return
+    }
+    val total = plan.topics.sumOf { it.sessions }
+    val done = plan.topics.sumOf { it.completedSessions.size }
+    Text("Progrés: $done de $total sessions", style = MaterialTheme.typography.titleMedium)
+    LinearProgressIndicator(
+        progress = { if (total == 0) 0f else done.toFloat() / total },
+        modifier = Modifier.fillMaxWidth()
+    )
+
+    for (term in 1..3) {
+        val units = plan.topics.filter { it.trimester == term }
+        val title = when (term) {
+            1 -> "Primer trimestre"
+            2 -> "Segon trimestre"
+            else -> "Tercer trimestre"
+        }
+        HorizontalDivider()
+        Text(title, style = MaterialTheme.typography.titleMedium)
+        if (units.isEmpty()) {
+            Text("Encara no s'han generat unitats per a aquest trimestre.",
+                style = MaterialTheme.typography.bodySmall)
+        }
+        units.forEachIndexed { unitIndex, unit ->
+            var titleEdit by remember(unit.id,unit.title) { mutableStateOf(unit.title) }
+            var expanded by remember(unit.id) { mutableStateOf(false) }
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text("Unitat ${unitIndex + 1} · ${unit.title}",
+                        style = MaterialTheme.typography.titleSmall)
+                    if (course.role == "teacher") {
                         OutlinedTextField(
-                            value=editTitle, onValueChange={editTitle=it.take(150)},
-                            label={Text("Títol de la unitat")},
-                            modifier=Modifier.fillMaxWidth()
+                            value = titleEdit,
+                            onValueChange = { titleEdit = it.take(150) },
+                            label = { Text("Nom de la unitat") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
                         )
-                        OutlinedButton(onClick={onRename(topic.id,editTitle)},
-                            enabled=editTitle.isNotBlank() && editTitle!=topic.title) {
-                            Text("Desa el títol")
+                        if (titleEdit.trim() != unit.title) {
+                            OutlinedButton(
+                                enabled = titleEdit.trim().length >= 3,
+                                onClick = { onRename(unit.id, titleEdit) }
+                            ) { Text("Actualitza el nom de la unitat") }
                         }
-                    } else Text(topic.title,style=MaterialTheme.typography.titleMedium)
-                    Text("${topic.completedSessions.size} / ${topic.sessions} sessions")
-                    OutlinedButton(onClick={expanded=!expanded}) {
-                        Text(if(expanded) "Amaga les sessions" else "Mostra les sessions")
                     }
-                    if(expanded) {
-                        (1..topic.sessions).forEach { session ->
-                            val checked=topic.completedSessions.contains(session)
-                            Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-                                if(course.role=="student") Checkbox(
-                                    checked=checked,
-                                    onCheckedChange={onDone(topic.id,session,it)}
-                                )
-                                Text("Sessió $session", modifier=Modifier.weight(1f))
-                                TextButton(onClick={
-                                    onGenerate("${topic.title} — sessió $session")
-                                }) {Text("Genera")}
+                    Text("${unit.completedSessions.size} de ${unit.sessions} sessions completades")
+                    OutlinedButton(onClick = { expanded = !expanded }) {
+                        Text(if (expanded) "Amaga l'índex de sessions"
+                            else "Mostra l'índex de sessions")
+                    }
+                    if (expanded) {
+                        (1..unit.sessions).forEach { number ->
+                            val lesson = unit.sessionTitle(number)
+                            var editing by remember(unit.id,number) { mutableStateOf(false) }
+                            var edited by remember(unit.id,number,lesson) {
+                                mutableStateOf(lesson)
                             }
+                            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                                Text("Sessió $number · $lesson",
+                                    style = MaterialTheme.typography.bodyMedium)
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    if (course.role == "student") {
+                                        Checkbox(
+                                            checked = number in unit.completedSessions,
+                                            onCheckedChange = {
+                                                onDone(unit.id, number, it)
+                                            }
+                                        )
+                                    }
+                                    TextButton(onClick = {
+                                        onGenerate(
+                                            "${unit.title} — Sessió $number: $lesson"
+                                        )
+                                    }) { Text("Genera materials") }
+                                    if (course.role == "teacher") {
+                                        TextButton(onClick = { editing = !editing }) {
+                                            Text(if (editing) "Tanca" else "Edita el tema")
+                                        }
+                                    }
+                                }
+                                if (course.role == "teacher" && editing) {
+                                    OutlinedTextField(
+                                        value = edited,
+                                        onValueChange = { edited = it.take(150) },
+                                        label = { Text("Tema que s'impartirà") },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        maxLines = 3
+                                    )
+                                    OutlinedButton(
+                                        enabled = edited.trim().length >= 3,
+                                        onClick = {
+                                            onRenameSession(unit.id,number,edited)
+                                            editing = false
+                                        }
+                                    ) { Text("Desa el tema de la sessió") }
+                                }
+                            }
+                            if (number != unit.sessions) HorizontalDivider()
                         }
                     }
                 }
