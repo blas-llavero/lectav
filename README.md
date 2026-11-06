@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current Android prototype (v0.8.6)
+## Current Android prototype (v0.8.7)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -21,6 +21,37 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## v0.8.7 — descriptive file names and encrypted backup/restore
+
+Generated and exported PDFs are now automatically named **Temari - Topic.pdf**,
+**Exercicis - Topic.pdf** or **Solucions - Topic.pdf** (and exported videos
+**Vídeo - Name.mp4**). The Android Save As dialog still lets users edit the
+proposed name, and older saved documents receive the same descriptive prefix.
+
+**Settings → Còpia de seguretat · Exporta i restaura** backs up locally
+saved courses, selection dropdowns, subtitle calibration, lesson plans,
+session progress, official curriculum extracts, generator preferences,
+local ChatGPT request limits, and all accessible PDF/MP4 library files
+(up to a total of 250 MB). The user selects shared internal storage or an
+SD folder. The resulting `.lectavbak` file is encrypted with a password
+using PBKDF2-HMAC-SHA256 + AES-256-GCM. Import authenticates it before
+restoring and requires explicit confirmation to replace existing indexes.
+
+**ChatGPT OAuth tokens, Android Keystore keys and authentication sessions are
+NOT portable**. An encrypted backup retains the preferred model and an
+account reminder, but the user must sign in and consent again after
+reinstalling. No external API charges, cloud upload or GitHub commit is
+required to create or restore the local archive.
+
+**Important:** because earlier Android debug APKs can use changing signing
+certificates, an upgrade may require reinstalling the app. **0.8.6 cannot
+create this new backup format**, so export critical PDFs separately and
+note current settings before uninstalling that version. From 0.8.7
+onwards, create a backup *before* any required uninstall. The longer-term
+fix is persistent APK signing via private GitHub Actions secrets.
+
+See [backup instructions, limits and test steps](docs/BACKUP_RESTORE_V0_8_7.md).
 
 ## v0.8.6 — emergency fix for unresponsive PDF export (ANR)
 
