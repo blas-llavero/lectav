@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current Android prototype (v0.8.4)
+## Current Android prototype (v0.8.5)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -21,6 +21,32 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## v0.8.5 — visible file location and Save As to any Android-accessible folder
+
+Users can now see where their documents live. **Generated PDFs** are stored
+in Android's app-private internal folder (`filesDir/generated/`, usually
+`/data/user/0/com.blasllavero.lectav/files/generated/`) and ordinary file
+managers cannot explore that location. **Imported PDFs and MP4s** remain in
+their selected original folders.
+
+Each saved course's **Materials** screen and the embedded viewer now offer
+**Desa una còpia a una carpeta…** for PDFs and MP4s. Android's official Save
+As document picker lets users select an accessible location on shared internal
+storage, removable SD card or another document provider. After generating
+a new PDF, the same button also appears immediately below the confirmation
+that it was saved inside LECTAV.
+
+Exports are local, do not require broad storage permission, do not re-run
+ChatGPT and do not alter or delete the original file. The materials index
+remembers the most recent exported location, where the document provider
+offers a meaningful location; some providers return only a URI and cannot
+supply a normal filesystem path. Users can find exported copies in CX File
+Explorer by navigating to the directory chosen with Android's picker.
+
+**The internal originals can disappear on app uninstall or clearing data.**
+Export important PDFs to an independent shared folder or SD card first.
+See [storage locations, export behavior and manual checks](docs/FILE_LOCATIONS_EXPORT_V0_8_5.md).
 
 ## v0.8.4 — colon-ending lead-ins and live official curriculum PDFs
 
