@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current Android prototype (v0.7.0)
+## Current Android prototype (v0.8.0)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -21,6 +21,14 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## v0.8.0 — first optional ChatGPT sign-in and AI inference integration
+
+Android Settings → **Compte ChatGPT** has a sign-in action using OpenAI's **public-client ChatGPT-plan OAuth + PKCE** flow in the system browser. The app binds a temporary loopback callback, verifies OAuth state, ID-token signature / issuer / audience / nonce, encrypts session credentials using Android Keystore AES-GCM, and supports local disconnect with an attempt to revoke the refresh token.
+
+On **Materials → Generate**, users may choose **ChatGPT (compte propi)** in addition to the existing offline demo and user-hosted Ollama. With explicit ChatGPT-plan consent and a compatible eligible account, the app lists available model choices and submits a user-initiated text-only educational prompt to the official Responses API, with `store:false`, `stream:true`. It requires `response.completed` to present the editable draft, and it saves the local PDF only after explicit confirmation.
+
+**Limitations:** compilation does not equal successful device login. The OAuth callback, account eligibility, model list and generation must be tested on a personal Android device; this is a **single-account prototype, not safe for shared classroom devices or student account management**. ChatGPT plan usage has user/workspace limits. It cannot create video, images or voice with this text-only flow. Never include personal student data in prompts. The local library and offline modes work without an account. See [Android sign-in test and security notes](docs/CHATGPT_ANDROID_V0_8.md).
 
 ## v0.7.0 — teacher course plan and learner session tracking pilot
 
