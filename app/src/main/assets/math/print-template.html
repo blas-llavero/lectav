@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src data:; connect-src 'none'">
+<link rel="stylesheet" href="katex.min.css">
+<style>
+  @page { size: A4; margin: 16mm 15mm 17mm 15mm; }
+  html, body { padding: 0; margin: 0; background: white; color: #17212b; }
+  body { font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.48; }
+  h1, h2, h3, h4 { color: #152d42; margin: 18pt 0 8pt; break-after: avoid; }
+  h1 { font-size: 18pt; } h2 { font-size: 15pt; } h3 { font-size: 12.5pt; }
+  #title { border-bottom: 1px solid #cdd7df; padding-bottom: 8pt; margin: 0 0 5pt; }
+  #warning { color: #6f470e; font-size: 9pt; margin-bottom: 20pt; }
+  p, li { orphans: 3; widows: 3; }
+  p { margin: 7pt 0; }
+  ul, ol { padding-left: 19pt; }
+  li { padding-bottom: 3pt; }
+  table { border-collapse: collapse; margin: 12pt 0; width: 100%; table-layout: auto; font-size: 9.5pt; }
+  thead { display: table-header-group; }
+  tr { break-inside: avoid; }
+  th, td { border: 1px solid #9cabba; padding: 6pt; overflow-wrap: anywhere; text-align: left; vertical-align: top; }
+  th { background: #eef3f8; }
+  blockquote { border-left: 3px solid #a3b5c7; margin: 9pt 0; padding-left: 12pt; color: #465768; }
+  code { font-family: monospace; font-size: 9.5pt; }
+  pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f1f3f5; padding: 8pt; }
+  .katex-display { margin: 12pt 0; font-size: 1.07em; overflow: visible; }
+  .katex { max-width: 100%; }
+  .math-block { page-break-inside: avoid; text-align: center; }
+  .math-error { background: #fff0f0; border: 1px solid #aa3344; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    h1, h2, h3, h4, tr, .katex-display { break-inside: avoid; }
+  }
+</style>
+<script src="markdown-it.min.js"></script>
+<script src="katex.min.js"></script>
+</head>
+<body>
+<h1 id="title"></h1>
+<p id="warning">ESBORRANY — revisa els continguts, els càlculs i les fonts abans d'utilitzar-los o compartir-los.</p>
+<main id="content"></main>
+<script>
+(function () {
+  "use strict";
+  const titleEncoded = "__LECTAV_TITLE_B64__";
+  const textEncoded = "__LECTAV_CONTENT_B64__";
+  function decode(input) {
+    return new TextDecoder("utf-8").decode(Uint8Array.from(
+      atob(input), c => c.charCodeAt(0)
+    ));
+  }
+  function escapeHtml(value) {
+    return value.replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function report(error) {
+    if (window.LECTAV && window.LECTAV.complete) {
+      window.LECTAV.complete(error || "");
+    }
+  }
+  try {
+    if (typeof window.markdownit !== "function" || !window.katex) {
+      throw new Error("Falten les biblioteques matemàtiques locals.");
+    }
+    const title = decode(titleEncoded);
+    const raw = decode(textEncoded);
+    document.getElementById("title").textContent = "LECTAV — " + title;
+    const tokens = [];
+    const problems = [];
+    // Isolate TeX *before* Markdown handles underscores, backslashes or stars.
+    // Accept standard display and inline delimiters, plus $$...$$ and $...$.
+    const math = /\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$\$[\s\S]*?\$\$|\$(?!\$)(?:\\.|[^$\n])+\$/g;
+    const prepared = raw.replace(math, function (original) {
+      const display = original.startsWith("\\[") || original.startsWith("$$");
+      const size = display || original.startsWith("\\(") ? 2 : 1;
+      const formula = original.slice(size, -size);
+      const marker = "LECTAVMATHTOKEN" + tokens.length + "END";
+      try {
+        const formatted = window.katex.renderToString(formula, {
+          displayMode: display, throwOnError: true, trust: false,
+          output: "htmlAndMathml", maxExpand: 1000, strict: "warn"
+        });
+        tokens.push(display ? '<div class="math-block">' + formatted + '</div>' : formatted);
+      } catch (e) {
+        problems.push((e && e.message) || "Sintaxi LaTeX incorrecta");
+        tokens.push('<code class="math-error">' + escapeHtml(original) + '</code>');
+      }
+      return marker;
+    });
+    if (problems.length > 0) {
+      throw new Error(problems.length + " fórmula(es) LaTeX sense interpretar. Revisa l'esborrany.");
+    }
+    const parser = window.markdownit({
+      html: false, breaks: true, linkify: false, typographer: false
+    });
+    const rendered = parser.render(prepared).replace(
+      /LECTAVMATHTOKEN(\d+)END/g,
+      function (_, index) { return tokens[Number(index)] || ""; }
+    );
+    document.getElementById("content").innerHTML = rendered;
+    Promise.resolve(document.fonts.ready).then(function () {
+      requestAnimationFrame(function () { report(""); });
+    }, function () { report("No s'han pogut carregar les fonts de les fórmules."); });
+  } catch (e) {
+    report((e && e.message) || "No s'ha pogut preparar el PDF.");
+  }
+})();
+</script>
+</body>
+</html>
