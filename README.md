@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current Android prototype (v0.8.2)
+## Current Android prototype (v0.8.3)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -21,6 +21,27 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## v0.8.3 — smaller PDF text, intact tables, no orphan section headings
+
+Feedback from the first on-device PDF tests showed that v0.8.2 produced text
+that was too large, visually split words in table columns, and cut through
+table rows at A4 page boundaries. Version 0.8.3 reduces body and heading
+type sizes and gives educational 4-column tables more sensible widths.
+
+Unlike CSS page-break hints (which the WebView canvas export ignores), the
+renderer now **calculates safe DOM block boundaries** after KaTeX fonts load
+and passes these page ranges to Android. Tables are kept intact and a section
+heading stays with its first block; if any table or block is taller than
+one page, a user-facing message asks for that content to be divided rather
+than silently cropping it. Bottom whitespace on a page is intentional when
+the following block needs to move to the next page.
+
+This update applies **only to PDFs generated after the upgrade**.
+The existing imported PDFs and media library are unchanged. See
+[the pagination implementation and testing checklist](docs/PDF_PAGINATION_V0_8_3.md).
+Compiled APKs still require manual on-device PDF verification before these
+visual layout constraints can be considered fully validated.
 
 ## v0.8.2 — mathematical Markdown/LaTeX PDFs
 
