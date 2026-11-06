@@ -234,6 +234,16 @@ private fun LectavApp() {
                     "term-plan" -> saved?.let { state ->
                         val selected = state.savedCourses.firstOrNull {
                             it.id == selectedCourseId
+                        } ?: run {
+                            val role = state.activeRole
+                            val currentId = "$role|ES-CT|${state.pathway}|" +
+                                "${state.course}|${state.subject}"
+                            if(currentId == selectedCourseId && state.subject.isNotBlank())
+                                SavedCourse(
+                                    currentId, role, state.pathway, state.course,
+                                    state.subject, System.currentTimeMillis()
+                                )
+                            else null
                         }
                         if (selected == null) Text("Curs no disponible")
                         else {
@@ -454,6 +464,30 @@ private fun LectavApp() {
                                             if (alreadySaved) R.string.library_saved
                                             else R.string.library_save
                                         )
+                                    )
+                                }
+                                if (saved?.activeRole == "teacher") {
+                                    Button(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        onClick = {
+                                            scope.launch {
+                                                // Persist the selected subject before
+                                                // opening its own term planner.
+                                                repository.saveCurrentCourse()
+                                                selectedCourseId =
+                                                    "${saved?.activeRole ?: "teacher"}|ES-CT|" +
+                                                    "$pathway|$course|$subject"
+                                                screen = "term-plan"
+                                            }
+                                        }
+                                    ) {
+                                        Text("Genera programació trimestral amb ChatGPT")
+                                    }
+                                    Text(
+                                        "No es consumirà cap petició de ChatGPT fins que " +
+                                        "escullis el trimestre, premis Genera i " +
+                                        "confirmis l'ús del teu compte.",
+                                        style=MaterialTheme.typography.bodySmall
                                     )
                                 }
                             }
