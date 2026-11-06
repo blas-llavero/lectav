@@ -42,6 +42,9 @@
 - [x] v0.8.2 — fix exported PDF math: offline KaTeX for fractions, radicals and set notation; markdown-it for headings, bold and tables; A4 PDF printing with embedded local math fonts and explicit parse errors.
 - [ ] Test the formatted PDFs visually on Android with multiple pages and verify Unicode/math font placement. Improve editable rendered preview later.
 
+- [x] v0.8.3 — reduce PDF font sizes, improve table column widths and calculate semantic page boundaries so headings are not orphaned and full tables are not split. Overlarge blocks return a descriptive error instead of silently cropping.
+- [ ] Validate all PDF pages on Android; later support continuation of very long tables with repeated table headers and richer page-numbered layouts.
+
 ## Short-term phases — initial Catalonia rollout
 
 - [x] 1A. Initial, explicitly partial and source-attributed 2026–2027 subject selection for ESO and Batxillerat: common, school-dependent, optional and modality distinctions; user-visible official source links.
