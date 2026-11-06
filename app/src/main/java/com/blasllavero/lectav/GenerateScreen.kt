@@ -44,6 +44,7 @@ internal fun GenerateScreen(
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf("") }
     var saved by remember { mutableStateOf(false) }
+    var editorExpanded by remember { mutableStateOf(false) }
     var savedFileUri by remember { mutableStateOf("") }
     var availableModels by remember { mutableStateOf(emptyList<ChatGPTModel>()) }
     var selectedModel by remember { mutableStateOf("") }
@@ -70,6 +71,7 @@ internal fun GenerateScreen(
             error = ""
             draft = ""
             saved = false
+            editorExpanded = false
             savedFileUri = ""
             val request = DraftRequest(
                 level = courseTitle, subject = subjectTitle, topic = topic.trim(),
@@ -246,13 +248,39 @@ internal fun GenerateScreen(
     }
     if (draft.isNotBlank()) {
         HorizontalDivider()
-        Text("Vista prèvia editable", style = MaterialTheme.typography.titleMedium)
-        OutlinedTextField(
-            value = draft,
-            onValueChange = { draft = it.take(50_000); saved = false },
-            minLines = 7, maxLines = 18,
-            modifier = Modifier.fillMaxWidth()
-        )
+        Text("Esborrany del PDF", style = MaterialTheme.typography.titleMedium)
+        // A 20–50k character Compose OutlinedTextField in a vertically
+        // scrolling screen can repeatedly relayout the entire document and
+        // freeze lower-powered tablets even AFTER the PDF was exported.
+        // Keep large editors collapsed until the user explicitly requests one.
+        val editorAllowed = editorExpanded || (!saved && draft.length <= 6000)
+        if (editorAllowed) {
+            OutlinedTextField(
+                value = draft,
+                onValueChange = { draft = it.take(50_000); saved = false },
+                minLines = 7, maxLines = 18,
+                modifier = Modifier.fillMaxWidth()
+            )
+            if (draft.length > 6000) {
+                TextButton(onClick = { editorExpanded = false }) {
+                    Text("Plega l'editor per alleugerir la tauleta")
+                }
+            }
+        } else {
+            Text(
+                if (saved)
+                    "El PDF està desat. Hem plegat l'editor per evitar bloquejos."
+                else "Esborrany extens (${draft.length} caràcters). " +
+                    "La vista curta evita bloquejos durant la maquetació.",
+                style = MaterialTheme.typography.bodySmall
+            )
+            if (!saved) {
+                Text(draft.take(1300) + if (draft.length > 1300) "…" else "")
+            }
+            OutlinedButton(onClick = { editorExpanded = true }) {
+                Text("Mostra i edita el text complet")
+            }
+        }
         Text(
             "Les fórmules LaTeX, la negreta, els títols i les taules es " +
             "maquetaran al PDF. Si alguna fórmula no es pot interpretar, " +
@@ -282,6 +310,7 @@ internal fun GenerateScreen(
                         onSaved(uri.toString(), "LECTAV - ${topic.trim().take(70)}.pdf", kind, "generated")
                         savedFileUri = uri.toString()
                         saved = true
+                        editorExpanded = false
                     }.onFailure { error = it.localizedMessage ?: "Error guardant PDF" }
                     busy = false
                 }
