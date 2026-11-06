@@ -287,7 +287,12 @@ private fun LectavApp() {
                     }
                     "viewer" -> {
                         val file = files.firstOrNull { it.id == selectedFileId }
-                        if(file != null) MaterialViewer(file)
+                        if(file != null) MaterialViewer(
+                            file,
+                            onExported = { destination ->
+                                scope.launch { fileRepository.recordExport(file.id, destination) }
+                            }
+                        )
                         else Text(stringResource(R.string.material_unavailable))
                     }
                     "chatgpt" -> ChatGPTAccountScreen(
