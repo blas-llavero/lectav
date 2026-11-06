@@ -21,6 +21,9 @@
 - [x] v0.6.0 — user-initiated PDF draft generation UI, offline demonstration with honest labelling, optional LAN-only FOSS Ollama generation, editable preview, privately saved generated PDFs, teacher sort by genuine generated-file counts and manual Android sharing.
 - [ ] v0.7+ — direct PDF export to user-selected SD/internal folder, real on-device FOSS LLM options, reviewed per-topic content/assessment rubrics, opt-in moderated community sharing and role-based access.
 
+- [x] v0.7.0 — first teacher-editable curriculum topic proposal (Matemàtiques 3r ESO), sessions pre-fill the draft generator, learner can mark sessions complete locally. Proposed sequence is **not** claimed as prescribed by law.
+- [ ] v0.8+ — verified versioned curriculum ingestion/AI-assisted crosswalk, full teacher programme, session exercises, assessment/rubrics and solution files, per-user progress, and FOSS per-session avatar MP4 generation.
+
 ## Short-term phases — initial Catalonia rollout
 
 - [x] 1A. Initial, explicitly partial and source-attributed 2026–2027 subject selection for ESO and Batxillerat: common, school-dependent, optional and modality distinctions; user-visible official source links.
