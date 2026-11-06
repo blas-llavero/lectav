@@ -62,6 +62,10 @@ La biblioteca explica si un document és:
 ## Política de privacitat i conservació
 
 - Cap document s'envia a serveis de conversió ni a GitHub per exportar-lo.
+- Si l'usuari escull un proveïdor al núvol (per exemple, Drive)
+  al selector de documents d'Android, el fitxer es pot sincronitzar amb
+  aquell servei. Per mantenir el document exclusivament al dispositiu,
+  cal seleccionar explícitament **memòria interna** o **targeta SD**.
 - No es demana `MANAGE_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`
   ni cap permís d'accés global. Android controla les destinacions.
 - Desar una còpia fora de l'emmagatzematge privat facilita conservar-la
