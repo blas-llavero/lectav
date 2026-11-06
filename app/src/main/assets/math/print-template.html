@@ -76,21 +76,42 @@
     ];
     const top = element => element.getBoundingClientRect().top + window.scrollY;
     const bottom = element => element.getBoundingClientRect().bottom + window.scrollY;
+    // A title, a lead-in such as "Resol els exercicis següents:", or a
+    // short caption belongs on the same page as the next content block.
+    function keepWithNext(element) {
+      if (/^H[1-6]$/.test(element.tagName)) return true;
+      if (!/^(P|DIV|FIGCAPTION|DT|STRONG)$/.test(element.tagName)) return false;
+      const text = (element.textContent || "").trim();
+      if (text.length < 2 || text.length > 240) return false;
+      return /[:：]$/.test(text) ||
+        /(?:següents|siguientes|following|a continuació|a continuación|below|exemples|ejemplos)\\s*[.!]?$/i.test(text);
+    }
     const candidates = [0];
-    let previous = null;
+    let groupStart = null;
+    let previousKeep = false;
     for (const el of nodes) {
-      const blockHeight = bottom(el) - top(el);
+      const elementTop = top(el);
+      const elementBottom = bottom(el);
+      const blockHeight = elementBottom - elementTop;
       if (blockHeight > pageHeight - 4) {
         throw new Error(el.tagName === "TABLE"
           ? "La taula no cap sencera en una pàgina. Divideix-la en dues taules."
           : "Hi ha un bloc massa llarg. Divideix-lo en fragments més curts.");
       }
-      const previousWasHeading = previous && /^H[1-6]$/.test(previous.tagName);
-      if (previousWasHeading && bottom(el) - top(previous) > pageHeight - 4) {
-        throw new Error("El títol i el primer bloc no caben junts en una pàgina.");
+      // A chain such as heading → introductory paragraph: → table is one
+      // indivisible unit for page-break purposes.
+      if (groupStart === null) groupStart = elementTop;
+      if (elementBottom - groupStart > pageHeight - 4) {
+        throw new Error(
+          "Un títol o una introducció i el contingut següent no caben junts. " +
+          "Divideix el bloc abans de desar el PDF."
+        );
       }
-      if (top(el) > 0 && !previousWasHeading) candidates.push(Math.floor(top(el)));
-      previous = el;
+      if (elementTop > 0 && !previousKeep) {
+        candidates.push(Math.floor(elementTop));
+        groupStart = elementTop;
+      }
+      previousKeep = keepWithNext(el);
     }
     const totalHeight = Math.ceil(Math.max(
       document.documentElement.scrollHeight, document.body.scrollHeight
