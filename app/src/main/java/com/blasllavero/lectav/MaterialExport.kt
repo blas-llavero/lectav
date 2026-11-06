@@ -93,8 +93,10 @@ internal fun ExportDocumentButton(
                 result.onSuccess {
                     exportedUri = destination.toString()
                     onExported(destination.toString())
-                    message = "Còpia desada correctament. " +
-                        "Pots trobar-la amb CX File Explorer a la carpeta que has triat."
+                    message = "Còpia desada correctament a la destinació escollida. " +
+                        "Si has triat emmagatzematge local o SD, podràs " +
+                        "trobar-la a CX File Explorer. Si has triat un " +
+                        "proveïdor al núvol, el fitxer pot sincronitzar-s'hi."
                 }.onFailure { error ->
                     message = "No s'ha pogut desar la còpia: " +
                         (error.localizedMessage ?: "comprova l'espai lliure i els permisos.")
@@ -123,6 +125,12 @@ internal fun ExportDocumentButton(
         enabled = !copying,
         modifier = Modifier.fillMaxWidth()
     ) { Text(if (copying) "Desant còpia…" else "Desa una còpia a una carpeta…") }
+    Text(
+        "Tria una carpeta de la memòria interna o de la targeta SD " +
+            "per conservar una còpia accessible. Si esculls un servei al núvol " +
+            "al selector d'Android, la còpia pot enviar-se a aquell servei.",
+        style = MaterialTheme.typography.bodySmall
+    )
     if (copying) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
     if (message.isNotBlank()) Text(message, style = MaterialTheme.typography.bodySmall)
     if (exportedUri.isNotBlank()) {
