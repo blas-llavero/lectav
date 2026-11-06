@@ -25,6 +25,10 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.yield
+import android.os.SystemClock
+import kotlinx.coroutines.sync.Mutex
 import java.io.File
 import java.io.IOException
 import org.json.JSONObject
@@ -45,7 +49,10 @@ internal object TypesetPdfExporter {
     private const val PAGE_WIDTH = 595
     private const val PAGE_HEIGHT = 842
     private const val MARGIN = 42f
-    private const val MAX_PAGES = 40
+    // Limit expensive whole-document WebView drawing on modest Android tablets.
+    private const val MAX_PAGES = 18
+    private const val MAX_EXPORT_MS = 90_000L
+    private val exportMutex = Mutex()
 
     private fun encode(s: String): String = Base64.encodeToString(
         s.toByteArray(Charsets.UTF_8), Base64.NO_WRAP
@@ -62,6 +69,11 @@ internal object TypesetPdfExporter {
 
     suspend fun save(context: Context, documentTitle: String, body: String): Uri =
         withContext(Dispatchers.Main) {
+            check(exportMutex.tryLock()) {
+                "Ja hi ha un PDF en procés de desament. Espera que finalitzi."
+            }
+            val startTime = SystemClock.elapsedRealtime()
+            try {
             require(body.isNotBlank()) { "No hi ha contingut per desar." }
             require(body.length <= 50_000) { "L'esborrany supera el límit d'aquest prototip." }
 
@@ -169,12 +181,22 @@ internal object TypesetPdfExporter {
                 )
                 browser.layout(0, 0, VIEW_WIDTH, height)
 
-                val destination = File.createTempFile("lectav_", ".pdf", fileFolder)
+                val destination = withContext(Dispatchers.IO) {
+                    File.createTempFile("lectav_", ".pdf", fileFolder)
+                }
                 try {
                     val pdf = PdfDocument()
                     try {
                         repeat(pageCount) { index ->
                             coroutineContext.ensureActive()
+                            if (SystemClock.elapsedRealtime() - startTime > MAX_EXPORT_MS) {
+                                error("La creació del PDF està trigant massa. " +
+                                    "Divideix els exercicis en documents més curts.")
+                            }
+                            // WebView.draw() must remain on Android's UI thread.
+                            // Yield between pages so input, redraw and cancellation
+                            // can be processed, preventing long uninterrupted loops.
+                            yield()
                             val page = pdf.startPage(
                                 PdfDocument.PageInfo.Builder(
                                     PAGE_WIDTH, PAGE_HEIGHT, index + 1
@@ -199,13 +221,18 @@ internal object TypesetPdfExporter {
                             browser.draw(canvas)
                             canvas.restore()
                             pdf.finishPage(page)
+                            delay(24)
                         }
-                        destination.outputStream().use { pdf.writeTo(it) }
+                        // Disk I/O and PDF verification were previously run on
+                        // the UI thread, causing app-not-responding freezes.
+                        withContext(Dispatchers.IO) {
+                            destination.outputStream().buffered().use { pdf.writeTo(it) }
+                            checkNotBlank(destination, pageCount)
+                        }
                     } finally {
                         pdf.close()
                     }
 
-                    checkNotBlank(destination, pageCount)
                     FileProvider.getUriForFile(
                         context, "${context.packageName}.files", destination
                     )
@@ -214,7 +241,14 @@ internal object TypesetPdfExporter {
                     throw e
                 }
             } finally {
+                // WebView ownership stays on the main thread. Release the
+                // render resources even on error or coroutine cancellation.
+                browser.removeJavascriptInterface("LECTAV")
+                browser.stopLoading()
                 browser.destroy()
+            }
+            } finally {
+                exportMutex.unlock()
             }
         }
 
