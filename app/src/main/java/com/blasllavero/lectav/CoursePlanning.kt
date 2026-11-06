@@ -21,7 +21,9 @@ internal data class TopicPlan(
     val title: String,
     val sessions: Int,
     val source: String,
-    val completedSessions: Set<Int> = emptySet()
+    val completedSessions: Set<Int> = emptySet(),
+    val term: Int = 1,
+    val sessionTitles: List<String> = emptyList()
 )
 
 // The decree defines competences/sabers, NOT one mandated first topic.
@@ -63,7 +65,13 @@ private fun decodePlans(raw: String): List<CoursePlan> = runCatching {
                     val done = (0 until completed.length())
                         .map { completed.optInt(it) }
                         .filter { it in 1..sessions }.toSet()
-                    add(TopicPlan(id, title, sessions, t.optString("source","teacher"), done))
+                    val quarter = t.optInt("term",1).coerceIn(1,3)
+                    val titlesJson = t.optJSONArray("sessionTitles") ?: JSONArray()
+                    val titles = (0 until minOf(sessions,titlesJson.length())).map {
+                        titlesJson.optString(it).trim().take(180)
+                    }
+                    add(TopicPlan(id, title, sessions, t.optString("source","teacher"),
+                        done, quarter, titles))
                 }
             }
             add(CoursePlan(key, topics))
@@ -81,6 +89,10 @@ private fun encodePlans(plans: List<CoursePlan>): String {
                 put("title", topic.title)
                 put("sessions", topic.sessions)
                 put("source", topic.source)
+                put("term", topic.term)
+                put("sessionTitles", JSONArray().apply {
+                    topic.sessionTitles.take(60).forEach { put(it) }
+                })
                 put("done", JSONArray().apply { topic.completedSessions.sorted().forEach { put(it) } })
             })
         }
@@ -136,6 +148,56 @@ internal class CoursePlanningRepository(context: Context) {
             prefs[key] = encodePlans(old.filterNot {
                 it.courseKey == newPlan.courseKey
             } + newPlan)
+        }
+    }
+
+    /**
+     * Save a reviewed ChatGPT proposal for ONE trimester. Previous
+     * trimesters, including their completed-session progress, are retained.
+     * Replacing the same trimester resets only those sessions.
+     */
+    suspend fun saveTermPlan(
+        course: SavedCourse, term: Int, topics: List<TopicPlan>
+    ) {
+        require(course.role == "teacher")
+        require(term in 1..3)
+        require(topics.size in 1..8)
+        require(topics.all {
+            it.term == term && it.sessions in 1..40 &&
+                it.sessionTitles.size == it.sessions &&
+                it.sessionTitles.all { title -> title.trim().length in 3..180 } &&
+                it.title.trim().length in 3..150
+        }) { "Cal revisar els títols i les sessions abans de desar." }
+        store.edit { prefs ->
+            val saved = decodePlans(prefs[key] ?: "[]")
+            val id = courseKey(course)
+            val existing = saved.firstOrNull { it.courseKey == id }
+            val retained = existing?.topics.orEmpty().filter { it.term != term }
+            val next = CoursePlan(id, (retained + topics).sortedBy { it.term })
+            prefs[key] = encodePlans(
+                saved.filterNot { it.courseKey == id } + next
+            )
+        }
+    }
+
+    suspend fun saveSessionTitle(
+        course: SavedCourse, topicId: String, number: Int, name: String
+    ) {
+        require(course.role == "teacher")
+        val clean = name.trim().take(180)
+        if (clean.length < 3) return
+        store.edit { p ->
+            p[key] = encodePlans(decodePlans(p[key] ?: "[]").map { plan ->
+                if (plan.courseKey == courseKey(course)) plan.copy(
+                    topics = plan.topics.map { topic ->
+                        if (topic.id == topicId && number in 1..topic.sessions &&
+                            topic.sessionTitles.size == topic.sessions
+                        ) topic.copy(sessionTitles = topic.sessionTitles.mapIndexed {
+                            index, title -> if (index + 1 == number) clean else title
+                        }, source = "teacher") else topic
+                    }
+                ) else plan
+            })
         }
     }
 
