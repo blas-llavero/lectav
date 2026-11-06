@@ -12,8 +12,8 @@ android {
         applicationId = "com.blasllavero.lectav"
         minSdk = 26
         targetSdk = 36
-        versionCode = 11
-        versionName = "0.8.3"
+        versionCode = 12
+        versionName = "0.8.4"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -36,4 +36,6 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
+    // Apache 2.0. Local text extraction of officially downloaded PDF curricula.
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
 }
