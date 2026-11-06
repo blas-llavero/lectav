@@ -60,6 +60,10 @@
 - [ ] Fix persistent signing across GitHub Actions builds using a secure private keystore stored as encrypted CI secrets, allowing future APK updates without uninstalling and losing application-private data.
 - [ ] Device-test backup corruption/wrong password, user-selected SD backup, all restored PDF/MP4 contents, account reauthorization and consistent usage limits.
 
+- [x] v0.8.8 — generate subject-specific programmes for any selected ESO/Batx course by ChatGPT; separate trimesters, unit indices and concrete session titles, editable on device, with topic prefill when creating PDF lessons/exercises.
+- [ ] Validate real ChatGPT model output on a personal Android tablet with Biology 3rd ESO and Maths 3rd ESO; verify per-term replacement, persistence and restored backups without official-curriculum hallucinations.
+- [ ] Future: legal-curriculum mapping across all subjects/regions, yearly timetable constraints, holidays, weekly teaching periods, competencies and assessment criteria per unit.
+
 ## Short-term phases — initial Catalonia rollout
 
 - [x] 1A. Initial, explicitly partial and source-attributed 2026–2027 subject selection for ESO and Batxillerat: common, school-dependent, optional and modality distinctions; user-visible official source links.
