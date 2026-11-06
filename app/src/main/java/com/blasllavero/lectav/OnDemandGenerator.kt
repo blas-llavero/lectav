@@ -5,13 +5,7 @@
  */
 package com.blasllavero.lectav
 
-import android.content.Context
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.pdf.PdfDocument
 import android.net.Uri
-import androidx.core.content.FileProvider
-import java.io.File
 import java.net.HttpURLConnection
 import java.net.Inet4Address
 import java.net.InetAddress
@@ -117,77 +111,4 @@ internal object OnDemandGenerator {
         }
     }
 
-    fun savePdf(context: Context, documentTitle: String, body: String): Uri {
-        val folder = File(context.filesDir, "generated").apply { mkdirs() }
-        val file = File.createTempFile("lectav_", ".pdf", folder)
-        val pageWidth = 595
-        val pageHeight = 842
-        val left = 44f
-        val maxX = 550f
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.BLACK
-            textSize = 11f
-            typeface = android.graphics.Typeface.create(
-                android.graphics.Typeface.DEFAULT,
-                android.graphics.Typeface.NORMAL
-            )
-        }
-        val pdf = PdfDocument()
-        var pageNumber = 0
-        var page: PdfDocument.Page? = null
-        var y = 52f
-        fun newPage() {
-            page?.let { pdf.finishPage(it) }
-            pageNumber++
-            page = pdf.startPage(
-                PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageNumber).create()
-            )
-            y = 52f
-        }
-        fun printLine(s: String) {
-            if (y > 786f) newPage()
-            page!!.canvas.drawText(s, left, y, paint)
-            y += 17f
-        }
-        fun printWrapped(text: String) {
-            if (text.isBlank()) {
-                printLine("")
-                return
-            }
-            var line = ""
-            for (word in text.split(Regex("""\s+"""))) {
-                // Split even very long unbroken tokens to prevent clipping.
-                val chunks = if (paint.measureText(word) > maxX-left) {
-                    word.chunked(45)
-                } else listOf(word)
-                for (chunk in chunks) {
-                    val combined = if (line.isBlank()) chunk else "$line $chunk"
-                    if (paint.measureText(combined) > maxX-left && line.isNotEmpty()) {
-                        printLine(line)
-                        line = chunk
-                    } else line = combined
-                }
-            }
-            if (line.isNotBlank()) printLine(line)
-        }
-        try {
-            newPage()
-            paint.textSize = 15f
-            printWrapped("LECTAV — " + documentTitle.take(100))
-            paint.textSize = 11f
-            printLine("ESBORRANY — REVISAR ABANS D'UTILITZAR O COMPARTIR")
-            printLine("")
-            body.take(50_000).lines().forEach { printWrapped(it) }
-            page?.let { pdf.finishPage(it) }
-            file.outputStream().use { pdf.writeTo(it) }
-        } catch (e: Exception) {
-            file.delete()
-            throw e
-        } finally {
-            pdf.close()
-        }
-        return FileProvider.getUriForFile(
-            context, "${context.packageName}.files", file
-        )
-    }
 }
