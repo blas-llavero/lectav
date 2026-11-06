@@ -123,7 +123,7 @@ internal object ChatGPTAuth {
 
         val socket = withContext(Dispatchers.IO) {
             ServerSocket(0, 8, InetAddress.getByName("127.0.0.1")).also {
-                it.soTimeout = 120_000
+                it.soTimeout = 300_000
             }
         }
         socket.use { server ->
@@ -203,7 +203,7 @@ internal object ChatGPTAuth {
         expectedClient: String,
         isNew: Boolean
     ): Callback {
-        val until = System.currentTimeMillis() + 120_000
+        val until = System.currentTimeMillis() + 300_000
         while (System.currentTimeMillis() < until) {
             val client = try {
                 server.accept()
