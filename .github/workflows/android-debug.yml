@@ -23,6 +23,11 @@ jobs:
       - uses: android-actions/setup-android@v4
       - name: Install Android SDK API 36
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Bundle offline mathematical renderer (KaTeX + Markdown-it)
+        run: bash scripts/prepare_pdf_math_assets.sh
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
