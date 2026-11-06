@@ -117,6 +117,7 @@ private fun LectavApp() {
                                     "chatgpt" -> authReturnScreen
                                     "generator" -> "materials"
                                     "course-plan" -> "library"
+                                    "curriculum" -> "course-plan"
                                     "materials" -> "library"
                                     else -> "home"
                                 }
@@ -212,8 +213,42 @@ private fun LectavApp() {
                             onGenerate={ title ->
                                 suggestedSessionTopic=title
                                 screen="generator"
-                            }
+                            },
+                            onCurriculum={ screen="curriculum" }
                         )
+                    }
+                    "curriculum" -> saved?.let { state ->
+                        val selected = state.savedCourses.firstOrNull { it.id==selectedCourseId }
+                        if (selected == null) {
+                            Text("Curs no disponible")
+                        } else {
+                            val title = catalogueSubjectsFor(selected.course)
+                                .firstOrNull { it.id == selected.subject }?.officialNameCa
+                                ?: selected.subject
+                            val level = coursesFor(selected.pathway)
+                                .firstOrNull { it.id == selected.course }
+                                ?.let { stringResource(it.label) } ?: selected.course
+                            CurriculumSourceScreen(
+                                course=selected,
+                                courseTitle=level,
+                                subjectTitle=title,
+                                hasExistingPlan=allPlans.any {
+                                    it.courseKey==courseKey(selected)
+                                },
+                                chatGPTStatus=chatGPTStatus,
+                                usageGuard=chatGPTGuard,
+                                onChatGPT={
+                                    authReturnScreen="curriculum"
+                                    screen="chatgpt"
+                                },
+                                onApplyPlan={ topics ->
+                                    scope.launch {
+                                        planningRepository.saveReviewedProposal(selected, topics)
+                                        screen="course-plan"
+                                    }
+                                }
+                            )
+                        }
                     }
                     "generator" -> saved?.let { state ->
                         val chosen = state.savedCourses.firstOrNull { it.id == selectedCourseId }
