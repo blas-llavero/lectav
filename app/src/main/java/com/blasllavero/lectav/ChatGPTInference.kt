@@ -45,11 +45,16 @@ internal object ChatGPTInference {
         model: ChatGPTModel,
         request: DraftRequest,
         usageGuard: ChatGPTUsageGuard,
-        curriculumContext: String = ""
+        curriculumContext: String = "",
+        customPrompt: String? = null
     ): String =
         withContext(Dispatchers.IO) {
             val token = ChatGPTAuth.bearerToken()
-            val prompt = """
+            // Specialized structured educational workflows may supply their
+            // own bounded prompt; the same OAuth, usage limit and consent
+            // controls still apply to every request.
+            require(customPrompt == null || customPrompt.length in 50..20_000)
+            val prompt = customPrompt ?: """
                 Actua com a assistent educatiu i escriu en ${request.language}.
                 Nivell: ${request.level}
                 Assignatura: ${request.subject}
