@@ -104,6 +104,28 @@ internal class CoursePlanningRepository(context: Context) {
         return true
     }
 
+    /**
+     * Explicit teacher approval replaces a course programme with the reviewed
+     * AI proposal. Existing completed-session marks are intentionally reset;
+     * callers must show an explicit replacement confirmation in the UI.
+     */
+    suspend fun saveReviewedProposal(course: SavedCourse, approved: List<TopicPlan>) {
+        require(course.role == "teacher") {
+            "Només el professor pot modificar la programació compartida."
+        }
+        require(approved.size in 1..16 && approved.all {
+            it.title.isNotBlank() && it.title.length <= 150 &&
+                it.sessions in 1..60
+        }) { "La proposta de temari és incompleta." }
+        store.edit { prefs ->
+            val old = decodePlans(prefs[key] ?: "[]")
+            val newPlan = CoursePlan(courseKey(course), approved)
+            prefs[key] = encodePlans(old.filterNot {
+                it.courseKey == newPlan.courseKey
+            } + newPlan)
+        }
+    }
+
     suspend fun saveTopicTitle(course: SavedCourse, id: String, title: String) {
         val cleaned = title.trim().take(150)
         if (cleaned.isBlank()) return
