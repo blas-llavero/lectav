@@ -239,7 +239,7 @@ internal object LectavBackup {
             .apply { if(!isDirectory) check(mkdirs()) }
         val stagedArchive = File.createTempFile("lectav_backup_",".zip",folder)
         val newFiles = ArrayList<File>()
-        var completed=false
+        var changesStarted=false
         try {
             // Decrypt entire stream and check AES-GCM authentication *before*
             // modifying any real user preferences or library index.
@@ -345,7 +345,10 @@ internal object LectavBackup {
                         lastExportUri="" // previous content:// grants can no longer be valid
                     ))
                 }
-                // Replace indexes only when decryption and extraction were successful.
+                // The archive and every file are authenticated/validated now.
+                // If a later preference write fails, keep staged files so
+                // previously written library URIs cannot point to deleted files.
+                changesStarted=true
                 plansRepo.restoreBackup(plans)
                 settingsRepo.restoreBackup(restoredSettings)
                 library.restoreBackup(restored)
@@ -358,7 +361,6 @@ internal object LectavBackup {
                 context.getSharedPreferences(
                     "lectav_restored_chatgpt",Context.MODE_PRIVATE
                 ).edit().putString("accountHint",hint).apply()
-                completed=true
                 RestoredBackup(
                     files=restored.size,
                     courses=restoredSettings.savedCourses.size,
@@ -367,7 +369,7 @@ internal object LectavBackup {
                 )
             }
         } catch(e: Exception) {
-            if(!completed) newFiles.forEach { runCatching { it.delete() } }
+            if(!changesStarted) newFiles.forEach { runCatching { it.delete() } }
             // Authentication errors from some providers are wrapped in IOException.
             if(e is javax.crypto.AEADBadTagException ||
                 e.cause is javax.crypto.AEADBadTagException)
