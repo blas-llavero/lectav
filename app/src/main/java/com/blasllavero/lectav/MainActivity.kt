@@ -63,6 +63,8 @@ class MainActivity : AppCompatActivity() {
 @Composable
 private fun LectavApp() {
     val context = LocalContext.current
+    remember(context.applicationContext) { ChatGPTAuth.initialize(context.applicationContext); true }
+    val chatGPTStatus by ChatGPTAuth.state.collectAsState()
     val repository = remember(context.applicationContext) { SettingsRepository(context.applicationContext) }
     val saved by repository.settings.collectAsState(initial = null)
     val scope = rememberCoroutineScope()
@@ -76,6 +78,7 @@ private fun LectavApp() {
     var selectedCourseId by rememberSaveable { mutableStateOf("") }
     var selectedFileId by rememberSaveable { mutableStateOf("") }
     var screen by rememberSaveable { mutableStateOf("home") }
+    var authReturnScreen by rememberSaveable { mutableStateOf("settings") }
     var subtitleHeight by remember { mutableFloatStateOf(0.25f) }
     LaunchedEffect(saved?.subtitleHeight) {
         saved?.let { subtitleHeight = it.subtitleHeight }
@@ -108,6 +111,7 @@ private fun LectavApp() {
                             TextButton(onClick = {
                                 screen = when(screen) {
                                     "viewer" -> "materials"
+                                    "chatgpt" -> authReturnScreen
                                     "generator" -> "materials"
                                     "course-plan" -> "library"
                                     "materials" -> "library"
@@ -221,6 +225,11 @@ private fun LectavApp() {
                                 course = chosen,
                                 subjectTitle = title,
                                 courseTitle = level,
+                                chatGPTStatus = chatGPTStatus,
+                                onChatGPT = {
+                                    authReturnScreen = "generator"
+                                    screen = "chatgpt"
+                                },
                                 suggestedTopic = suggestedSessionTopic.ifBlank {
                                     allPlans.firstOrNull { it.courseKey==courseKey(chosen) }
                                         ?.topics?.firstOrNull()?.title
@@ -239,11 +248,20 @@ private fun LectavApp() {
                         if(file != null) MaterialViewer(file)
                         else Text(stringResource(R.string.material_unavailable))
                     }
+                    "chatgpt" -> ChatGPTAccountScreen(
+                        status = chatGPTStatus,
+                        onSignIn = { ChatGPTAuth.signIn(context) },
+                        onSignOut = { ChatGPTAuth.signOut() }
+                    )
                     "settings" -> saved?.let {
                         SettingsScreen(
                             settings = it,
                             onClear = { scope.launch { repository.clearSelection() } },
-                            onCalibration = { screen = "calibration" }
+                            onCalibration = { screen = "calibration" },
+                            onChatGPT = {
+                                authReturnScreen = "settings"
+                                screen = "chatgpt"
+                            }
                         )
                     }
                     "calibration" -> CalibrationScreen(
@@ -567,7 +585,8 @@ private val appLanguages = listOf(
 private fun SettingsScreen(
     settings: SavedSettings,
     onClear: () -> Unit,
-    onCalibration: () -> Unit
+    onCalibration: () -> Unit,
+    onChatGPT: () -> Unit
 ) {
     // Subscribe to configuration changes so the picker refreshes after locale changes.
     val config = LocalConfiguration.current
@@ -608,6 +627,10 @@ private fun SettingsScreen(
         }
     }
     Text(stringResource(R.string.language_help), style = MaterialTheme.typography.bodySmall)
+    HorizontalDivider()
+    OutlinedButton(onClick = onChatGPT, modifier = Modifier.fillMaxWidth()) {
+        Text("Compte ChatGPT · connexió opcional")
+    }
     HorizontalDivider()
     Text(stringResource(R.string.saved_education), style = MaterialTheme.typography.titleMedium)
     Text("${stringResource(R.string.settings_country)}: ${stringResource(R.string.settings_spain)}")
