@@ -161,7 +161,9 @@ internal fun BackupScreen(
                         result.onSuccess {
                             message = "Restauració completada: " + it.courses +
                                 " cursos i " + it.files +
-                                " materials. Connecta ChatGPT de nou."
+                                " materials. " + (if (it.accountHint.isNotBlank())
+                                    "Compte anterior: " + it.accountHint + ". "
+                                else "") + "Connecta ChatGPT de nou."
                             if(it.languageTag.isNotBlank()) {
                                 AppCompatDelegate.setApplicationLocales(
                                     LocaleListCompat.forLanguageTags(it.languageTag)
