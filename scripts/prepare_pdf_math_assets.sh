@@ -29,6 +29,29 @@ for pkg in katex markdown-it; do
   cp "$license" "$OUT/$pkg-LICENSE.txt"
 done
 
+# Compile-time smoke test; cannot replace an Android PDF visual check.
+KATEX_DIR="$KATEX" MARKDOWN_DIR="$MARKDOWN" node <<'NODE'
+const katex = require(process.env.KATEX_DIR);
+const MarkdownIt = require(process.env.MARKDOWN_DIR);
+const examples = [
+  String.raw`\\sqrt{2}+(-\\sqrt{2})=0`,
+  String.raw`\\mathbb{N} \\subset \\mathbb{Z} \\subset \\mathbb{Q} \\subset \\mathbb{R}`,
+  String.raw`\\frac{3}{8}=0{,}375`,
+  String.raw`\\frac{a}{b},\\quad a,b\\in\\mathbb{Z},\\quad b\\neq0`
+];
+for (const source of examples) {
+  const html = katex.renderToString(source.replace(/\\\\/g, '\\'), {
+    throwOnError: true, output: 'htmlAndMathml'
+  });
+  if (!html.includes('class="katex"')) throw Error('Math rendering failed');
+}
+const html = new MarkdownIt({ html: false }).render(
+  '| Conjunt | Exemple |\\n|---|---|\\n| Naturals | 0, 1 |\\n'
+);
+if (!html.includes('<table>')) throw Error('Table rendering failed');
+console.log('Math and Markdown compilation smoke tests passed.');
+NODE
+
 test -s "$OUT/katex.min.js"
 test -s "$OUT/markdown-it.min.js"
 test -s "$OUT/katex.min.css"
