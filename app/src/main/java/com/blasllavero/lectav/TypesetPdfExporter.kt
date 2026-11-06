@@ -53,6 +53,7 @@ internal object TypesetPdfExporter {
     private const val MAX_PAGES = 18
     private const val MAX_EXPORT_MS = 90_000L
     private val exportMutex = Mutex()
+    private var slowWholeDocumentDrawEnabled = false
 
     private fun encode(s: String): String = Base64.encodeToString(
         s.toByteArray(Charsets.UTF_8), Base64.NO_WRAP
@@ -79,7 +80,12 @@ internal object TypesetPdfExporter {
 
             // Android 5.0+: allow software drawing of the entire document,
             // not only the currently visible WebView viewport.
-            WebView.enableSlowWholeDocumentDraw()
+            if (!slowWholeDocumentDrawEnabled) {
+                // Android requires this to run before constructing the first
+                // PDF WebView; it is a process-wide setting, not per-export.
+                WebView.enableSlowWholeDocumentDraw()
+                slowWholeDocumentDrawEnabled = true
+            }
             val browser = WebView(context)
             val fileFolder = File(context.filesDir, "generated").apply {
                 check(isDirectory || mkdirs()) { "No es pot crear la carpeta de documents." }
