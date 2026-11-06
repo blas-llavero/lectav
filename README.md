@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current Android prototype (v0.5.0)
+## Current Android prototype (v0.6.0)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -21,6 +21,21 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## v0.6.0 — on-demand content draft generation (Android)
+
+**Every teacher or learner can generate content when needed**, rather than downloading large pre-bundled content archives. Open a saved subject in **My courses → Materials → Generate**; enter a topic, language and content type (theory, exercises or solutions). LECTAV provides two intentionally distinct generation methods:
+
+1. **Offline PDF pipeline demonstration (without AI)**: creates a short, clearly labelled test draft. This proves PDF creation, editable preview, private storage and sharing, but **does not create a real educational lesson**.
+2. **Optional self-hosted FOSS AI (Ollama)**: connects on explicit button press to a model already installed on the user's trusted local network and asks it for an original educational draft. Only numeric private IPv4 endpoints are accepted; the model identifier and topic are selected by the user. The app **does not bundle a model**, host an LLM service, download model weights, or rely on paid proprietary AI.
+
+Review and edit the resulting text before choosing **Save this PDF to My courses**. PDF output is generated locally by Android `PdfDocument` and stored in the app's private files directory. The existing materials library indexes the saved file using a restricted FileProvider URI and labels it **generated** (rather than imported). Teacher courses are now ranked by the number of **generated** PDFs; imported-file counts are still displayed separately. A **Share** control opens Android's chooser to send a PDF/MP4 to another user or app *only when the user requests it*. No community upload or automatic GitHub publishing occurs.
+
+**Important privacy details:** Using the LAN AI mode sends the educational generation request, which includes the subject, year, topic and requested content type, to the configured self-hosted Ollama server using unencrypted HTTP over the local network. Do **not** include student names, records or other sensitive information. Avoid use on untrusted networks. The Android app requests INTERNET permission for this optional service. External public domains are blocked in this prototype. The offline PDF demo and existing library work without an AI server or internet connection.
+
+**Content safety and copyright:** AI output is an unverified *draft*. Always check mathematical correctness, curriculum alignment, pedagogical suitability, copyright, attribution and licensing before distributing it. Do not assume an exercise answer is correct simply because the model supplied it. Review and share intentionally, especially when working with minors.
+
+**Current limitations:** generated PDFs are stored inside the app, and *may be removed if the app is uninstalled or its data are cleared*. Use Android **Share** to save a durable copy to Files/Drive or send it via another app; a direct SAF export-to-SD option will follow. The app does not yet support permanent cloud/community storage, human review/moderation of community materials, on-device LLM inference on the tablet, automatically validated official syllabuses or full PDF accessibility features. `Ollama` must be separately configured by the user on their own computer/server.
 
 ## v0.5.0 — offline import and viewing of existing educational files
 
