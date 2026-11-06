@@ -311,7 +311,7 @@ internal fun GenerateScreen(
                         )
                     }
                     result.onSuccess { uri ->
-                        onSaved(uri.toString(), "LECTAV - ${topic.trim().take(70)}.pdf", kind, "generated")
+                        onSaved(uri.toString(), MaterialFileNames.forDraft(topic, kind), kind, "generated")
                         savedFileUri = uri.toString()
                         saved = true
                         editorExpanded = false
@@ -346,7 +346,7 @@ internal fun GenerateScreen(
             if (savedFileUri.isNotBlank()) {
                 ExportDocumentButton(
                     sourceUri = savedFileUri,
-                    displayName = "LECTAV - ${topic.trim().take(70)}.pdf",
+                    displayName = MaterialFileNames.forDraft(topic, kind),
                     mime = "application/pdf"
                 )
             }
