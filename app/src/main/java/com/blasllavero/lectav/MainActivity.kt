@@ -118,7 +118,8 @@ private fun LectavApp() {
                                     "backup" -> "settings"
                                     "generator" -> "materials"
                                     "course-plan" -> "library"
-                                    "curriculum" -> "course-plan"
+                                    "curriculum" -> "trimester"
+                                    "trimester" -> "course-plan"
                                     "materials" -> "library"
                                     else -> "home"
                                 }
@@ -153,10 +154,6 @@ private fun LectavApp() {
                             onPlan = { id ->
                                 selectedCourseId = id
                                 screen = "course-plan"
-                                scope.launch {
-                                    val coursePlan = saved?.savedCourses?.firstOrNull { it.id==id }
-                                    if (coursePlan != null) planningRepository.initialize(coursePlan)
-                                }
                             },
                             onRoleChange = { role ->
                                 scope.launch { repository.setActiveRole(role) }
@@ -205,9 +202,14 @@ private fun LectavApp() {
                         else CoursePlanScreen(
                             course=selected,
                             plan=allPlans.firstOrNull { it.courseKey==courseKey(selected) },
-                            onCreate={ scope.launch { planningRepository.initialize(selected) } },
+                            onCreate={ screen="trimester" },
                             onRename={ id, title ->
                                 scope.launch { planningRepository.saveTopicTitle(selected,id,title) }
+                            },
+                            onSessionTitle={ id, number, name ->
+                                scope.launch {
+                                    planningRepository.saveSessionTitle(selected,id,number,name)
+                                }
                             },
                             onDone={ id, session, done ->
                                 scope.launch {
@@ -218,8 +220,51 @@ private fun LectavApp() {
                                 suggestedSessionTopic=title
                                 screen="generator"
                             },
-                            onCurriculum={ screen="curriculum" }
+                            onCurriculum={ screen="trimester" }
                         )
+                    }
+                    "trimester" -> saved?.let { state ->
+                        val selected=state.savedCourses.firstOrNull {
+                            it.id==selectedCourseId
+                        } ?: run {
+                            val role=state.activeRole
+                            val id="$role|ES-CT|${state.pathway}|${state.course}|${state.subject}"
+                            if (id==selectedCourseId && state.subject.isNotBlank()) {
+                                SavedCourse(id,role,state.pathway,state.course,state.subject,
+                                    System.currentTimeMillis())
+                            } else null
+                        }
+                        if(selected==null) {
+                            Text("Tria una assignatura i desa-la a Els meus cursos.")
+                        } else {
+                            val title=catalogueSubjectsFor(selected.course)
+                                .firstOrNull { it.id==selected.subject }
+                                ?.officialNameCa ?: selected.subject
+                            val level=coursesFor(selected.pathway)
+                                .firstOrNull { it.id==selected.course }
+                                ?.let { stringResource(it.label) } ?: selected.course
+                            TrimesterPlanGeneratorScreen(
+                                course=selected,
+                                courseTitle=level,
+                                subjectTitle=title,
+                                existing=allPlans.firstOrNull {
+                                    it.courseKey==courseKey(selected)
+                                },
+                                auth=chatGPTStatus,
+                                usageGuard=chatGPTGuard,
+                                onChatGPT={
+                                    authReturnScreen="trimester"
+                                    screen="chatgpt"
+                                },
+                                onOfficialSource={ screen="curriculum" },
+                                onSave={ quarter,topics ->
+                                    scope.launch {
+                                        planningRepository.saveTermPlan(selected,quarter,topics)
+                                        screen="course-plan"
+                                    }
+                                }
+                            )
+                        }
                     }
                     "curriculum" -> saved?.let { state ->
                         val selected = state.savedCourses.firstOrNull { it.id==selectedCourseId }
@@ -275,8 +320,10 @@ private fun LectavApp() {
                                 },
                                 suggestedTopic = suggestedSessionTopic.ifBlank {
                                     allPlans.firstOrNull { it.courseKey==courseKey(chosen) }
-                                        ?.topics?.firstOrNull()?.title
-                                        ?: starterTopicsFor(chosen).firstOrNull()?.title.orEmpty()
+                                        ?.topics?.sortedBy { it.term }
+                                        ?.firstOrNull()
+                                        ?.let { it.sessionTitles.firstOrNull() ?: it.title }
+                                        .orEmpty()
                                 },
                                 onSaved = { uri, name, kind, origin ->
                                     scope.launch {
@@ -407,6 +454,27 @@ private fun LectavApp() {
                                         )
                                     )
                                 }
+                                Button(
+                                    modifier=Modifier.fillMaxWidth(),
+                                    onClick={
+                                        scope.launch {
+                                            repository.saveCurrentCourse()
+                                            selectedCourseId =
+                                                "${saved?.activeRole ?: "teacher"}|ES-CT|" +
+                                                "$pathway|$course|$subject"
+                                            screen="trimester"
+                                        }
+                                    }
+                                ) {
+                                    Text("Genera programació trimestral amb ChatGPT")
+                                }
+                                Text(
+                                    "El primer tema es crearà a partir del curs i " +
+                                    "la matèria seleccionats, no d'un temari " +
+                                    "precarregat. La consulta a ChatGPT requereix " +
+                                    "confirmació abans de consumir una petició.",
+                                    style=MaterialTheme.typography.bodySmall
+                                )
                             }
                         }
                         HorizontalDivider()
