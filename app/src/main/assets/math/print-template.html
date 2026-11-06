@@ -95,10 +95,11 @@
     const parser = window.markdownit({
       html: false, breaks: true, linkify: false, typographer: false
     });
-    const rendered = parser.render(prepared).replace(
-      /LECTAVMATHTOKEN(\d+)END/g,
-      function (_, index) { return tokens[Number(index)] || ""; }
-    );
+    const rendered = parser.render(prepared)
+      .replace(/<p>LECTAVMATHTOKEN(\d+)END<\/p>/g,
+        function (_, index) { return tokens[Number(index)] || ""; })
+      .replace(/LECTAVMATHTOKEN(\d+)END/g,
+        function (_, index) { return tokens[Number(index)] || ""; });
     document.getElementById("content").innerHTML = rendered;
     Promise.resolve(document.fonts.ready).then(function () {
       requestAnimationFrame(function () { report(""); });
