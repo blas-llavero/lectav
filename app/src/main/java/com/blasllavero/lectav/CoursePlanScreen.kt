@@ -70,6 +70,7 @@ internal fun CoursePlanScreen(
                 style = MaterialTheme.typography.bodySmall)
         }
         units.forEachIndexed { unitIndex, unit ->
+            val trimesterSessionOffset = units.take(unitIndex).sumOf { it.sessions }
             var titleEdit by remember(unit.id,unit.title) { mutableStateOf(unit.title) }
             var expanded by remember(unit.id) { mutableStateOf(false) }
             Card(modifier = Modifier.fillMaxWidth()) {
@@ -107,7 +108,7 @@ internal fun CoursePlanScreen(
                                 mutableStateOf(lesson)
                             }
                             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                                Text("Sessió $number · $lesson",
+                                Text("Sessió ${trimesterSessionOffset + number} · $lesson",
                                     style = MaterialTheme.typography.bodyMedium)
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     if (course.role == "student") {
@@ -120,7 +121,7 @@ internal fun CoursePlanScreen(
                                     }
                                     TextButton(onClick = {
                                         onGenerate(
-                                            "${unit.title} — Sessió $number: $lesson"
+                                            "${unit.title} — Sessió ${trimesterSessionOffset + number}: $lesson"
                                         )
                                     }) { Text("Genera materials") }
                                     if (course.role == "teacher") {
