@@ -88,8 +88,22 @@ internal object ChatGPTInference {
                 connection.outputStream.use {
                     it.write(body.toByteArray(Charsets.UTF_8))
                 }
-                require(connection.responseCode == 200) {
-                    "No s'ha pogut començar la generació (HTTP ${connection.responseCode})."
+                if (connection.responseCode != 200) {
+                    val status = connection.responseCode
+                    val raw = runCatching {
+                        connection.errorStream?.bufferedReader()
+                            ?.use { it.readText().take(4000) }.orEmpty()
+                    }.getOrDefault("")
+                    val failureCode = runCatching {
+                        JSONObject(raw).optJSONObject("error")?.optString("code")
+                    }.getOrNull().orEmpty()
+                    if (failureCode == "subscription_sharing_usage_limit_exceeded") {
+                        error("S'ha esgotat el límit de ChatGPT. Consulta Configuració → Ús.")
+                    }
+                    if (failureCode == "subscription_sharing_usage_unavailable") {
+                        error("No es pot comprovar la quota de ChatGPT. Petició aturada.")
+                    }
+                    error("Error HTTP $status. Comprova la quota de ChatGPT.")
                 }
                 val output = StringBuilder()
                 var completed = false
