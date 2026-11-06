@@ -44,6 +44,7 @@ internal fun GenerateScreen(
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf("") }
     var saved by remember { mutableStateOf(false) }
+    var savedFileUri by remember { mutableStateOf("") }
     var availableModels by remember { mutableStateOf(emptyList<ChatGPTModel>()) }
     var selectedModel by remember { mutableStateOf("") }
     var modelBusy by remember { mutableStateOf(false) }
@@ -69,6 +70,7 @@ internal fun GenerateScreen(
             error = ""
             draft = ""
             saved = false
+            savedFileUri = ""
             val request = DraftRequest(
                 level = courseTitle, subject = subjectTitle, topic = topic.trim(),
                 language = language, kind = when(kind) {
@@ -103,7 +105,9 @@ internal fun GenerateScreen(
         style = MaterialTheme.typography.bodySmall
     )
     OutlinedTextField(
-        value = topic, onValueChange = { topic = it.take(200); draft = ""; saved = false },
+        value = topic, onValueChange = {
+            topic = it.take(200); draft = ""; saved = false; savedFileUri = ""
+        },
         label = { Text("Tema o concepte") }, placeholder = { Text("Ex.: equacions de primer grau") },
         singleLine = true, modifier = Modifier.fillMaxWidth()
     )
@@ -254,6 +258,11 @@ internal fun GenerateScreen(
             "maquetaran al PDF. Si alguna fórmula no es pot interpretar, " +
             "LECTAV t'indicarà que la revisis abans de desar el document."
         )
+        Text(
+            "LECTAV desa primer el PDF a la seva carpeta privada de la memòria " +
+            "interna. Després podràs exportar-ne una còpia al directori que " +
+            "triïs, inclosa la targeta SD, sense generar de nou el contingut."
+        )
         Text("El PDF es desarà només quan premis el botó següent.")
         Button(
             enabled = !busy && !saved && draft.isNotBlank(),
@@ -271,6 +280,7 @@ internal fun GenerateScreen(
                     }
                     result.onSuccess { uri ->
                         onSaved(uri.toString(), "LECTAV - ${topic.trim().take(70)}.pdf", kind, "generated")
+                        savedFileUri = uri.toString()
                         saved = true
                     }.onFailure { error = it.localizedMessage ?: "Error guardant PDF" }
                     busy = false
@@ -278,7 +288,18 @@ internal fun GenerateScreen(
             }
         ) { Text("Desa aquest PDF a Els meus cursos") }
         if (saved) {
-            Text("PDF desat. El trobaràs a Materials del curs.")
+            Text(
+                "PDF desat a la memòria privada de LECTAV. " +
+                "Per trobar-lo amb CX File Explorer, desa'n una còpia " +
+                "a Documents, Descàrregues o una carpeta de la targeta SD."
+            )
+            if (savedFileUri.isNotBlank()) {
+                ExportDocumentButton(
+                    sourceUri = savedFileUri,
+                    displayName = "LECTAV - ${topic.trim().take(70)}.pdf",
+                    mime = "application/pdf"
+                )
+            }
         }
     }
 }
