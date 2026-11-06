@@ -65,6 +65,9 @@ private fun LectavApp() {
     val context = LocalContext.current
     remember(context.applicationContext) { ChatGPTAuth.initialize(context.applicationContext); true }
     val chatGPTStatus by ChatGPTAuth.state.collectAsState()
+    val chatGPTGuard = remember(context.applicationContext) {
+        ChatGPTUsageGuard(context.applicationContext)
+    }
     val repository = remember(context.applicationContext) { SettingsRepository(context.applicationContext) }
     val saved by repository.settings.collectAsState(initial = null)
     val scope = rememberCoroutineScope()
@@ -226,6 +229,7 @@ private fun LectavApp() {
                                 subjectTitle = title,
                                 courseTitle = level,
                                 chatGPTStatus = chatGPTStatus,
+                                usageGuard = chatGPTGuard,
                                 onChatGPT = {
                                     authReturnScreen = "generator"
                                     screen = "chatgpt"
@@ -250,6 +254,7 @@ private fun LectavApp() {
                     }
                     "chatgpt" -> ChatGPTAccountScreen(
                         status = chatGPTStatus,
+                        usageGuard = chatGPTGuard,
                         onSignIn = { ChatGPTAuth.signIn(context,
                             requestConsent = chatGPTStatus.connected &&
                                 !chatGPTStatus.inferenceAllowed) },
