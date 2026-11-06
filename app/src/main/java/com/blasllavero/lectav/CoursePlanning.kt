@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -92,6 +93,18 @@ internal class CoursePlanningRepository(context: Context) {
     private val store = context.applicationContext.learningStore
     private val key = stringPreferencesKey("plans_v1")
     val plans = store.data.map { decodePlans(it[key] ?: "[]") }
+
+    suspend fun snapshotRaw(): String =
+        encodePlans(plans.first())
+
+    suspend fun restoreBackup(raw: String) {
+        require(raw.length <= 350_000) { "El pla curricular supera el límit." }
+        val valid = decodePlans(raw)
+        require(raw.trim() == "[]" || valid.isNotEmpty()) {
+            "El pla curricular és invàlid."
+        }
+        store.edit { it[key] = encodePlans(valid) }
+    }
 
     suspend fun initialize(course: SavedCourse): Boolean {
         val defaults = starterTopicsFor(course)
