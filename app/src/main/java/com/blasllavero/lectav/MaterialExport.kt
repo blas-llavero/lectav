@@ -27,8 +27,10 @@ import java.io.IOException
  */
 internal object MaterialLocation {
     fun source(context: Context, material: LocalMaterial): String {
-        if (material.origin == "generated") {
-            return "Original privat: memòria interna de LECTAV\n" +
+        if (material.origin == "generated" || material.origin == "restored") {
+            return (if (material.origin == "restored")
+                "Material recuperat d'una còpia: carpeta privada de LECTAV\n"
+            else "Original privat: memòria interna de LECTAV\n") +
                 context.filesDir.absolutePath + "/generated/\n" +
                 "Aquesta carpeta està protegida per Android i, sense accés especial, " +
                 "CX File Explorer no la pot obrir."
