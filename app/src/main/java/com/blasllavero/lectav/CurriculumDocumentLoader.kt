@@ -34,11 +34,17 @@ internal object CurriculumDocumentLoader {
 
     const val CATALAN_MATHS_URL =
         "https://xtec.gencat.cat/web/.content/curriculum/eso/curriculum-175-2022/Matematiques.pdf"
+    const val CATALAN_BIOLOGY_URL =
+        "https://xtec.gencat.cat/web/.content/curriculum/eso/curriculum-175-2022/Biologia-i-Geologia.pdf"
 
+    // These are only pointers to official PDFs, not bundled curricular
+    // content. Teachers fetch/check the source on demand.
     fun initialUrl(course: SavedCourse): String =
-        if (course.pathway == "eso" && course.subject == "matematiques") {
-            CATALAN_MATHS_URL
-        } else ""
+        if (course.pathway != "eso") "" else when (course.subject) {
+            "matematiques" -> CATALAN_MATHS_URL
+            "biologia-geologia" -> CATALAN_BIOLOGY_URL
+            else -> ""
+        }
 
     private fun sourceIsOfficial(host: String): Boolean {
         val h = host.lowercase(Locale.ROOT)
