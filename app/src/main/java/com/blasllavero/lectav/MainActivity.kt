@@ -118,6 +118,7 @@ private fun LectavApp() {
                                     "backup" -> "settings"
                                     "generator" -> "materials"
                                     "course-plan" -> "library"
+                                    "term-plan" -> "course-plan"
                                     "curriculum" -> "course-plan"
                                     "materials" -> "library"
                                     else -> "home"
@@ -205,9 +206,13 @@ private fun LectavApp() {
                         else CoursePlanScreen(
                             course=selected,
                             plan=allPlans.firstOrNull { it.courseKey==courseKey(selected) },
-                            onCreate={ scope.launch { planningRepository.initialize(selected) } },
                             onRename={ id, title ->
                                 scope.launch { planningRepository.saveTopicTitle(selected,id,title) }
+                            },
+                            onRenameSession={ id, number, title ->
+                                scope.launch {
+                                    planningRepository.saveSessionTitle(selected,id,number,title)
+                                }
                             },
                             onDone={ id, session, done ->
                                 scope.launch {
@@ -218,8 +223,45 @@ private fun LectavApp() {
                                 suggestedSessionTopic=title
                                 screen="generator"
                             },
-                            onCurriculum={ screen="curriculum" }
+                            onCurriculum={ screen="curriculum" },
+                            onAiProgramme={ screen="term-plan" }
                         )
+                    }
+                    "term-plan" -> saved?.let { state ->
+                        val selected = state.savedCourses.firstOrNull {
+                            it.id == selectedCourseId
+                        }
+                        if (selected == null) Text("Curs no disponible")
+                        else {
+                            val subjectName = catalogueSubjectsFor(selected.course)
+                                .firstOrNull { it.id == selected.subject }?.officialNameCa
+                                ?: selected.subject
+                            val levelName = coursesFor(selected.pathway)
+                                .firstOrNull { it.id == selected.course }
+                                ?.let { stringResource(it.label) } ?: selected.course
+                            TrimesterPlanGeneratorScreen(
+                                course = selected,
+                                courseTitle = levelName,
+                                subjectTitle = subjectName,
+                                currentPlan = allPlans.firstOrNull {
+                                    it.courseKey == courseKey(selected)
+                                },
+                                chatGPTStatus = chatGPTStatus,
+                                usageGuard = chatGPTGuard,
+                                onConnect = {
+                                    authReturnScreen = "term-plan"
+                                    screen = "chatgpt"
+                                },
+                                onSave = { trimester, units ->
+                                    scope.launch {
+                                        planningRepository.saveTrimesterProposal(
+                                            selected, trimester, units
+                                        )
+                                        screen = "course-plan"
+                                    }
+                                }
+                            )
+                        }
                     }
                     "curriculum" -> saved?.let { state ->
                         val selected = state.savedCourses.firstOrNull { it.id==selectedCourseId }
@@ -276,7 +318,7 @@ private fun LectavApp() {
                                 suggestedTopic = suggestedSessionTopic.ifBlank {
                                     allPlans.firstOrNull { it.courseKey==courseKey(chosen) }
                                         ?.topics?.firstOrNull()?.title
-                                        ?: starterTopicsFor(chosen).firstOrNull()?.title.orEmpty()
+                                        .orEmpty()
                                 },
                                 onSaved = { uri, name, kind, origin ->
                                     scope.launch {
