@@ -45,6 +45,10 @@
 - [x] v0.8.3 — reduce PDF font sizes, improve table column widths and calculate semantic page boundaries so headings are not orphaned and full tables are not split. Overlarge blocks return a descriptive error instead of silently cropping.
 - [ ] Validate all PDF pages on Android; later support continuation of very long tables with repeated table headers and richer page-numbered layouts.
 
+- [x] v0.8.4 — keep short colon-ending introductions with their following tables/exercises in local PDF layout; on-demand retrieval of official source PDFs with local text extraction, source provenance and teacher-approved AI-generated suggested topic/session sequences.
+- [ ] Expand an official legal-curriculum registry to all Spanish autonomous communities and countries, with verified versioned primary-source documents, precise per-course criteria/sabers mappings and update detection.
+- [ ] Add full, multi-user classroom roles before saving learner-specific history or replacing shared progress; improve PDF table auto-splitting with repeated headers.
+
 ## Short-term phases — initial Catalonia rollout
 
 - [x] 1A. Initial, explicitly partial and source-attributed 2026–2027 subject selection for ESO and Batxillerat: common, school-dependent, optional and modality distinctions; user-visible official source links.
