@@ -15,6 +15,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
 import java.io.IOException
 import org.json.JSONArray
 import org.json.JSONObject
@@ -121,6 +122,23 @@ internal class SettingsRepository(context: Context) {
                 savedCourses = readSavedCourses(p[Keys.bookmarks] ?: "[]")
             )
         }
+
+    suspend fun snapshot(): SavedSettings = settings.first()
+
+    suspend fun restoreBackup(value: SavedSettings) {
+        require(value.activeRole in setOf("teacher", "student"))
+        require(value.savedCourses.size <= 500)
+        store.edit { p ->
+            p[Keys.country] = value.countryCode.take(12)
+            p[Keys.region] = value.regionCode.take(24)
+            p[Keys.pathway] = value.pathway.take(40)
+            p[Keys.course] = value.course.take(40)
+            p[Keys.subject] = value.subject.take(100)
+            p[Keys.subtitle] = value.subtitleHeight.coerceIn(0f, 1f)
+            p[Keys.activeRole] = value.activeRole
+            p[Keys.bookmarks] = writeSavedCourses(value.savedCourses)
+        }
+    }
 
     suspend fun choosePathway(pathway: String) {
         store.edit {
