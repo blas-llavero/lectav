@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
-private fun parseTrimesterPlan(json: String, trimester: Int): List<TopicPlan> {
+private fun parseTrimesterPlan(json: String, trimester: Int, expected: Int): List<TopicPlan> {
     val cleaned = json.trim().removePrefix("```json").removePrefix("```JSON")
         .removePrefix("```").removeSuffix("```").trim()
     val data = JSONObject(cleaned).getJSONArray("units")
@@ -45,8 +45,10 @@ private fun parseTrimesterPlan(json: String, trimester: Int): List<TopicPlan> {
             sessionTitles = titles
         )
     }
-    require(units.sumOf { it.sessions } in 6..48) {
-        "La proposta ha de tenir entre 6 i 48 sessions en total."
+    val actual = units.sumOf { it.sessions }
+    require(actual == expected) {
+        "ChatGPT ha retornat $actual sessions, però n'havies demanat " +
+            "$expected. No s'ha desat cap programació incompleta."
     }
     return units
 }
@@ -143,8 +145,36 @@ internal fun TrimesterPlanGeneratorScreen(
     var saveDialog by remember { mutableStateOf(false) }
     var proposal by remember { mutableStateOf(emptyList<TopicPlan>()) }
     val usage by usageGuard.state.collectAsState()
-    val official = remember(course.id) {
-        CurriculumDocumentLoader.cached(context, course)
+    var official by remember(course.id) {
+        mutableStateOf(CurriculumDocumentLoader.cached(context, course))
+    }
+    var sourceBusy by remember { mutableStateOf(false) }
+    var sourceError by remember { mutableStateOf("") }
+
+    // Download the known official curriculum document on demand. This is
+    // local text extraction and does not consume any ChatGPT plan usage.
+    LaunchedEffect(course.id) {
+        if(official == null) {
+            val url = CurriculumDocumentLoader.initialUrl(course)
+            if(url.isNotBlank()) {
+                sourceBusy = true
+                val fetched = runCatching {
+                    CurriculumDocumentLoader.initialize(context)
+                    CurriculumDocumentLoader.retrieve(url)
+                }
+                fetched.onSuccess {
+                    if(CurriculumDocumentLoader.save(context, course, it)) {
+                        official = it
+                    } else {
+                        sourceError = "No s'ha pogut desar la font oficial."
+                    }
+                }.onFailure {
+                    sourceError = "No s'ha pogut carregar el PDF oficial. " +
+                        "La proposta sense font serà orientativa."
+                }
+                sourceBusy = false
+            }
+        }
     }
     val existingForTerm = currentPlan?.topics.orEmpty()
         .count { it.trimester == trimester }
@@ -198,6 +228,14 @@ internal fun TrimesterPlanGeneratorScreen(
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier.fillMaxWidth(), singleLine = true
     )
+    if (sourceBusy) {
+        LinearProgressIndicator(modifier=Modifier.fillMaxWidth())
+        Text("Consultant i llegint la font oficial al dispositiu…",
+            style=MaterialTheme.typography.bodySmall)
+    }
+    if (sourceError.isNotBlank()) {
+        Text(sourceError, color=MaterialTheme.colorScheme.error)
+    }
     Text(
         if (official != null)
             "Font curricular descarregada disponible: ${official.sourceUrl}. " +
@@ -242,7 +280,7 @@ internal fun TrimesterPlanGeneratorScreen(
         }
         Button(
             modifier = Modifier.fillMaxWidth(),
-            enabled = !loading && !modelBusy && !usage.blocked &&
+            enabled = !loading && !modelBusy && !sourceBusy && !usage.blocked &&
                 models.any { it.slug == chosenModel } &&
                 (sessionsWanted.toIntOrNull() ?: 0) in 6..48 &&
                 academicYear.length >= 4 && course.role == "teacher",
@@ -286,7 +324,7 @@ internal fun TrimesterPlanGeneratorScreen(
                         val text = ChatGPTInference.generate(
                             model, request, usageGuard, customPrompt = prompt
                         )
-                        parseTrimesterPlan(text, term)
+                        parseTrimesterPlan(text, term, target)
                     }
                     result.onSuccess { units ->
                         proposal = units
