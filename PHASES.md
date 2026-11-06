@@ -56,6 +56,10 @@
 - [ ] Verify responsiveness and memory behavior on DOOGEE Android tablet with progressively longer PDF exercises; gather ANR trace if the problem recurs. Do not claim a complete root-cause determination without device trace.
 - [ ] Add user-selectable default SD/internal export directory and library backup/restore, especially before app reinstall/uninstall.
 
+- [x] v0.8.7 — filenames start with Temari, Exercicis or Solucions; local AES-GCM encrypted portable backup/restore of selections, saved courses, programme/session progress, IA generator preferences, local ChatGPT request limit and accessible library PDFs/MP4s.
+- [ ] Fix persistent signing across GitHub Actions builds using a secure private keystore stored as encrypted CI secrets, allowing future APK updates without uninstalling and losing application-private data.
+- [ ] Device-test backup corruption/wrong password, user-selected SD backup, all restored PDF/MP4 contents, account reauthorization and consistent usage limits.
+
 ## Short-term phases — initial Catalonia rollout
 
 - [x] 1A. Initial, explicitly partial and source-attributed 2026–2027 subject selection for ESO and Batxillerat: common, school-dependent, optional and modality distinctions; user-visible official source links.
