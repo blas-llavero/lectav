@@ -27,6 +27,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import java.io.File
 import java.io.IOException
+import org.json.JSONObject
 import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -50,12 +51,12 @@ internal object TypesetPdfExporter {
         s.toByteArray(Charsets.UTF_8), Base64.NO_WRAP
     )
 
-    private class RenderReady(private val onReady: (String, Int) -> Unit) {
+    private class RenderReady(private val onReady: (String, String) -> Unit) {
         private val main = Handler(Looper.getMainLooper())
 
         @JavascriptInterface
-        fun complete(error: String, height: Int) {
-            main.post { onReady(error.take(300), height) }
+        fun complete(error: String, layoutJson: String) {
+            main.post { onReady(error.take(300), layoutJson.take(12000)) }
         }
     }
 
@@ -93,18 +94,18 @@ internal object TypesetPdfExporter {
                 )
                 browser.layout(0, 0, VIEW_WIDTH, 1123)
 
-                val height = withTimeout(60_000L) {
-                    suspendCancellableCoroutine<Int> { continuation ->
-                        browser.addJavascriptInterface(RenderReady { error, measuredHeight ->
+                val layoutJson = withTimeout(60_000L) {
+                    suspendCancellableCoroutine<String> { continuation ->
+                        browser.addJavascriptInterface(RenderReady { error, layout ->
                             if (!continuation.isActive) return@RenderReady
                             if (error.isNotBlank()) {
                                 continuation.resumeWithException(IOException(error))
-                            } else if (measuredHeight < 40) {
+                            } else if (layout.isBlank()) {
                                 continuation.resumeWithException(
-                                    IOException("El document ha quedat buit.")
+                                    IOException("No s'han rebut els salts de pàgina.")
                                 )
                             } else {
-                                continuation.resume(measuredHeight)
+                                continuation.resume(layout)
                             }
                         }, "LECTAV")
                         try {
@@ -128,11 +129,37 @@ internal object TypesetPdfExporter {
                 val printableWidth = PAGE_WIDTH - 2 * MARGIN
                 val scale = printableWidth / VIEW_WIDTH
                 val pageContentHeight = (PAGE_HEIGHT - 2 * MARGIN) / scale
-                val pageCount = ceil(height / pageContentHeight).toInt().coerceAtLeast(1)
-                require(pageCount <= MAX_PAGES) {
-                    "Aquest document és massa llarg ($pageCount pàgines). " +
-                    "Divideix-lo en sessions o unitats més petites."
+                // The JS DOM paginator provides safe CSS-space block boundaries.
+                // WebView may scale CSS px to actual canvas px on different tablets,
+                // so convert using the WebView's measured physical width.
+                val parsed = JSONObject(layoutJson)
+                val cssWidth = parsed.getDouble("viewportWidth").toFloat()
+                require(cssWidth in 250f..2000f) { "Amplada del document incorrecta." }
+                val cssToCanvas = VIEW_WIDTH / cssWidth
+                val rawPages = parsed.getJSONArray("pages")
+                require(rawPages.length() in 1..MAX_PAGES) {
+                    "El PDF supera el límit de $MAX_PAGES pàgines."
                 }
+                val pageRanges = (0 until rawPages.length()).map { index ->
+                    val range = rawPages.getJSONArray(index)
+                    require(range.length() == 2) { "Salt de pàgina incorrecte." }
+                    val from = range.getDouble(0).toFloat() * cssToCanvas
+                    val to = range.getDouble(1).toFloat() * cssToCanvas
+                    require(from >= 0f && to > from &&
+                        to - from <= pageContentHeight + 2f) {
+                        "Una pàgina desborda l'espai imprimible."
+                    }
+                    if (index > 0) {
+                        val previousEnd = rawPages.getJSONArray(index - 1)
+                            .getDouble(1).toFloat() * cssToCanvas
+                        require(kotlin.math.abs(from - previousEnd) < 2f) {
+                            "Els salts de pàgina no són consecutius."
+                        }
+                    }
+                    from to to
+                }
+                val pageCount = pageRanges.size
+                val height = ceil(pageRanges.last().second).toInt().coerceAtLeast(1123)
                 // Lay out the complete HTML before vector/raster canvas capture.
                 browser.measure(
                     View.MeasureSpec.makeMeasureSpec(
@@ -161,7 +188,14 @@ internal object TypesetPdfExporter {
                             )
                             canvas.translate(MARGIN, MARGIN)
                             canvas.scale(scale, scale)
-                            canvas.translate(0f, -index * pageContentHeight)
+                            val bounds = pageRanges[index]
+                            // Clip at the chosen safe boundary, leaving blank
+                            // bottom space rather than slicing a table or heading.
+                            canvas.clipRect(
+                                0f, 0f, VIEW_WIDTH.toFloat(),
+                                (bounds.second - bounds.first).coerceAtMost(pageContentHeight)
+                            )
+                            canvas.translate(0f, -bounds.first)
                             browser.draw(canvas)
                             canvas.restore()
                             pdf.finishPage(page)
