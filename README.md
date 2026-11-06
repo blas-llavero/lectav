@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current Android prototype (v0.8.3)
+## Current Android prototype (v0.8.4)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -21,6 +21,32 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## v0.8.4 — colon-ending lead-ins and live official curriculum PDFs
+
+Further improves PDF page breaks: a short introduction such as "Activitats
+següents:" or "Els conjunts són els següents:" is kept with the first block
+of content that follows it. It also handles chains consisting of a heading,
+a lead-in paragraph and the next table/list. Overlarge indivisible blocks
+produce an explicit error rather than being cut.
+
+Adds **Temari → Consulta el currículum oficial**. The app now retrieves a
+**current PDF file directly from the official source on demand**, extracts
+its text locally using Apache 2.0 PDFBox for Android and stores the source URL,
+hash, date and selected excerpt in private local storage. No legal curriculum
+contents are bundled into the APK. The first linked source covers Catalunya
+ESO Mathematics (XTEC); direct HTTPS links to other supported official PDF
+sources may be provided by the user.
+
+The optional ChatGPT button (with existing eligibility, consent and usage
+limits) can analyze an extract of the fetched source and propose an editable
+didactic topic/session sequence; teachers explicitly review and approve it
+before replacing the locally stored plan. **AI output is never labelled a
+mandatory or legally verified topic order.** Supported official host checks
+do not constitute universal legislation-version monitoring. Other autonomous
+communities and countries need their own verified primary-source mappings.
+
+See [technical details, tests and limitations](docs/CURRICULUM_LIVE_V0_8_4.md).
 
 ## v0.8.3 — smaller PDF text, intact tables, no orphan section headings
 
