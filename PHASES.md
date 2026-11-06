@@ -24,6 +24,16 @@
 - [x] v0.7.0 — first teacher-editable curriculum topic proposal (Matemàtiques 3r ESO), sessions pre-fill the draft generator, learner can mark sessions complete locally. Proposed sequence is **not** claimed as prescribed by law.
 - [ ] v0.8+ — verified versioned curriculum ingestion/AI-assisted crosswalk, full teacher programme, session exercises, assessment/rubrics and solution files, per-user progress, and FOSS per-session avatar MP4 generation.
 
+## ChatGPT account integration — design approved for investigation
+
+- [x] Verify current OpenAI Sign in with ChatGPT open-source client documentation and eligible ChatGPT-plan inference routes (6 November 2026).
+- [x] Document LECTAV's secure optional sign-in and AI-mode architecture in [CHATGPT_ACCOUNT_INTEGRATION.md](docs/CHATGPT_ACCOUNT_INTEGRATION.md).
+- [ ] Validate native Android OAuth 2.0 + PKCE with the officially required loopback callback; secure device token storage, refresh/revocation and user identity/role isolation.
+- [ ] With explicit user consent, connect the user's *own eligible ChatGPT plan* to supported streamed Responses API text inference (theory, programmes, exercises, worked solutions, avatar scripts).
+- [ ] Preserve local-only/offline mode and optional FOSS Ollama/llama.cpp paths for users without access to ChatGPT-plan inference.
+- [ ] Create genuine per-session MP4 avatars using independently audited FOSS speech/animation/video tools. ChatGPT plan token-sharing does not itself enable video generation.
+- [ ] Implement responsible teacher publishing, learner permissions, separate progress and GDPR/minor safeguards. Never pool or lend subscriptions across users.
+
 ## Short-term phases — initial Catalonia rollout
 
 - [x] 1A. Initial, explicitly partial and source-attributed 2026–2027 subject selection for ESO and Batxillerat: common, school-dependent, optional and modality distinctions; user-visible official source links.
