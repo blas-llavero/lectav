@@ -59,6 +59,21 @@ internal class ChatGPTUsageGuard(context: Context) {
     }
 
     @Synchronized
+    fun restoreBackupLimit(limit: Int, attempts: Int, backupWeek: String) {
+        // Never lower this installation's existing counter for the same week.
+        val now = snapshot()
+        val oldAttempts = if (backupWeek == now.weekStart) attempts.coerceAtLeast(0) else 0
+        val merged = maxOf(now.attempts, oldAttempts)
+        val actualLimit = limit.coerceIn(0, 30)
+        check(prefs.edit()
+            .putInt("limit", actualLimit)
+            .putInt("attempts", merged)
+            .putString("week", now.weekStart)
+            .commit()) { "No s'ha pogut restaurar el límit de ChatGPT." }
+        refresh()
+    }
+
+    @Synchronized
     fun reserveAttempt(): Boolean {
         val now = snapshot()
         if (now.blocked) {
