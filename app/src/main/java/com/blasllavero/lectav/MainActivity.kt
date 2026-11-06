@@ -171,7 +171,11 @@ private fun LectavApp() {
                             onRemove = { id ->
                                 scope.launch { repository.removeSavedCourse(id) }
                             },
-                            onPickCourse = { screen = "home" }
+                            onPickCourse = { screen = "home" },
+                            onAiProgramme = { id ->
+                                selectedCourseId = id
+                                screen = "term-plan"
+                            }
                         )
                     }
                     "materials" -> saved?.let { state ->
@@ -563,7 +567,8 @@ private fun SavedCoursesScreen(
     onRoleChange: (String) -> Unit,
     onOpen: (String) -> Unit,
     onRemove: (String) -> Unit,
-    onPickCourse: () -> Unit
+    onPickCourse: () -> Unit,
+    onAiProgramme: (String) -> Unit
 ) {
     var pendingRemoval by remember { mutableStateOf<SavedCourse?>(null) }
     val entries = settings.savedCourses.filter { it.role == settings.activeRole }
@@ -628,6 +633,12 @@ private fun SavedCoursesScreen(
                             " · $generatedCount PDF generats",
                         style = MaterialTheme.typography.bodySmall
                     )
+                    if (settings.activeRole == "teacher") {
+                        OutlinedButton(
+                            onClick = { onAiProgramme(entry.id) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) { Text("Genera programació trimestral amb ChatGPT") }
+                    }
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Button(onClick = { onMaterials(entry.id) }) {
                             Text(stringResource(R.string.materials_title))
