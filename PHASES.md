@@ -52,6 +52,10 @@
 - [x] v0.8.5 — show genuine location of private generated PDFs versus imported documents; support explicit Android Save As to a selected internal/shared folder or removable SD for PDFs and MP4s, from Materials, the viewer and after PDF creation; retain last exported destination.
 - [ ] Future: optional persistent default export directory chosen via Android Storage Access Framework; library backup/restore, free-space monitoring and user-controlled retention policies.
 
+- [x] v0.8.6 — mitigate reported PDF-generation ANRs: move expensive PDF writing and verification off UI thread, yield between page draws, single active export, 18-page limit, responsive progress/cancel, collapse large draft editor.
+- [ ] Verify responsiveness and memory behavior on DOOGEE Android tablet with progressively longer PDF exercises; gather ANR trace if the problem recurs. Do not claim a complete root-cause determination without device trace.
+- [ ] Add user-selectable default SD/internal export directory and library backup/restore, especially before app reinstall/uninstall.
+
 ## Short-term phases — initial Catalonia rollout
 
 - [x] 1A. Initial, explicitly partial and source-attributed 2026–2027 subject selection for ESO and Batxillerat: common, school-dependent, optional and modality distinctions; user-visible official source links.
