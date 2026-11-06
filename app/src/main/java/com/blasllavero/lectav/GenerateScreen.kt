@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
 
 @Composable
@@ -45,6 +46,8 @@ internal fun GenerateScreen(
     var error by remember { mutableStateOf("") }
     var saved by remember { mutableStateOf(false) }
     var editorExpanded by remember { mutableStateOf(false) }
+    var savingPdf by remember { mutableStateOf(false) }
+    var savingJob by remember { mutableStateOf<Job?>(null) }
     var savedFileUri by remember { mutableStateOf("") }
     var availableModels by remember { mutableStateOf(emptyList<ChatGPTModel>()) }
     var selectedModel by remember { mutableStateOf("") }
@@ -297,8 +300,9 @@ internal fun GenerateScreen(
             modifier = Modifier.fillMaxWidth(),
             onClick = {
                 busy = true
+                savingPdf = true
                 error = ""
-                scope.launch {
+                savingJob = scope.launch {
                     val result = runCatching {
                         TypesetPdfExporter.save(
                             context,
@@ -311,11 +315,28 @@ internal fun GenerateScreen(
                         savedFileUri = uri.toString()
                         saved = true
                         editorExpanded = false
-                    }.onFailure { error = it.localizedMessage ?: "Error guardant PDF" }
+                    }.onFailure {
+                        error = if (it is kotlinx.coroutines.CancellationException)
+                            "S'ha cancel·lat la creació del PDF."
+                        else it.localizedMessage ?: "Error guardant PDF"
+                    }
+                    savingPdf = false
                     busy = false
+                    savingJob = null
                 }
             }
         ) { Text("Desa aquest PDF a Els meus cursos") }
+        if (savingPdf) {
+            Text(
+                "LECTAV està maquetant i desant el PDF. Pots cancel·lar " +
+                "aquesta operació si triga massa; no cal tancar l'app.",
+                style = MaterialTheme.typography.bodySmall
+            )
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            OutlinedButton(onClick = { savingJob?.cancel() }) {
+                Text("Cancel·la la creació del PDF")
+            }
+        }
         if (saved) {
             Text(
                 "PDF desat a la memòria privada de LECTAV. " +
