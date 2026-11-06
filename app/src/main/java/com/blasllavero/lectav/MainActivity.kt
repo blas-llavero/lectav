@@ -250,7 +250,9 @@ private fun LectavApp() {
                     }
                     "chatgpt" -> ChatGPTAccountScreen(
                         status = chatGPTStatus,
-                        onSignIn = { ChatGPTAuth.signIn(context) },
+                        onSignIn = { ChatGPTAuth.signIn(context,
+                            requestConsent = chatGPTStatus.connected &&
+                                !chatGPTStatus.inferenceAllowed) },
                         onSignOut = { ChatGPTAuth.signOut() }
                     )
                     "settings" -> saved?.let {
