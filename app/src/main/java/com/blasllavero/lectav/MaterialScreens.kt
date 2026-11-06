@@ -125,7 +125,7 @@ internal fun MaterialsScreen(
                 }
                 ExportDocumentButton(
                     sourceUri = file.uri,
-                    displayName = file.name,
+                    displayName = MaterialFileNames.forExport(file.name, file.type),
                     mime = materialMime(file.type),
                     onExported = { destination -> onExported(file.id, destination) }
                 )
@@ -166,7 +166,7 @@ internal fun MaterialViewer(file: LocalMaterial, onExported: (String) -> Unit = 
     }
     ExportDocumentButton(
         sourceUri=file.uri,
-        displayName=file.name,
+        displayName=MaterialFileNames.forExport(file.name,file.type),
         mime=materialMime(file.type),
         onExported=onExported
     )
