@@ -35,10 +35,17 @@ internal object CurriculumDocumentLoader {
     const val CATALAN_MATHS_URL =
         "https://xtec.gencat.cat/web/.content/curriculum/eso/curriculum-175-2022/Matematiques.pdf"
 
-    fun initialUrl(course: SavedCourse): String =
-        if (course.pathway == "eso" && course.subject == "matematiques") {
-            CATALAN_MATHS_URL
-        } else ""
+    const val CATALAN_BIOLOGY_URL =
+        "https://xtec.gencat.cat/web/.content/curriculum/eso/curriculum-175-2022/Biologia-i-Geologia.pdf"
+
+    fun initialUrl(course: SavedCourse): String {
+        if(course.pathway != "eso") return ""
+        return when(course.subject) {
+            "matematiques" -> CATALAN_MATHS_URL
+            "biologia-geologia" -> CATALAN_BIOLOGY_URL
+            else -> ""
+        }
+    }
 
     private fun sourceIsOfficial(host: String): Boolean {
         val h = host.lowercase(Locale.ROOT)
