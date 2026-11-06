@@ -156,7 +156,7 @@ internal object TypesetPdfExporter {
                             "Els salts de pàgina no són consecutius."
                         }
                     }
-                    from to to
+                    Pair(from, to)
                 }
                 val pageCount = pageRanges.size
                 val height = ceil(pageRanges.last().second).toInt().coerceAtLeast(1123)
