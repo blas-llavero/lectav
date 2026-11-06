@@ -41,7 +41,11 @@ internal object ChatGPTInference {
         }
     }
 
-    suspend fun generate(model: ChatGPTModel, request: DraftRequest): String =
+    suspend fun generate(
+        model: ChatGPTModel,
+        request: DraftRequest,
+        usageGuard: ChatGPTUsageGuard
+    ): String =
         withContext(Dispatchers.IO) {
             val token = ChatGPTAuth.bearerToken()
             val prompt = """
@@ -67,6 +71,9 @@ internal object ChatGPTInference {
                 .put("store", false)
                 .put("stream", true)
                 .toString()
+            require(usageGuard.reserveAttempt()) {
+                "Límit setmanal de LECTAV assolit; revisa el control d'ús del compte."
+            }
             val connection = URL("https://api.openai.com/v1/responses")
                 .openConnection() as HttpURLConnection
             try {
