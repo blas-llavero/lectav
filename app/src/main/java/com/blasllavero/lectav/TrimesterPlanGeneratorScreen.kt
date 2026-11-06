@@ -247,7 +247,7 @@ internal fun TrimesterPlanGeneratorScreen(
         (1..3).forEach { quarter ->
             FilterChip(
                 selected=trimester==quarter,
-                onClick={trimester=quarter},
+                onClick={trimester=quarter}, enabled=!busy,
                 label={Text("$quarter")}
             )
         }
@@ -263,14 +263,14 @@ internal fun TrimesterPlanGeneratorScreen(
     }
     OutlinedTextField(
         value=academicYear,
-        onValueChange={academicYear=it.take(20)},
+        onValueChange={academicYear=it.take(20)}, enabled=!busy,
         label={Text("Curs acadèmic")},
         modifier=Modifier.fillMaxWidth(),
         singleLine=true
     )
     OutlinedTextField(
         value=sessionsText,
-        onValueChange={sessionsText=it.filter(Char::isDigit).take(2)},
+        onValueChange={sessionsText=it.filter(Char::isDigit).take(2)}, enabled=!busy,
         label={Text("Nombre total de sessions del trimestre (8–40)")},
         modifier=Modifier.fillMaxWidth(), singleLine=true
     )
@@ -331,7 +331,7 @@ internal fun TrimesterPlanGeneratorScreen(
         Button(
             onClick={showConsent=true},
             enabled=!busy && !checkingSource && !usage.blocked &&
-                sessionsText.toIntOrNull() in 8..40 &&
+                (sessionsText.toIntOrNull()?.let { it in 8..40 } == true) &&
                 academicYear.isNotBlank() &&
                 models.any { it.slug==model },
             modifier=Modifier.fillMaxWidth()
