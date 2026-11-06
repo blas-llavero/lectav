@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current Android prototype (v0.8.0)
+## Current Android prototype (v0.8.1)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -21,6 +21,14 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## v0.8.1 — controllable ChatGPT generation limits
+
+The account screen now offers a locally persisted, conservative **weekly attempt limit** (default 3; 0–30 adjustable; 0 disables ChatGPT generation). Generated drafts require an explicit **per-request confirmation** that the user has checked their official ChatGPT app usage limits and disabled the use of credits; API requests stop when the local cap is reached. Official quota-limit and unavailable-usage errors are shown instead of switching to another billing path.
+
+**Important:** the local counter tracks attempts on this installation only — **not** real tokens, subscription quota, remaining credits, money, usage in other apps or reset times for an OpenAI account. For exact controls, users must visit **ChatGPT → Settings → Usage → App limits → LECTAV → Manage limits**. Per OpenAI documentation, setting an app limit **below 100%** prevents credits from being used by that app. Users should also review credit use and auto-recharge settings. LECTAV cannot read or change them. Offline PDF demonstration and self-hosted Ollama remain independent.
+
+See [usage and credit-protection design and tests](docs/CHATGPT_USAGE_LIMITS_V0_8_1.md).
 
 ## v0.8.0 — first optional ChatGPT sign-in and AI inference integration
 
