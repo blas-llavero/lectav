@@ -68,6 +68,11 @@ private fun LectavApp() {
     val scope = rememberCoroutineScope()
     val fileRepository = remember(context.applicationContext) { MaterialLibrary(context.applicationContext) }
     val files by fileRepository.files.collectAsState(initial=emptyList())
+    val planningRepository = remember(context.applicationContext) {
+        CoursePlanningRepository(context.applicationContext)
+    }
+    val allPlans by planningRepository.plans.collectAsState(initial=emptyList())
+    var suggestedSessionTopic by rememberSaveable { mutableStateOf("") }
     var selectedCourseId by rememberSaveable { mutableStateOf("") }
     var selectedFileId by rememberSaveable { mutableStateOf("") }
     var screen by rememberSaveable { mutableStateOf("home") }
@@ -104,6 +109,7 @@ private fun LectavApp() {
                                 screen = when(screen) {
                                     "viewer" -> "materials"
                                     "generator" -> "materials"
+                                    "course-plan" -> "library"
                                     "materials" -> "library"
                                     else -> "home"
                                 }
@@ -135,6 +141,14 @@ private fun LectavApp() {
                                 selectedCourseId = id
                                 screen = "materials"
                             },
+                            onPlan = { id ->
+                                selectedCourseId = id
+                                screen = "course-plan"
+                                scope.launch {
+                                    val coursePlan = saved?.savedCourses?.firstOrNull { it.id==id }
+                                    if (coursePlan != null) planningRepository.initialize(coursePlan)
+                                }
+                            },
                             onRoleChange = { role ->
                                 scope.launch { repository.setActiveRole(role) }
                             },
@@ -155,7 +169,10 @@ private fun LectavApp() {
                         if(chosen != null) MaterialsScreen(
                             course = chosen,
                             files = files.filter { it.courseKey == courseKey(chosen) },
-                            onGenerate = { screen = "generator" },
+                            onGenerate = {
+                                suggestedSessionTopic=""
+                                screen = "generator"
+                            },
                             onAdd = { uri,name,kind ->
                                 scope.launch { fileRepository.add(chosen,uri,name,kind) }
                             },
@@ -170,6 +187,27 @@ private fun LectavApp() {
                             onRemove = { id -> scope.launch { fileRepository.remove(id) } }
                         ) else Text(stringResource(R.string.material_unavailable))
                     }
+                    "course-plan" -> saved?.let { state ->
+                        val selected = state.savedCourses.firstOrNull { it.id==selectedCourseId }
+                        if (selected == null) Text("Curs no disponible")
+                        else CoursePlanScreen(
+                            course=selected,
+                            plan=allPlans.firstOrNull { it.courseKey==courseKey(selected) },
+                            onCreate={ scope.launch { planningRepository.initialize(selected) } },
+                            onRename={ id, title ->
+                                scope.launch { planningRepository.saveTopicTitle(selected,id,title) }
+                            },
+                            onDone={ id, session, done ->
+                                scope.launch {
+                                    planningRepository.setSessionDone(selected,id,session,done)
+                                }
+                            },
+                            onGenerate={ title ->
+                                suggestedSessionTopic=title
+                                screen="generator"
+                            }
+                        )
+                    }
                     "generator" -> saved?.let { state ->
                         val chosen = state.savedCourses.firstOrNull { it.id == selectedCourseId }
                         if (chosen != null) {
@@ -183,6 +221,11 @@ private fun LectavApp() {
                                 course = chosen,
                                 subjectTitle = title,
                                 courseTitle = level,
+                                suggestedTopic = suggestedSessionTopic.ifBlank {
+                                    allPlans.firstOrNull { it.courseKey==courseKey(chosen) }
+                                        ?.topics?.firstOrNull()?.title
+                                        ?: starterTopicsFor(chosen).firstOrNull()?.title.orEmpty()
+                                },
                                 onSaved = { uri, name, kind, origin ->
                                     scope.launch {
                                         fileRepository.add(chosen, uri, name, kind, origin)
@@ -398,6 +441,7 @@ private fun SavedCoursesScreen(
     settings: SavedSettings,
     files: List<LocalMaterial>,
     onMaterials: (String) -> Unit,
+    onPlan: (String) -> Unit,
     onRoleChange: (String) -> Unit,
     onOpen: (String) -> Unit,
     onRemove: (String) -> Unit,
@@ -469,6 +513,9 @@ private fun SavedCoursesScreen(
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Button(onClick = { onMaterials(entry.id) }) {
                             Text(stringResource(R.string.materials_title))
+                        }
+                        OutlinedButton(onClick = { onPlan(entry.id) }) {
+                            Text("Temari")
                         }
                         OutlinedButton(onClick = { onOpen(entry.id) }) {
                             Text(stringResource(R.string.library_open))
