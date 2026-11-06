@@ -249,6 +249,11 @@ internal fun GenerateScreen(
             minLines = 7, maxLines = 18,
             modifier = Modifier.fillMaxWidth()
         )
+        Text(
+            "Les fórmules LaTeX, la negreta, els títols i les taules es " +
+            "maquetaran al PDF. Si alguna fórmula no es pot interpretar, " +
+            "LECTAV t'indicarà que la revisis abans de desar el document."
+        )
         Text("El PDF es desarà només quan premis el botó següent.")
         Button(
             enabled = !busy && !saved && draft.isNotBlank(),
@@ -258,13 +263,11 @@ internal fun GenerateScreen(
                 error = ""
                 scope.launch {
                     val result = runCatching {
-                        withContext(Dispatchers.IO) {
-                            OnDemandGenerator.savePdf(
-                                context,
-                                "$subjectTitle — ${topic.trim().take(75)}",
-                                draft
-                            )
-                        }
+                        TypesetPdfExporter.save(
+                            context,
+                            "$subjectTitle — ${topic.trim().take(75)}",
+                            draft
+                        )
                     }
                     result.onSuccess { uri ->
                         onSaved(uri.toString(), "LECTAV - ${topic.trim().take(70)}.pdf", kind, "generated")
