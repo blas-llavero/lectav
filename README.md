@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current Android prototype (v0.8.1)
+## Current Android prototype (v0.8.2)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -21,6 +21,27 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## v0.8.2 — mathematical Markdown/LaTeX PDFs
+
+Fixed the reported PDF-export bug: earlier LECTAV saved raw `\\sqrt{2}`,
+`\\mathbb{N}` and Markdown `**bold**`/table markup as literal text.
+Newly generated PDFs now go through an offline, locally bundled KaTeX and
+markdown-it rendering pipeline before Android's A4 WebView print-to-PDF path.
+
+Supported: fractions, radicals, set symbols, typical math notation, inline
+`\\(...\\)`, block `\\[...\\]`, Markdown headings, bold text and tables.
+Unparseable formulas show a recoverable error instead of silently producing
+broken output. No document is uploaded to a third-party PDF conversion server.
+
+**Important:** older exported PDFs cannot be fixed automatically — regenerate
+them from the original draft. Editable text remains Markdown/LaTeX; the actual
+saved PDF is typeset. KaTeX and fonts are packaged into the Android APK by
+`scripts/prepare_pdf_math_assets.sh` at build time, so new PDF export remains
+offline. CI compilation and JavaScript smoke tests **do not substitute**
+for verifying rendered PDF pages on a tablet.
+
+See [the rendering design, limitations and test cases](docs/MATH_PDF_RENDERING_V0_8_2.md).
 
 ## v0.8.1 — controllable ChatGPT generation limits
 
