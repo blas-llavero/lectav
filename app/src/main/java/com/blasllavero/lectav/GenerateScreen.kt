@@ -32,15 +32,18 @@ internal fun GenerateScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val generatorPrefs = remember(context.applicationContext) {
+        context.applicationContext.getSharedPreferences("lectav_generator", android.content.Context.MODE_PRIVATE)
+    }
     val usage by usageGuard.state.collectAsState()
     var showUsageConfirm by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { usageGuard.refresh() }
     var topic by rememberSaveable(course.id, suggestedTopic) { mutableStateOf(suggestedTopic) }
-    var language by rememberSaveable { mutableStateOf("Català") }
-    var kind by rememberSaveable { mutableStateOf("lesson") }
-    var mode by rememberSaveable { mutableStateOf("demo") }
-    var endpoint by rememberSaveable { mutableStateOf("http://192.168.1.10:11434") }
-    var model by rememberSaveable { mutableStateOf("gemma3:4b") }
+    var language by rememberSaveable { mutableStateOf(generatorPrefs.getString("language","Català") ?: "Català") }
+    var kind by rememberSaveable { mutableStateOf(generatorPrefs.getString("kind","lesson") ?: "lesson") }
+    var mode by rememberSaveable { mutableStateOf(generatorPrefs.getString("mode","demo") ?: "demo") }
+    var endpoint by rememberSaveable { mutableStateOf(generatorPrefs.getString("endpoint","http://192.168.1.10:11434") ?: "http://192.168.1.10:11434") }
+    var model by rememberSaveable { mutableStateOf(generatorPrefs.getString("ollamaModel","gemma3:4b") ?: "gemma3:4b") }
     var draft by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf("") }
@@ -50,7 +53,17 @@ internal fun GenerateScreen(
     var savingJob by remember { mutableStateOf<Job?>(null) }
     var savedFileUri by remember { mutableStateOf("") }
     var availableModels by remember { mutableStateOf(emptyList<ChatGPTModel>()) }
-    var selectedModel by remember { mutableStateOf("") }
+    var selectedModel by remember { mutableStateOf(generatorPrefs.getString("chatgptModel","") ?: "") }
+    LaunchedEffect(language, kind, mode, endpoint, model, selectedModel) {
+        generatorPrefs.edit()
+            .putString("language",language.take(40))
+            .putString("kind",kind.take(20))
+            .putString("mode",mode.take(20))
+            .putString("endpoint",endpoint.take(120))
+            .putString("ollamaModel",model.take(100))
+            .putString("chatgptModel",selectedModel.take(100))
+            .apply()
+    }
     var modelBusy by remember { mutableStateOf(false) }
     var modelError by remember { mutableStateOf("") }
     var expandedModels by remember { mutableStateOf(false) }
