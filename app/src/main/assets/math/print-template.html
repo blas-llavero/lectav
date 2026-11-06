@@ -8,24 +8,24 @@
 <style>
   @page { size: A4; margin: 16mm 15mm 17mm 15mm; }
   html, body { padding: 0; margin: 0; background: white; color: #17212b; }
-  body { font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.48; }
-  h1, h2, h3, h4 { color: #152d42; margin: 18pt 0 8pt; break-after: avoid; }
-  h1 { font-size: 18pt; } h2 { font-size: 15pt; } h3 { font-size: 12.5pt; }
+  body { font-family: Arial, sans-serif; font-size: 9pt; line-height: 1.36; }
+  h1, h2, h3, h4 { color: #152d42; margin: 12pt 0 5pt; break-after: avoid; }
+  h1 { font-size: 14pt; } h2 { font-size: 11.5pt; } h3 { font-size: 10pt; }
   #title { border-bottom: 1px solid #cdd7df; padding-bottom: 8pt; margin: 0 0 5pt; }
-  #warning { color: #6f470e; font-size: 9pt; margin-bottom: 20pt; }
+  #warning { color: #6f470e; font-size: 8pt; margin-bottom: 11pt; }
   p, li { orphans: 3; widows: 3; }
-  p { margin: 7pt 0; }
+  p { margin: 4pt 0; }
   ul, ol { padding-left: 19pt; }
   li { padding-bottom: 3pt; }
-  table { border-collapse: collapse; margin: 12pt 0; width: 100%; table-layout: auto; font-size: 9.5pt; }
+  table { border-collapse: collapse; margin: 7pt 0; width: 100%; table-layout: fixed; font-size: 8.4pt; }
   thead { display: table-header-group; }
   tr { break-inside: avoid; }
-  th, td { border: 1px solid #9cabba; padding: 6pt; overflow-wrap: anywhere; text-align: left; vertical-align: top; }
+  th, td { border: 1px solid #9cabba; padding: 4pt 5pt; overflow-wrap: break-word; word-break: normal; text-align: left; vertical-align: top; }
   th { background: #eef3f8; }
   blockquote { border-left: 3px solid #a3b5c7; margin: 9pt 0; padding-left: 12pt; color: #465768; }
   code { font-family: monospace; font-size: 9.5pt; }
   pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f1f3f5; padding: 8pt; }
-  .katex-display { margin: 12pt 0; font-size: 1.07em; overflow: visible; }
+  .katex-display { margin: 8pt 0; font-size: 1em; overflow: visible; }
   .katex { max-width: 100%; }
   .math-block { page-break-inside: avoid; text-align: center; }
   .math-error { background: #fff0f0; border: 1px solid #aa3344; }
@@ -55,17 +55,62 @@
     return value.replace(/&/g, "&amp;").replace(/</g, "&lt;")
       .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
-  function report(error) {
+  function report(error, layout) {
     if (window.LECTAV && window.LECTAV.complete) {
-      window.LECTAV.complete(
-        error || "",
-        Math.ceil(Math.max(
-          document.documentElement.scrollHeight,
-          document.body.scrollHeight
-        ))
-      );
+      window.LECTAV.complete(error || "", layout ? JSON.stringify(layout) : "");
     }
   }
+
+  // A WebView drawn into PdfDocument does not honour CSS @page breaks.
+  // Compute safe explicit cuts in document CSS coordinates before drawing.
+  function paginate() {
+    const cssWidth = document.documentElement.clientWidth || window.innerWidth;
+    if (!(cssWidth >= 250)) throw new Error("Amplada de pàgina no vàlida.");
+    // Android A4 points: page 595 x 842; margins 42 on all four sides.
+    // Reserve 14 CSS pixels so rounding never touches the next block.
+    const pageHeight = 758 * cssWidth / 511 - 14;
+    const nodes = [
+      document.getElementById("title"),
+      document.getElementById("warning"),
+      ...document.getElementById("content").children
+    ];
+    const top = element => element.getBoundingClientRect().top + window.scrollY;
+    const bottom = element => element.getBoundingClientRect().bottom + window.scrollY;
+    const candidates = [0];
+    let previous = null;
+    for (const el of nodes) {
+      const blockHeight = bottom(el) - top(el);
+      if (blockHeight > pageHeight - 4) {
+        throw new Error(el.tagName === "TABLE"
+          ? "La taula no cap sencera en una pàgina. Divideix-la en dues taules."
+          : "Hi ha un bloc massa llarg. Divideix-lo en fragments més curts.");
+      }
+      const previousWasHeading = previous && /^H[1-6]$/.test(previous.tagName);
+      if (previousWasHeading && bottom(el) - top(previous) > pageHeight - 4) {
+        throw new Error("El títol i el primer bloc no caben junts en una pàgina.");
+      }
+      if (top(el) > 0 && !previousWasHeading) candidates.push(Math.floor(top(el)));
+      previous = el;
+    }
+    const totalHeight = Math.ceil(Math.max(
+      document.documentElement.scrollHeight, document.body.scrollHeight
+    ));
+    const pages = [];
+    let start = 0;
+    while (totalHeight - start > pageHeight) {
+      const options = candidates.filter(y => y > start + 5 && y <= start + pageHeight);
+      const next = options.length ? Math.max(...options) : -1;
+      if (next <= start + 5) {
+        throw new Error("No hi ha un salt de pàgina segur. Divideix el bloc més llarg.");
+      }
+      pages.push([start, next]);
+      start = next;
+      if (pages.length >= 40) throw new Error("El document supera 40 pàgines.");
+    }
+    pages.push([start, totalHeight]);
+    return { viewportWidth: cssWidth, pages: pages };
+  }
+
   try {
     if (typeof window.markdownit !== "function" || !window.katex) {
       throw new Error("Falten les biblioteques matemàtiques locals.");
@@ -107,8 +152,26 @@
       .replace(/LECTAVMATHTOKEN(\d+)END/g,
         function (_, index) { return tokens[Number(index)] || ""; });
     document.getElementById("content").innerHTML = rendered;
+    // Give four-column teaching tables usable space for collection names,
+    // mathematical symbols, descriptions and examples.
+    document.querySelectorAll("#content table").forEach(function (table) {
+      const row = table.querySelector("tr");
+      if (row && row.children.length === 4) {
+        const group = document.createElement("colgroup");
+        [22, 13, 40, 25].forEach(function (percent) {
+          const col = document.createElement("col");
+          col.style.width = percent + "%";
+          group.appendChild(col);
+        });
+        table.insertBefore(group, table.firstChild);
+      }
+    });
+
     Promise.resolve(document.fonts.ready).then(function () {
-      requestAnimationFrame(function () { report(""); });
+      requestAnimationFrame(function () {
+        try { report("", paginate()); }
+        catch (error) { report(error.message || "No es pot paginar el PDF."); }
+      });
     }, function () { report("No s'han pogut carregar les fonts de les fórmules."); });
   } catch (e) {
     report((e && e.message) || "No s'ha pogut preparar el PDF.");
