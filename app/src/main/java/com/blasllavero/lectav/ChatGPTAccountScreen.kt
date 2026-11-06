@@ -13,9 +13,11 @@ import androidx.compose.ui.unit.dp
 @Composable
 internal fun ChatGPTAccountScreen(
     status: ChatGPTAuthState,
+    usageGuard: ChatGPTUsageGuard,
     onSignIn: () -> Unit,
     onSignOut: () -> Unit
 ) {
+    ChatGPTUsageControls(usageGuard)
     Text("Compte ChatGPT", style = MaterialTheme.typography.titleLarge)
     Text(
         "La connexió amb ChatGPT és opcional. Els teus cursos, documents i " +
