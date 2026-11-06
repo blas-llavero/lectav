@@ -18,9 +18,13 @@ internal fun CoursePlanScreen(
     onCreate: () -> Unit,
     onRename: (String, String) -> Unit,
     onDone: (String, Int, Boolean) -> Unit,
-    onGenerate: (String) -> Unit
+    onGenerate: (String) -> Unit,
+    onCurriculum: () -> Unit
 ) {
     Text("Programació i sessions", style=MaterialTheme.typography.titleLarge)
+    OutlinedButton(onClick=onCurriculum,modifier=Modifier.fillMaxWidth()) {
+        Text("Consulta el currículum oficial i prepara temari amb IA")
+    }
     Text(
         "Proposta didàctica editable. La normativa estableix competències i sabers; " +
         "aquest ordre dels temes no és obligatori ni oficial.",
