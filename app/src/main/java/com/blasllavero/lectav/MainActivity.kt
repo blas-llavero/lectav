@@ -115,6 +115,7 @@ private fun LectavApp() {
                                 screen = when(screen) {
                                     "viewer" -> "materials"
                                     "chatgpt" -> authReturnScreen
+                                    "backup" -> "settings"
                                     "generator" -> "materials"
                                     "course-plan" -> "library"
                                     "curriculum" -> "course-plan"
@@ -303,6 +304,12 @@ private fun LectavApp() {
                                 !chatGPTStatus.inferenceAllowed) },
                         onSignOut = { ChatGPTAuth.signOut() }
                     )
+                    "backup" -> BackupScreen(
+                        settingsRepo = repository,
+                        plansRepo = planningRepository,
+                        library = fileRepository,
+                        usageGuard = chatGPTGuard
+                    )
                     "settings" -> saved?.let {
                         SettingsScreen(
                             settings = it,
@@ -311,7 +318,8 @@ private fun LectavApp() {
                             onChatGPT = {
                                 authReturnScreen = "settings"
                                 screen = "chatgpt"
-                            }
+                            },
+                            onBackup = { screen = "backup" }
                         )
                     }
                     "calibration" -> CalibrationScreen(
@@ -636,7 +644,8 @@ private fun SettingsScreen(
     settings: SavedSettings,
     onClear: () -> Unit,
     onCalibration: () -> Unit,
-    onChatGPT: () -> Unit
+    onChatGPT: () -> Unit,
+    onBackup: () -> Unit
 ) {
     // Subscribe to configuration changes so the picker refreshes after locale changes.
     val config = LocalConfiguration.current
@@ -702,6 +711,15 @@ private fun SettingsScreen(
     OutlinedButton(onClick = onCalibration, modifier = Modifier.fillMaxWidth()) {
         Text(stringResource(R.string.calibrate_subtitles))
     }
+    HorizontalDivider()
+    OutlinedButton(onClick = onBackup, modifier = Modifier.fillMaxWidth()) {
+        Text("Còpia de seguretat · Exporta i restaura")
+    }
+    Text(
+        "Desa els cursos, la configuració i els materials en un arxiu xifrat " +
+        "abans de desinstal·lar. El compte ChatGPT s'haurà de reconnectar.",
+        style = MaterialTheme.typography.bodySmall
+    )
     Text(stringResource(R.string.settings_local_only), style = MaterialTheme.typography.bodySmall)
 }
 
