@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current Android prototype (v0.8.8)
+## Current Android prototype (v0.8.9)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -21,6 +21,25 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## v0.8.9 — direct trimester planning from course and subject selection
+
+After choosing a course and a subject on the home screen, teachers can now
+open **Genera programació trimestral amb ChatGPT** directly. No course-specific
+topic sequences are preloaded, and no model request is sent before user
+confirmation of the local usage limit. The teacher chooses the trimester
+and total sessions, receives an indexed list of units and distinct lesson
+titles, reviews the result and saves it locally. The generated number
+of sessions must match the requested count exactly. Sessions are numbered
+consecutively within their trimester. They prefill the material-generation
+topic field.
+
+Known ESO Maths and Biology-Geology official PDFs are optionally retrieved
+**on demand**, parsed on the Android device and used as a reference context;
+this preliminary crosswalk is not a legal validity guarantee. The app
+explains when no official document was available and labels the plan
+a non-verified teaching proposal. See
+[direct term planning, curriculum provenance and test steps](docs/DIRECT_TERM_PLAN_V0_8_9.md).
 
 ## v0.8.8 — generate a term-by-term programme with a concrete topic for every session
 
