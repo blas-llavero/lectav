@@ -29,7 +29,8 @@ internal fun MaterialsScreen(
     onAdd: (String,String,String) -> Unit,
     onOpen: (String) -> Unit,
     onUpdate: (String,Boolean) -> Unit,
-    onRemove: (String) -> Unit
+    onRemove: (String) -> Unit,
+    onGenerate: () -> Unit
 ) {
     val context=LocalContext.current
     var kind by remember { mutableStateOf("lesson") }
@@ -54,6 +55,9 @@ internal fun MaterialsScreen(
         }
     }
     Text(stringResource(R.string.materials_title),style=MaterialTheme.typography.titleLarge)
+    Button(onClick = onGenerate, modifier = Modifier.fillMaxWidth()) {
+        Text("Genera teoria, exercicis o solucionari")
+    }
     Text(stringResource(R.string.materials_intro),style=MaterialTheme.typography.bodySmall)
     OutlinedButton(onClick={kind="lesson";picker.launch(arrayOf("application/pdf"))}) {
         Text(stringResource(R.string.material_import_lesson))
@@ -82,8 +86,21 @@ internal fun MaterialsScreen(
                         else->R.string.material_not_opened
                     }))
                 }
+                if (file.origin == "generated") {
+                    Text("PDF creat amb LECTAV · esborrany")
+                }
                 Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
                     Button(onClick={onOpen(file.id)}) {Text(stringResource(R.string.library_open))}
+                    OutlinedButton(onClick={
+                        runCatching {
+                            val intent=Intent(Intent.ACTION_SEND).apply {
+                                type = if(file.type=="video") "video/mp4" else "application/pdf"
+                                putExtra(Intent.EXTRA_STREAM, Uri.parse(file.uri))
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            }
+                            context.startActivity(Intent.createChooser(intent,"Comparteix material"))
+                        }
+                    }) { Text("Comparteix") }
                     TextButton(onClick={removeId=file.id}) {
                         Text(stringResource(R.string.library_remove))
                     }
