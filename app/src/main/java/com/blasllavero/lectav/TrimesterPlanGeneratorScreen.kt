@@ -238,7 +238,7 @@ internal fun TrimesterPlanGeneratorScreen(
     }
     Text(
         if (official != null)
-            "Font curricular descarregada disponible: ${official.sourceUrl}. " +
+            "Font curricular descarregada disponible: ${official?.sourceUrl.orEmpty()}. " +
             "S'emprarà un extracte local. Verifica'n la vigència i el curs concret."
         else "No hi ha cap currículum oficial adjunt a aquest curs. " +
             "ChatGPT elaborarà una proposta orientativa i no normativa. " +
