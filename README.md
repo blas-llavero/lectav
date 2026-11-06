@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current Android prototype (v0.8.7)
+## Current Android prototype (v0.8.8)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -21,6 +21,35 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## v0.8.8 — generate a term-by-term programme with a concrete topic for every session
+
+From a saved teacher course and its selected subject, choose **Genera
+programació trimestral amb ChatGPT**. Select trimester (1–3), expected
+number of sessions (6–48) and the personal ChatGPT model. The existing
+usage-limit and explicit confirmation screens still apply, so opening
+a course does not automatically spend ChatGPT credits or attempt quota.
+
+The response is a **subject-specific proposed index** (2–8 units per
+term, each with individually named session topics) that the teacher can
+review and approve. The three terms are stored independently; updating
+the current term preserves the other two and warns before replacing
+existing progress. All unit and session titles are editable locally
+after saving. Selecting **Genera materials** for a saved session pre-fills
+its exact topic in the PDF generator.
+
+No mathematics or biology syllabus content is preloaded into the APK:
+the subject and year come from the selected course, and ChatGPT creates
+a proposal only on request. A previously fetched, independently checked
+official curriculum PDF excerpt may be supplied as contextual evidence,
+but in its absence the plan is clearly marked **not officially verified**.
+The XTEC *Biologia i Geologia* ESO PDF link is now offered for on-demand
+consultation in the existing curriculum tool.
+
+Earlier saved topic lists remain readable. The existing encrypted
+`.lectavbak` backup stores the new per-term and per-session details;
+OAuth credentials must still be authorized after reinstalling. See
+[planning design and Android test checklist](docs/AI_TRIMESTER_PLANNING_V0_8_8.md).
 
 ## v0.8.7 — descriptive file names and encrypted backup/restore
 
