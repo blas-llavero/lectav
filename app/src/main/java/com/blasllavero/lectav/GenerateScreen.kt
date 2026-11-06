@@ -25,11 +25,15 @@ internal fun GenerateScreen(
     courseTitle: String,
     suggestedTopic: String,
     chatGPTStatus: ChatGPTAuthState,
+    usageGuard: ChatGPTUsageGuard,
     onChatGPT: () -> Unit,
     onSaved: (String, String, String, String) -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val usage by usageGuard.state.collectAsState()
+    var showUsageConfirm by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { usageGuard.refresh() }
     var topic by rememberSaveable(course.id, suggestedTopic) { mutableStateOf(suggestedTopic) }
     var language by rememberSaveable { mutableStateOf("Català") }
     var kind by rememberSaveable { mutableStateOf("lesson") }
@@ -57,6 +61,38 @@ internal fun GenerateScreen(
             modelError = result.exceptionOrNull()?.localizedMessage ?: ""
             modelBusy = false
         }
+    }
+
+
+    fun generateDraft() {
+            busy = true
+            error = ""
+            draft = ""
+            saved = false
+            val request = DraftRequest(
+                level = courseTitle, subject = subjectTitle, topic = topic.trim(),
+                language = language, kind = when(kind) {
+                    "exercise" -> "Exercicis"
+                    "solutions" -> "Solucionari"
+                    else -> "Teoria"
+                }
+            )
+            scope.launch {
+                val result = runCatching {
+                    when (mode) {
+                        "ollama" -> OnDemandGenerator.generateWithOllama(endpoint, model, request)
+                        "chatgpt" -> {
+                            val selected = availableModels.firstOrNull { it.slug == selectedModel }
+                                ?: error("No hi ha cap model ChatGPT seleccionat.")
+                            ChatGPTInference.generate(selected, request, usageGuard)
+                        }
+                        else -> OnDemandGenerator.demoDraft(request)
+                    }
+                }
+                draft = result.getOrDefault("")
+                error = result.exceptionOrNull()?.localizedMessage ?: ""
+                busy = false
+            }
     }
 
     Text("Generació de continguts · LECTAV", style = MaterialTheme.typography.titleLarge)
@@ -120,6 +156,12 @@ internal fun GenerateScreen(
         )
     } else if (mode == "chatgpt") {
         Text(
+            "Límit local: ${usage.attempts}/${usage.weeklyLimit} intents aquesta setmana. " +
+            "Resten ${usage.remaining}. No és el saldo de ChatGPT. " +
+            "Comprova Configuració → Ús a ChatGPT abans de generar.",
+            style = MaterialTheme.typography.bodySmall
+        )
+        Text(
             "La petició educativa s'enviarà a OpenAI amb el teu compte. " +
             "No incloguis noms, notes ni dades personals d'alumnes. " +
             "El text generat és un esborrany que cal revisar.",
@@ -177,40 +219,23 @@ internal fun GenerateScreen(
         modifier = Modifier.fillMaxWidth(),
         enabled = !busy && topic.trim().length >= 3 &&
             (mode != "chatgpt" || (
-                chatGPTStatus.inferenceAllowed && !modelBusy &&
+                !usage.blocked && chatGPTStatus.inferenceAllowed && !modelBusy &&
                 availableModels.any { it.slug == selectedModel }
             )),
         onClick = {
-            busy = true
-            error = ""
-            draft = ""
-            saved = false
-            val request = DraftRequest(
-                level = courseTitle, subject = subjectTitle, topic = topic.trim(),
-                language = language, kind = when(kind) {
-                    "exercise" -> "Exercicis"
-                    "solutions" -> "Solucionari"
-                    else -> "Teoria"
-                }
-            )
-            scope.launch {
-                val result = runCatching {
-                    when (mode) {
-                        "ollama" -> OnDemandGenerator.generateWithOllama(endpoint, model, request)
-                        "chatgpt" -> {
-                            val selected = availableModels.firstOrNull { it.slug == selectedModel }
-                                ?: error("No hi ha cap model ChatGPT seleccionat.")
-                            ChatGPTInference.generate(selected, request)
-                        }
-                        else -> OnDemandGenerator.demoDraft(request)
-                    }
-                }
-                draft = result.getOrDefault("")
-                error = result.exceptionOrNull()?.localizedMessage ?: ""
-                busy = false
-            }
+            if (mode == "chatgpt") showUsageConfirm = true else generateDraft()
         }
     ) { Text(if (busy) "Generant…" else "Genera l'esborrany") }
+    if (showUsageConfirm) {
+        ChatGPTUsageConfirmDialog(
+            guard = usageGuard,
+            onConfirm = {
+                showUsageConfirm = false
+                generateDraft()
+            },
+            onDismiss = { showUsageConfirm = false }
+        )
+    }
     if (busy) CircularProgressIndicator()
     if (error.isNotBlank()) {
         Text("No s'ha pogut generar: $error", color = MaterialTheme.colorScheme.error)
