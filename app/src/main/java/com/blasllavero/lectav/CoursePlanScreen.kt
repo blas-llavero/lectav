@@ -56,7 +56,7 @@ internal fun CoursePlanScreen(
             var absoluteNumber=0
             quarterTopics.forEachIndexed { index, topic ->
                 var editTitle by remember(topic.id, topic.title) { mutableStateOf(topic.title) }
-                var expanded by remember(topic.id) { mutableStateOf(true) }
+                var expanded by remember(topic.id) { mutableStateOf(false) }
                 Card(modifier=Modifier.fillMaxWidth()) {
                     Column(
                         Modifier.padding(12.dp),
