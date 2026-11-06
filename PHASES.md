@@ -49,6 +49,9 @@
 - [ ] Expand an official legal-curriculum registry to all Spanish autonomous communities and countries, with verified versioned primary-source documents, precise per-course criteria/sabers mappings and update detection.
 - [ ] Add full, multi-user classroom roles before saving learner-specific history or replacing shared progress; improve PDF table auto-splitting with repeated headers.
 
+- [x] v0.8.5 — show genuine location of private generated PDFs versus imported documents; support explicit Android Save As to a selected internal/shared folder or removable SD for PDFs and MP4s, from Materials, the viewer and after PDF creation; retain last exported destination.
+- [ ] Future: optional persistent default export directory chosen via Android Storage Access Framework; library backup/restore, free-space monitoring and user-controlled retention policies.
+
 ## Short-term phases — initial Catalonia rollout
 
 - [x] 1A. Initial, explicitly partial and source-attributed 2026–2027 subject selection for ESO and Batxillerat: common, school-dependent, optional and modality distinctions; user-visible official source links.
