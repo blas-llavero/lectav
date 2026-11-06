@@ -98,18 +98,16 @@
           ? "La taula no cap sencera en una pàgina. Divideix-la en dues taules."
           : "Hi ha un bloc massa llarg. Divideix-lo en fragments més curts.");
       }
-      // A chain such as heading → introductory paragraph: → table is one
-      // indivisible unit for page-break purposes.
-      if (groupStart === null) groupStart = elementTop;
+      // New independent blocks may start a new page; a linked block may not.
+      if (groupStart === null || !previousKeep) {
+        groupStart = elementTop;
+        if (elementTop > 0) candidates.push(Math.floor(elementTop));
+      }
       if (elementBottom - groupStart > pageHeight - 4) {
         throw new Error(
           "Un títol o una introducció i el contingut següent no caben junts. " +
           "Divideix el bloc abans de desar el PDF."
         );
-      }
-      if (elementTop > 0 && !previousKeep) {
-        candidates.push(Math.floor(elementTop));
-        groupStart = elementTop;
       }
       previousKeep = keepWithNext(el);
     }
