@@ -14,7 +14,8 @@ private val Context.lectavFiles by preferencesDataStore("lectav_files")
 internal data class LocalMaterial(
     val id: String, val courseKey: String, val uri: String,
     val name: String, val type: String, val opened: Boolean, val completed: Boolean,
-    val origin: String = "imported"
+    val origin: String = "imported",
+    val lastExportUri: String = ""
 )
 
 internal fun courseKey(course: SavedCourse) =
@@ -32,7 +33,7 @@ internal class MaterialLibrary(context: Context) {
             LocalMaterial(j.optString("id"), j.optString("courseKey"), uri,
                 j.optString("name"), j.optString("type"),
                 j.optBoolean("opened"), j.optBoolean("completed"),
-                j.optString("origin", "imported"))
+                j.optString("origin", "imported"), j.optString("lastExportUri"))
         }
     }.getOrDefault(emptyList())
     private fun encode(items: List<LocalMaterial>): String {
@@ -43,6 +44,7 @@ internal class MaterialLibrary(context: Context) {
                 put("uri",m.uri); put("name",m.name); put("type",m.type)
                 put("opened",m.opened); put("completed",m.completed)
                 put("origin",m.origin)
+                put("lastExportUri",m.lastExportUri)
             })
         }
         return arr.toString()
@@ -67,6 +69,14 @@ internal class MaterialLibrary(context: Context) {
             p[key]=encode(decode(p[key] ?: "[]").map { m ->
                 if(m.id==id) m.copy(opened=opened ?: m.opened,
                     completed=completed ?: m.completed) else m
+            })
+        }
+    }
+    suspend fun recordExport(id: String, destination: String) {
+        require(destination.startsWith("content://"))
+        store.edit { p ->
+            p[key] = encode(decode(p[key] ?: "[]").map { item ->
+                if (item.id == id) item.copy(lastExportUri = destination) else item
             })
         }
     }
