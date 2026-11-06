@@ -10,6 +10,7 @@ import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -26,12 +27,12 @@ internal fun GenerateScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var topic by rememberSaveableCompat { mutableStateOf("") }
-    var language by rememberSaveableCompat { mutableStateOf("Català") }
-    var kind by rememberSaveableCompat { mutableStateOf("lesson") }
-    var mode by rememberSaveableCompat { mutableStateOf("demo") }
-    var endpoint by rememberSaveableCompat { mutableStateOf("http://192.168.1.10:11434") }
-    var model by rememberSaveableCompat { mutableStateOf("gemma3:4b") }
+    var topic by rememberSaveable { mutableStateOf("") }
+    var language by rememberSaveable { mutableStateOf("Català") }
+    var kind by rememberSaveable { mutableStateOf("lesson") }
+    var mode by rememberSaveable { mutableStateOf("demo") }
+    var endpoint by rememberSaveable { mutableStateOf("http://192.168.1.10:11434") }
+    var model by rememberSaveable { mutableStateOf("gemma3:4b") }
     var draft by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf("") }
@@ -166,8 +167,3 @@ internal fun GenerateScreen(
     }
 }
 
-// Simple wrapper avoids saving large draft text across Android process recreation;
-// the generated PDF is the only durable version after user confirmation.
-@Composable
-private fun <T> rememberSaveableCompat(init: () -> T): androidx.compose.runtime.MutableState<T> =
-    remember { mutableStateOf(init()) }
