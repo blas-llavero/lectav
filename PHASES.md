@@ -64,6 +64,10 @@
 - [ ] Validate real ChatGPT model output on a personal Android tablet with Biology 3rd ESO and Maths 3rd ESO; verify per-term replacement, persistence and restored backups without official-curriculum hallucinations.
 - [ ] Future: legal-curriculum mapping across all subjects/regions, yearly timetable constraints, holidays, weekly teaching periods, competencies and assessment criteria per unit.
 
+- [x] v0.8.9 — launch AI term programme immediately after course and subject selection, and automatically prefill the selected session topic when generating materials; 1–3 terms, consecutive session numbering, strict session-count validation.
+- [x] v0.8.9 — live optional XTEC PDF retrieval for ESO Biology-Geology and Mathematics without packaged curriculum documents or consuming ChatGPT plan usage.
+- [ ] On-device check of newly generated unit/session indices, programme updates, source citations and backup/restore across APK reinstalls.
+
 ## Short-term phases — initial Catalonia rollout
 
 - [x] 1A. Initial, explicitly partial and source-attributed 2026–2027 subject selection for ESO and Batxillerat: common, school-dependent, optional and modality distinctions; user-visible official source links.
