@@ -34,6 +34,11 @@
 - [ ] Create genuine per-session MP4 avatars using independently audited FOSS speech/animation/video tools. ChatGPT plan token-sharing does not itself enable video generation.
 - [ ] Implement responsible teacher publishing, learner permissions, separate progress and GDPR/minor safeguards. Never pool or lend subscriptions across users.
 
+- [x] v0.8.0 (Android pilot) — implement ChatGPT public-client PKCE/loopback, OIDC JWT verification, Keystore credential storage, consent, optional account-authorized model listing and streamed text draft generation.
+- [ ] Verify v0.8.0 live on a personal Android device with an eligible ChatGPT account, including callback, token refresh, revocation, scope denial and usage limits; CI compilation alone cannot validate these.
+- [ ] Improve multi-account and individual student privacy isolation before any shared school-device deployment, with required parental and institution controls.
+- [ ] Separate FOSS avatar video engine, Spanish/Catalan curricular authority index, full teaching plans, and actual exercise/solution validation.
+
 ## Short-term phases — initial Catalonia rollout
 
 - [x] 1A. Initial, explicitly partial and source-attributed 2026–2027 subject selection for ESO and Batxillerat: common, school-dependent, optional and modality distinctions; user-visible official source links.
