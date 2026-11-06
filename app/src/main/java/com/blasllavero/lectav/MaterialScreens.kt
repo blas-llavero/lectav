@@ -153,9 +153,23 @@ internal fun MaterialsScreen(
 }
 
 @Composable
-internal fun MaterialViewer(file: LocalMaterial) {
+internal fun MaterialViewer(file: LocalMaterial, onExported: (String) -> Unit = {}) {
     val context=LocalContext.current
     Text(file.name,style=MaterialTheme.typography.titleMedium)
+    Text(MaterialLocation.source(context, file), style=MaterialTheme.typography.bodySmall)
+    if (file.lastExportUri.isNotBlank()) {
+        Text(
+            "Darrera còpia exportada: " +
+                MaterialLocation.selectedLocation(file.lastExportUri),
+            style=MaterialTheme.typography.bodySmall
+        )
+    }
+    ExportDocumentButton(
+        sourceUri=file.uri,
+        displayName=file.name,
+        mime=materialMime(file.type),
+        onExported=onExported
+    )
     if(file.type=="video") {
         var failed by remember(file.id){mutableStateOf(false)}
         val video=remember(file.id){
