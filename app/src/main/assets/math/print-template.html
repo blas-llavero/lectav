@@ -57,7 +57,13 @@
   }
   function report(error) {
     if (window.LECTAV && window.LECTAV.complete) {
-      window.LECTAV.complete(error || "");
+      window.LECTAV.complete(
+        error || "",
+        Math.ceil(Math.max(
+          document.documentElement.scrollHeight,
+          document.body.scrollHeight
+        ))
+      );
     }
   }
   try {
