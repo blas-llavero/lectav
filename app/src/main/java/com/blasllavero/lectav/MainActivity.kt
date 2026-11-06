@@ -103,6 +103,7 @@ private fun LectavApp() {
                             TextButton(onClick = {
                                 screen = when(screen) {
                                     "viewer" -> "materials"
+                                    "generator" -> "materials"
                                     "materials" -> "library"
                                     else -> "home"
                                 }
@@ -154,6 +155,7 @@ private fun LectavApp() {
                         if(chosen != null) MaterialsScreen(
                             course = chosen,
                             files = files.filter { it.courseKey == courseKey(chosen) },
+                            onGenerate = { screen = "generator" },
                             onAdd = { uri,name,kind ->
                                 scope.launch { fileRepository.add(chosen,uri,name,kind) }
                             },
@@ -167,6 +169,27 @@ private fun LectavApp() {
                             },
                             onRemove = { id -> scope.launch { fileRepository.remove(id) } }
                         ) else Text(stringResource(R.string.material_unavailable))
+                    }
+                    "generator" -> saved?.let { state ->
+                        val chosen = state.savedCourses.firstOrNull { it.id == selectedCourseId }
+                        if (chosen != null) {
+                            val title = catalogueSubjectsFor(chosen.course)
+                                .firstOrNull { it.id == chosen.subject }?.officialNameCa
+                                ?: chosen.subject
+                            val level = coursesFor(chosen.pathway)
+                                .firstOrNull { it.id == chosen.course }
+                                ?.let { stringResource(it.label) } ?: chosen.course
+                            GenerateScreen(
+                                course = chosen,
+                                subjectTitle = title,
+                                courseTitle = level,
+                                onSaved = { uri, name, kind, origin ->
+                                    scope.launch {
+                                        fileRepository.add(chosen, uri, name, kind, origin)
+                                    }
+                                }
+                            )
+                        } else Text(stringResource(R.string.material_unavailable))
                     }
                     "viewer" -> {
                         val file = files.firstOrNull { it.id == selectedFileId }
@@ -385,7 +408,7 @@ private fun SavedCoursesScreen(
         .sortedWith(
             compareByDescending<SavedCourse> { entry ->
                 if(settings.activeRole=="teacher") files.count {
-                    it.courseKey==courseKey(entry)
+                    it.courseKey==courseKey(entry) && it.origin=="generated"
                 } else 0
             }.thenByDescending { it.lastOpenedAt }
                 .thenBy { it.course }
@@ -428,6 +451,7 @@ private fun SavedCoursesScreen(
                 .firstOrNull { it.id == entry.course }?.let { stringResource(it.label) }
                 ?: entry.course
             val related = files.filter { it.courseKey==courseKey(entry) }
+            val generatedCount = related.count { it.origin=="generated" }
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -438,7 +462,8 @@ private fun SavedCoursesScreen(
                     Text(
                         stringResource(R.string.material_counts,
                             related.count { it.type != "video" },
-                            related.count { it.type == "video" }),
+                            related.count { it.type == "video" }) +
+                            " · $generatedCount PDF generats",
                         style = MaterialTheme.typography.bodySmall
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
