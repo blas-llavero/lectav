@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current Android prototype (v0.8.7)
+## Current Android prototype (v0.9.0)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -21,6 +21,35 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## v0.9.0 — ChatGPT on-demand trimester programming with specific session topics
+
+From the selected course and subject, **Genera programació trimestral amb ChatGPT**
+opens a planning screen. Teachers pick trimester 1–3 and the number
+of sessions (8–40), then explicitly authorize one ChatGPT-plan request.
+The model returns an editable list of 2–8 didactic units and a **unique,
+concrete topic title for every numbered teaching session**. The proposal
+is validated, reviewed, and saved locally; the other trimesters are preserved.
+**Temari** now groups lessons by trimester and unit, lets teachers edit
+each lesson title, and sends that specific topic straight into the existing
+materials/PDF generator. Nothing is automatically billed or sent to
+ChatGPT merely by changing a dropdown.
+
+No new subjects depend on a preloaded topic order: the previous
+3r ESO maths starter-unit list has been removed. For ESO Mathematics
+and Biology and Geology the app fetches official XTEC PDF documents
+on demand, extracts the content locally and can reference it when
+preparing an optional ChatGPT proposal. Other subjects can use a
+teacher-provided official PDF; without a source, the app labels the
+proposal **unverified and orientative**, never as legally mandated.
+Official curricula define sabers/competences, not a required "first topic".
+
+Existing locally saved course records, progress, encrypted backup
+compatibility and optional self-hosted mode are retained. OAuth
+authorization must be reconnected after uninstall; export a
+`.lectavbak` with 0.8.7 before any uninstall. The index is not a
+complete legally compliant didactic programme. See
+[full behaviour, privacy controls and Android test checklist](docs/TERM_PLAN_V0_9_0.md).
 
 ## v0.8.7 — descriptive file names and encrypted backup/restore
 
