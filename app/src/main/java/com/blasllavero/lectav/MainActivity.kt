@@ -192,7 +192,10 @@ private fun LectavApp() {
                             onUpdate = { id,value ->
                                 scope.launch { fileRepository.update(id,completed=value) }
                             },
-                            onRemove = { id -> scope.launch { fileRepository.remove(id) } }
+                            onRemove = { id -> scope.launch { fileRepository.remove(id) } },
+                            onExported = { id, destination ->
+                                scope.launch { fileRepository.recordExport(id, destination) }
+                            }
                         ) else Text(stringResource(R.string.material_unavailable))
                     }
                     "course-plan" -> saved?.let { state ->
