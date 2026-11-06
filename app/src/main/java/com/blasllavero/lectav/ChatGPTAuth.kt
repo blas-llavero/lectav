@@ -76,12 +76,12 @@ internal object ChatGPTAuth {
         )
     }
 
-    fun signIn(context: Context) {
+    fun signIn(context: Context, requestConsent: Boolean = false) {
         initialize(context)
         if (state.value.busy) return
         publish(busy = true, message = "Obre el navegador i autoritza LECTAV.")
         scope.launch {
-            val result = runCatching { performSignIn(context) }
+            val result = runCatching { performSignIn(context, requestConsent) }
             result.onSuccess {
                 publish(message = if (it.canGenerate)
                     "ChatGPT connectat. Pots utilitzar els models disponibles al compte."
@@ -108,7 +108,7 @@ internal object ChatGPTAuth {
         val error: String = ""
     )
 
-    private suspend fun performSignIn(context: Context): ChatGPTSession {
+    private suspend fun performSignIn(context: Context, requestConsent: Boolean): ChatGPTSession {
         val previous = current
         val isNew = previous == null
         val initialClientId = previous?.clientId ?: "dynamic_agent_client"
@@ -144,7 +144,10 @@ internal object ChatGPTAuth {
                 .appendQueryParameter("code_challenge_method", "S256")
                 .appendQueryParameter("code_challenge", challenge)
             if (isNew) builder.appendQueryParameter("agent_name_hint", "LECTAV")
-            else previous?.idToken?.let {
+            if (!isNew && requestConsent) {
+                builder.appendQueryParameter("prompt", "consent")
+            }
+            if (!isNew) previous?.idToken?.let {
                 builder.appendQueryParameter("id_token_hint", it)
             }
             val authorization = builder.build()
