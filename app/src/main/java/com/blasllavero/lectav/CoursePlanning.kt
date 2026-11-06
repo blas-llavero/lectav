@@ -21,23 +21,20 @@ internal data class TopicPlan(
     val title: String,
     val sessions: Int,
     val source: String,
-    val completedSessions: Set<Int> = emptySet()
-)
+    val completedSessions: Set<Int> = emptySet(),
+    val trimester: Int = 1,
+    val sessionTitles: List<String> = emptyList()
+) {
+    fun sessionTitle(number: Int): String =
+        sessionTitles.getOrNull(number - 1)?.takeIf { it.isNotBlank() }
+            ?: "Sessió ${number} · Contingut pendent de concretar"
+}
 
 // The decree defines competences/sabers, NOT one mandated first topic.
 // These are proposed teacher-editable didactic units, never an official order.
-internal fun starterTopicsFor(course: SavedCourse): List<TopicPlan> {
-    if (course.pathway != "eso" || course.course != "eso3" ||
-        course.subject != "matematiques") return emptyList()
-    return listOf(
-        TopicPlan("numeros", "Nombres racionals, reals i operacions", 6, "proposal"),
-        TopicPlan("proporcions", "Proporcionalitat, percentatges i situacions quotidianes", 6, "proposal"),
-        TopicPlan("algebra", "Expressions algebraiques, equacions i problemes", 8, "proposal"),
-        TopicPlan("funcions", "Relacions, funcions i representació gràfica", 8, "proposal"),
-        TopicPlan("geometria", "Geometria, mesura i semblança", 8, "proposal"),
-        TopicPlan("estadistica", "Estadística, probabilitat i interpretació de dades", 8, "proposal")
-    )
-}
+// No preloaded, subject-specific curricular index. Each course and
+// trimester can receive an explicitly approved AI-generated proposal.
+internal fun starterTopicsFor(course: SavedCourse): List<TopicPlan> = emptyList()
 
 internal data class CoursePlan(
     val courseKey: String,
@@ -63,7 +60,13 @@ private fun decodePlans(raw: String): List<CoursePlan> = runCatching {
                     val done = (0 until completed.length())
                         .map { completed.optInt(it) }
                         .filter { it in 1..sessions }.toSet()
-                    add(TopicPlan(id, title, sessions, t.optString("source","teacher"), done))
+                    val lessonArray = t.optJSONArray("lessons") ?: JSONArray()
+                    val lessons = (0 until minOf(sessions,lessonArray.length()))
+                        .map { n -> lessonArray.optString(n).take(150) }
+                    add(TopicPlan(
+                        id, title, sessions, t.optString("source","teacher"),
+                        done, t.optInt("trimester",1).coerceIn(1,3), lessons
+                    ))
                 }
             }
             add(CoursePlan(key, topics))
@@ -81,6 +84,8 @@ private fun encodePlans(plans: List<CoursePlan>): String {
                 put("title", topic.title)
                 put("sessions", topic.sessions)
                 put("source", topic.source)
+                put("trimester",topic.trimester)
+                put("lessons",JSONArray().apply { topic.sessionTitles.forEach { put(it) } })
                 put("done", JSONArray().apply { topic.completedSessions.sorted().forEach { put(it) } })
             })
         }
@@ -136,6 +141,74 @@ internal class CoursePlanningRepository(context: Context) {
             prefs[key] = encodePlans(old.filterNot {
                 it.courseKey == newPlan.courseKey
             } + newPlan)
+        }
+    }
+
+    /**
+     * Save only the selected trimester; another trimester remains intact.
+     * Existing progress within the replaced trimester is reset only after
+     * the user has confirmed replacement in the visible interface.
+     */
+    suspend fun saveTrimesterProposal(
+        course: SavedCourse,
+        trimester: Int,
+        proposed: List<TopicPlan>
+    ) {
+        require(course.role == "teacher")
+        require(trimester in 1..3)
+        require(proposed.size in 2..8 && proposed.all { topic ->
+            topic.trimester == trimester &&
+                topic.title.length in 3..150 &&
+                topic.sessions in 1..30 &&
+                topic.sessionTitles.size == topic.sessions &&
+                topic.sessionTitles.all { it.length in 3..150 }
+        })
+        require(proposed.sumOf { it.sessions } in 6..48) {
+            "El trimestre ha de tenir entre 6 i 48 sessions."
+        }
+        store.edit { prefs ->
+            val existing = decodePlans(prefs[key] ?: "[]")
+            val index = existing.indexOfFirst { it.courseKey == courseKey(course) }
+            val old = existing.getOrNull(index)
+            val combined = old?.topics.orEmpty().filterNot { it.trimester == trimester } +
+                proposed.mapIndexed { index, t ->
+                    t.copy(
+                        id = "t${trimester}-u${index+1}",
+                        completedSessions = emptySet(),
+                        source = "ai-reviewed"
+                    )
+                }
+            val ordered = combined.sortedWith(
+                compareBy<TopicPlan> { it.trimester }.thenBy { it.id }
+            )
+            require(ordered.size <= 30)
+            val updated = CoursePlan(courseKey(course), ordered)
+            prefs[key] = encodePlans(existing.filterNot {
+                it.courseKey == updated.courseKey
+            } + updated)
+        }
+    }
+
+    suspend fun saveSessionTitle(
+        course: SavedCourse, topicId: String, session: Int, title: String
+    ) {
+        require(course.role == "teacher")
+        val cleaned = title.trim().take(150)
+        require(cleaned.length >= 3)
+        store.edit { prefs ->
+            prefs[key] = encodePlans(decodePlans(prefs[key] ?: "[]").map { plan ->
+                if (plan.courseKey != courseKey(course)) plan else plan.copy(
+                    topics = plan.topics.map { unit ->
+                        if (unit.id != topicId || session !in 1..unit.sessions) unit
+                        else {
+                            val previous = (1..unit.sessions)
+                                .map { unit.sessionTitle(it) }.toMutableList()
+                            previous[session - 1] = cleaned
+                            unit.copy(sessionTitles = previous, source = "teacher")
+                        }
+                    }
+                )
+            })
         }
     }
 
