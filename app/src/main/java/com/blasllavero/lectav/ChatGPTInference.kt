@@ -45,7 +45,8 @@ internal object ChatGPTInference {
         model: ChatGPTModel,
         request: DraftRequest,
         usageGuard: ChatGPTUsageGuard,
-        curriculumContext: String = ""
+        curriculumContext: String = "",
+        promptOverride: String = ""
     ): String =
         withContext(Dispatchers.IO) {
             val token = ChatGPTAuth.bearerToken()
@@ -84,10 +85,15 @@ internal object ChatGPTInference {
                     """.trimIndent()
                 } else ""}
             """.trimIndent()
+            // A structured plan can use a dedicated JSON-only prompt.
+            // The same authenticated token, local usage guard, store=false
+            // and streamed API route are retained for every AI request.
+            val finalPrompt = promptOverride.takeIf { it.isNotBlank() } ?: prompt
+            require(finalPrompt.length <= 35_000)
             val body = JSONObject()
                 .put("model", model.slug)
                 .put("input", JSONArray().put(
-                    JSONObject().put("role", "user").put("content", prompt)
+                    JSONObject().put("role", "user").put("content", finalPrompt)
                 ))
                 .put("store", false)
                 .put("stream", true)
