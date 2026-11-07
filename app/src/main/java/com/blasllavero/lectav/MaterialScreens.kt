@@ -27,6 +27,7 @@ import kotlinx.coroutines.withContext
 internal fun MaterialsScreen(
     course: SavedCourse,
     files: List<LocalMaterial>,
+    plan: CoursePlan?,
     onAdd: (String,String,String) -> Unit,
     onOpen: (String) -> Unit,
     onUpdate: (String,Boolean) -> Unit,
@@ -142,7 +143,7 @@ internal fun MaterialsScreen(
                 }
                 ExportDocumentButton(
                     sourceUri = file.uri,
-                    displayName = MaterialFileNames.forExport(file.name, file.type),
+                    displayName = MaterialFileNames.forMaterial(file, plan),
                     mime = materialMime(file.type),
                     onExported = { destination -> onExported(file.id, destination) }
                 )
@@ -170,7 +171,7 @@ internal fun MaterialsScreen(
 }
 
 @Composable
-internal fun MaterialViewer(file: LocalMaterial, onExported: (String) -> Unit = {}) {
+internal fun MaterialViewer(file: LocalMaterial, plan: CoursePlan? = null, onExported: (String) -> Unit = {}) {
     val context=LocalContext.current
     Text(file.name,style=MaterialTheme.typography.titleMedium)
     Text(MaterialLocation.source(context, file), style=MaterialTheme.typography.bodySmall)
@@ -183,7 +184,7 @@ internal fun MaterialViewer(file: LocalMaterial, onExported: (String) -> Unit = 
     }
     ExportDocumentButton(
         sourceUri=file.uri,
-        displayName=MaterialFileNames.forExport(file.name,file.type),
+        displayName=MaterialFileNames.forMaterial(file,plan),
         mime=materialMime(file.type),
         onExported=onExported
     )
