@@ -191,9 +191,9 @@ internal fun GenerateScreen(
         )
     } else if (mode == "chatgpt") {
         Text(
-            "Límit local: ${usage.attempts}/${usage.weeklyLimit} intents aquesta setmana. " +
-            "Resten ${usage.remaining}. No és el saldo de ChatGPT. " +
-            "Comprova Configuració → Ús a ChatGPT abans de generar.",
+            "LECTAV no imposa un nombre màxim d'intents. ChatGPT sí " +
+            "que pot aplicar límits del compte o consumir crèdits " +
+            "autoritzats; consulta Configuració → Ús.",
             style = MaterialTheme.typography.bodySmall
         )
         Text(
@@ -254,7 +254,7 @@ internal fun GenerateScreen(
         modifier = Modifier.fillMaxWidth(),
         enabled = !busy && topic.trim().length >= 3 &&
             (mode != "chatgpt" || (
-                !usage.blocked && chatGPTStatus.inferenceAllowed && !modelBusy &&
+                chatGPTStatus.inferenceAllowed && !modelBusy &&
                 availableModels.any { it.slug == selectedModel }
             )),
         onClick = {
@@ -332,7 +332,7 @@ internal fun GenerateScreen(
                     val result = runCatching {
                         TypesetPdfExporter.save(
                             context,
-                            "$subjectTitle — ${topic.trim().take(75)}",
+                            MaterialFileNames.forDraft(topic, kind).removeSuffix(".pdf"),
                             draft
                         )
                     }
