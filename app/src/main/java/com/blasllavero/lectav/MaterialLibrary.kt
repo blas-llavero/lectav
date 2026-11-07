@@ -92,6 +92,30 @@ internal class MaterialLibrary(context: Context) {
             })
         }
     }
+    /**
+     * Attach existing unlinked files to a session after the teacher reviews
+     * their contents. Do not silently guess their curriculum placement.
+     */
+    suspend fun linkExistingToSession(
+        course: SavedCourse, materialId: String, newSessionKey: String
+    ) {
+        require(newSessionKey.matches(Regex("""[1-3]\\|[^|]{1,120}\\|\\d{1,2}"""))) {
+            "Identificador de sessió incorrecte."
+        }
+        store.edit { prefs ->
+            val items=decode(prefs[key] ?: "[]")
+            require(items.any {
+                it.id == materialId && it.courseKey == courseKey(course) &&
+                    it.sessionKey.isBlank()
+            }) { "El material ja està associat o no pertany al curs." }
+            prefs[key]=encode(items.map { material ->
+                if(material.id==materialId)
+                    material.copy(sessionKey=newSessionKey)
+                else material
+            })
+        }
+    }
+
     suspend fun recordExport(id: String, destination: String) {
         require(destination.startsWith("content://"))
         store.edit { p ->
