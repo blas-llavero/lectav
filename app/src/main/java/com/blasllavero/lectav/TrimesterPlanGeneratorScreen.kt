@@ -390,6 +390,8 @@ internal fun TrimesterPlanGeneratorScreen(
                     if (existingForTerm > 0)
                         "Substituiràs només les unitats del trimestre $trimester i " +
                         "perdràs les marques de progrés d'aquest trimestre. " +
+                        "Els PDF i MP4 antics es conservaran a Materials, però " +
+                        "no s'assignaran automàticament a sessions noves. " +
                         "Els altres trimestres es conservaran."
                     else "Desaràs ${proposal.size} unitats i " +
                         "${proposal.sumOf { it.sessions }} sessions d'aquest trimestre. " +
