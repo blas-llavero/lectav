@@ -27,12 +27,16 @@ internal fun CoursePlanScreen(
     onOpenMaterial: (String) -> Unit,
     onLinkMaterial: (String, String) -> Unit,
     onImportVideo: (String, String, String) -> Unit,
+    onImportAudio: (String, String, String, String) -> Unit,
     onCurriculum: () -> Unit,
     onAiProgramme: () -> Unit
 ) {
     val context = LocalContext.current
     var pendingVideoKey by remember { mutableStateOf("") }
     var pendingVideoName by remember { mutableStateOf("") }
+    var pendingAudioKey by remember { mutableStateOf("") }
+    var pendingAudioName by remember { mutableStateOf("") }
+    var pendingAudioType by remember { mutableStateOf("podcast") }
     var importError by remember { mutableStateOf("") }
     val videoPicker=rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
@@ -53,6 +57,21 @@ internal fun CoursePlanScreen(
         }
         pendingVideoKey=""
         pendingVideoName=""
+    }
+    val audioPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null && pendingAudioKey.isNotBlank()) {
+            val result = runCatching {
+                context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                val mime = context.contentResolver.getType(uri).orEmpty()
+                require(mime == "audio/mpeg" || mime == "audio/mp3") {
+                    "Selecciona un fitxer d’àudio MP3."
+                }
+                onImportAudio(uri.toString(), pendingAudioName, pendingAudioKey, pendingAudioType)
+            }
+            importError = result.exceptionOrNull()?.localizedMessage.orEmpty()
+        }
+        pendingAudioKey = ""
+        pendingAudioName = ""
     }
     Text("Programació didàctica · Índex de sessions",
         style = MaterialTheme.typography.titleLarge)
@@ -152,6 +171,8 @@ internal fun CoursePlanScreen(
                                 val sessionNumber=trimesterSessionOffset + number
                                 val sessionId="$term|${unit.id}|$number"
                                 val sessionTopic="Sessió $sessionNumber - $lesson"
+                                val unitNumber = plan.topics.indexOfFirst { it.id == unit.id } + 1
+                                val fileStem = MaterialFileNames.sessionStem(unitNumber,sessionNumber,lesson)
                                 val attached=files.filter {
                                     it.sessionKey == sessionId
                                 }
@@ -160,7 +181,10 @@ internal fun CoursePlanScreen(
                                         "Teoria ${attached.count { it.type=="lesson" }}",
                                         "Exercicis ${attached.count { it.type=="exercise" }}",
                                         "Solucions ${attached.count { it.type=="solutions" }}",
-                                        "Avatar ${attached.count { it.type=="video" }}"
+                                        "Avatar ${attached.count { it.type=="video" }}",
+                                        "Àudio ${attached.count { it.type=="audio" }}",
+                                        "Podcast ${attached.count { it.type=="podcast" }}",
+                                        "Transcripció ${attached.count { it.type=="transcript" }}"
                                     ).joinToString(" · "),
                                     style=MaterialTheme.typography.bodySmall
                                 )
@@ -184,7 +208,10 @@ internal fun CoursePlanScreen(
                                     "lesson" to "Teoria",
                                     "exercise" to "Exercicis",
                                     "solutions" to "Solucions",
-                                    "video" to "Avatar"
+                                    "video" to "Avatar",
+                                    "audio" to "Àudio",
+                                    "podcast" to "Podcast",
+                                    "transcript" to "Transcripció"
                                 ).forEach { (type, label) ->
                                     val matching=attached.filter { it.type==type }
                                     val latest=matching.lastOrNull()
@@ -199,7 +226,7 @@ internal fun CoursePlanScreen(
                                                 Text("Obre")
                                             }
                                         }
-                                        if(type!="video") {
+                                        if(type=="lesson" || type=="exercise" || type=="solutions" || type=="transcript") {
                                             OutlinedButton(onClick={
                                                 onGenerateMaterial(sessionId,sessionTopic,type)
                                             }) {
@@ -249,16 +276,29 @@ internal fun CoursePlanScreen(
                                     modifier=Modifier.fillMaxWidth(),
                                     onClick={
                                         pendingVideoKey=sessionId
-                                        pendingVideoName=MaterialFileNames.avatarSession(
-                                            sessionTopic
-                                        )
+                                        pendingVideoName=MaterialFileNames.forSessionStem(fileStem,"video")
                                         videoPicker.launch(arrayOf("video/mp4"))
                                     }
                                 ) { Text("Importa un vídeo de l'avatar (MP4)") }
+                                if(course.role == "teacher") {
+                                    listOf("audio" to "àudio", "podcast" to "podcast").forEach { (type, label) ->
+                                        OutlinedButton(
+                                            modifier=Modifier.fillMaxWidth(),
+                                            onClick={
+                                                pendingAudioKey=sessionId
+                                                pendingAudioType=type
+                                                pendingAudioName=MaterialFileNames.forSessionStem(fileStem,type)
+                                                audioPicker.launch(arrayOf("audio/mpeg"))
+                                            }
+                                        ) { Text("Importa un $label (MP3)") }
+                                    }
+                                }
                                 OutlinedButton(
                                     enabled=false, onClick={},
                                     modifier=Modifier.fillMaxWidth()
                                 ) { Text("Genera el vídeo de l'avatar (fase futura)") }
+                                Text("Generació automàtica de podcast: pendent del motor de veu FOSS.",
+                                    style=MaterialTheme.typography.bodySmall)
                                 if (course.role == "teacher" && editing) {
                                     OutlinedTextField(
                                         value = edited,

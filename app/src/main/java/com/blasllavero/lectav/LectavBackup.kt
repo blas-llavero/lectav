@@ -159,8 +159,12 @@ internal object LectavBackup {
         require(documents.size <= MAX_ITEMS)
         val infos = JSONArray()
         documents.forEachIndexed { i, file ->
-            require(file.type in setOf("lesson","exercise","solutions","video"))
-            val extension = if(file.type == "video") ".mp4" else ".pdf"
+            require(file.type in setOf("lesson","exercise","solutions","video","audio","podcast","transcript"))
+            val extension = when(file.type) {
+                "video" -> ".mp4"
+                "audio", "podcast" -> ".mp3"
+                else -> ".pdf"
+            }
             infos.put(JSONObject()
                 .put("id",file.id).put("courseKey",file.courseKey)
                 .put("name",file.name).put("type",file.type)
@@ -294,9 +298,13 @@ internal object LectavBackup {
                 for(i in 0 until items.length()) {
                     val obj=items.getJSONObject(i)
                     val type=obj.getString("type")
-                    require(type in setOf("lesson","exercise","solutions","video"))
+                    require(type in setOf("lesson","exercise","solutions","video","audio","podcast","transcript"))
                     val fileName=obj.getString("entry")
-                    val suffix=if(type=="video") ".mp4" else ".pdf"
+                    val suffix=when(type) {
+                        "video" -> ".mp4"
+                        "audio", "podcast" -> ".mp3"
+                        else -> ".pdf"
+                    }
                     require(fileName.matches(Regex("""files/\d{4}\.(pdf|mp4)""")) &&
                         fileName.endsWith(suffix) && usedNames.add(fileName))
                     val zipEntry=zip.getEntry(fileName)

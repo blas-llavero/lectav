@@ -60,7 +60,11 @@ internal object MaterialLocation {
 }
 
 internal fun materialMime(kind: String): String =
-    if (kind == "video") "video/mp4" else "application/pdf"
+    when (kind) {
+        "video" -> "video/mp4"
+        "audio", "podcast" -> "audio/mpeg"
+        else -> "application/pdf"
+    }
 
 /**
  * This component is present only when a user explicitly chooses to export.
@@ -121,7 +125,11 @@ internal fun ExportDocumentButton(
                 .replace(Regex("""[\\/:*?"<>|\u0000-\u001F]"""), "_")
                 .take(140)
                 .ifBlank { "LECTAV" }
-            val ext = if (mime == "video/mp4") ".mp4" else ".pdf"
+            val ext = when(mime) {
+                "video/mp4" -> ".mp4"
+                "audio/mpeg" -> ".mp3"
+                else -> ".pdf"
+            }
             create.launch(if (safeName.endsWith(ext, true)) safeName else safeName + ext)
         },
         enabled = !copying,

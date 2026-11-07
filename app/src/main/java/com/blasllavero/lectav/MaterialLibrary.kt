@@ -59,7 +59,7 @@ internal class MaterialLibrary(context: Context) {
             it.id.isNotBlank() && it.courseKey.length in 1..200 &&
                 it.uri.startsWith("content://") &&
                 it.name.length in 1..160 &&
-                it.type in listOf("lesson", "exercise", "solutions", "video") &&
+                it.type in listOf("lesson", "exercise", "solutions", "video", "audio", "podcast", "transcript") &&
                 it.origin in listOf("generated", "restored") &&
                 it.sessionKey.length <= 150
         }) { "La biblioteca restaurada conté elements invàlids." }
@@ -71,7 +71,7 @@ internal class MaterialLibrary(context: Context) {
     suspend fun add(course: SavedCourse, uri: String, name: String, type: String,
         origin: String = "imported", sessionKey: String = "") {
         require(origin in listOf("imported","generated","restored"))
-        require(type in listOf("lesson","exercise","solutions","video"))
+        require(type in listOf("lesson","exercise","solutions","video","audio","podcast","transcript"))
         require(uri.startsWith("content://"))
         require(sessionKey.length <= 150)
         store.edit { p ->

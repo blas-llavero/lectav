@@ -27,6 +27,7 @@ internal fun GenerateScreen(
     suggestedTopic: String,
     preferredKind: String = "lesson",
     sessionKey: String = "",
+    sessionFileStem: String = "",
     chatGPTStatus: ChatGPTAuthState,
     usageGuard: ChatGPTUsageGuard,
     onChatGPT: () -> Unit,
@@ -87,6 +88,10 @@ internal fun GenerateScreen(
     }
 
 
+    fun generatedFilename(): String = if(sessionFileStem.isNotBlank())
+        MaterialFileNames.forSessionStem(sessionFileStem,kind)
+    else MaterialFileNames.forDraft(topic,kind)
+
     fun generateDraft() {
             busy = true
             error = ""
@@ -99,6 +104,7 @@ internal fun GenerateScreen(
                 language = language, kind = when(kind) {
                     "exercise" -> "Exercicis"
                     "solutions" -> "Solucionari"
+                    "transcript" -> "Transcripció de la teoria, en format de guió escrit per a lectura o locució. No afirmis que procedeix de cap gravació d’àudio."
                     else -> "Teoria"
                 }
             )
@@ -155,6 +161,12 @@ internal fun GenerateScreen(
             label = { Text("Exercicis") })
         FilterChip(selected = kind == "solutions", onClick = { kind = "solutions" },
             label = { Text("Solucions") })
+    }
+    if (sessionKey.isNotBlank()) {
+        FilterChip(selected = kind == "transcript", onClick = { kind = "transcript" },
+            label = { Text("Guió / transcripció PDF") })
+        Text("Aquest guió es genera a partir de la petició de la sessió; no és una transcripció automàtica d’un MP3.",
+            style = MaterialTheme.typography.bodySmall)
     }
     HorizontalDivider()
     Text("Motor de generació", style = MaterialTheme.typography.titleSmall)
@@ -332,13 +344,13 @@ internal fun GenerateScreen(
                     val result = runCatching {
                         TypesetPdfExporter.save(
                             context,
-                            MaterialFileNames.forDraft(topic, kind).removeSuffix(".pdf"),
+                            generatedFilename().removeSuffix(".pdf"),
                             draft
                         )
                     }
                     result.onSuccess { uri ->
                         onSaved(
-                            uri.toString(), MaterialFileNames.forDraft(topic, kind),
+                            uri.toString(), generatedFilename(),
                             kind, "generated", sessionKey
                         )
                         savedFileUri = uri.toString()
@@ -375,7 +387,7 @@ internal fun GenerateScreen(
             if (savedFileUri.isNotBlank()) {
                 ExportDocumentButton(
                     sourceUri = savedFileUri,
-                    displayName = MaterialFileNames.forDraft(topic, kind),
+                    displayName = generatedFilename(),
                     mime = "application/pdf"
                 )
             }
