@@ -173,7 +173,11 @@ internal class CoursePlanningRepository(context: Context) {
             val combined = old?.topics.orEmpty().filterNot { it.trimester == trimester } +
                 proposed.mapIndexed { index, t ->
                     t.copy(
-                        id = "t${trimester}-u${index+1}",
+                        // A regenerated trimester must get *new* unit IDs.
+                        // Otherwise PDFs from the previous programme could
+                        // silently appear attached to a different lesson.
+                        id = "t${trimester}-u${index+1}-" +
+                            java.util.UUID.randomUUID().toString().take(8),
                         completedSessions = emptySet(),
                         source = "ai-reviewed"
                     )
