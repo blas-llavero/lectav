@@ -250,6 +250,9 @@ private fun LectavApp() {
                                     fileRepository.linkExistingToSession(selected,id,sessionId)
                                 }
                             },
+                            onImportAudio={ uri, name, sessionId, type ->
+                                scope.launch { fileRepository.add(selected,uri,name,type,"imported",sessionId) }
+                            },
                             onImportVideo={ uri, name, sessionId ->
                                 scope.launch {
                                     fileRepository.add(
@@ -361,6 +364,22 @@ private fun LectavApp() {
                                 },
                                 preferredKind = requestedMaterialKind,
                                 sessionKey = requestedSessionKey,
+                                sessionFileStem = allPlans.firstOrNull {
+                                    it.courseKey == courseKey(chosen)
+                                }?.let { plan ->
+                                    val parts=requestedSessionKey.split('|')
+                                    val term=parts.getOrNull(0)?.toIntOrNull()
+                                    val unit=plan.topics.firstOrNull {
+                                        it.trimester==term && it.id==parts.getOrNull(1)
+                                    }
+                                    val local=parts.getOrNull(2)?.toIntOrNull()
+                                    if(unit!=null && local!=null && local in 1..unit.sessions) {
+                                        val units=plan.topics.filter { it.trimester==term }
+                                        val index=plan.topics.indexOf(unit)+1
+                                        val number=units.takeWhile { it.id!=unit.id }.sumOf { it.sessions }+local
+                                        MaterialFileNames.sessionStem(index,number,unit.sessionTitle(local))
+                                    } else ""
+                                }.orEmpty(),
                                 suggestedTopic = suggestedSessionTopic.ifBlank {
                                     allPlans.firstOrNull { it.courseKey==courseKey(chosen) }
                                         ?.topics?.sortedBy { it.trimester }?.firstOrNull()
