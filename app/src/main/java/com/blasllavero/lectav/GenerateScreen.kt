@@ -25,10 +25,12 @@ internal fun GenerateScreen(
     subjectTitle: String,
     courseTitle: String,
     suggestedTopic: String,
+    preferredKind: String = "lesson",
+    sessionKey: String = "",
     chatGPTStatus: ChatGPTAuthState,
     usageGuard: ChatGPTUsageGuard,
     onChatGPT: () -> Unit,
-    onSaved: (String, String, String, String) -> Unit
+    onSaved: (String, String, String, String, String) -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -40,7 +42,10 @@ internal fun GenerateScreen(
     LaunchedEffect(Unit) { usageGuard.refresh() }
     var topic by rememberSaveable(course.id, suggestedTopic) { mutableStateOf(suggestedTopic) }
     var language by rememberSaveable { mutableStateOf(generatorPrefs.getString("language","Català") ?: "Català") }
-    var kind by rememberSaveable { mutableStateOf(generatorPrefs.getString("kind","lesson") ?: "lesson") }
+    var kind by rememberSaveable(course.id, suggestedTopic, preferredKind) {
+        mutableStateOf(if (sessionKey.isNotBlank()) preferredKind
+            else generatorPrefs.getString("kind","lesson") ?: "lesson")
+    }
     var mode by rememberSaveable { mutableStateOf(generatorPrefs.getString("mode","demo") ?: "demo") }
     var endpoint by rememberSaveable { mutableStateOf(generatorPrefs.getString("endpoint","http://192.168.1.10:11434") ?: "http://192.168.1.10:11434") }
     var model by rememberSaveable { mutableStateOf(generatorPrefs.getString("ollamaModel","gemma3:4b") ?: "gemma3:4b") }
@@ -116,6 +121,14 @@ internal fun GenerateScreen(
     }
 
     Text("Generació de continguts · LECTAV", style = MaterialTheme.typography.titleLarge)
+    if(sessionKey.isNotBlank()) {
+        Text(
+            "Material vinculat a la sessió de la programació. " +
+                "Tindrà el nom de la sessió i quedarà associat al seu " +
+                "temari; també es conservarà a la biblioteca de materials.",
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
     Text("$courseTitle · $subjectTitle", style = MaterialTheme.typography.titleMedium)
     Text(
         "Els esborranys es generen quan ho demanes. Revisa el contingut abans de " +
@@ -324,7 +337,10 @@ internal fun GenerateScreen(
                         )
                     }
                     result.onSuccess { uri ->
-                        onSaved(uri.toString(), MaterialFileNames.forDraft(topic, kind), kind, "generated")
+                        onSaved(
+                            uri.toString(), MaterialFileNames.forDraft(topic, kind),
+                            kind, "generated", sessionKey
+                        )
                         savedFileUri = uri.toString()
                         saved = true
                         editorExpanded = false
