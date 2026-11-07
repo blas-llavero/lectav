@@ -97,9 +97,9 @@ internal object ChatGPTInference {
                 .put("store", false)
                 .put("stream", true)
                 .toString()
-            require(usageGuard.reserveAttempt()) {
-                "Límit setmanal de LECTAV assolit; revisa el control d'ús del compte."
-            }
+            // No artificial per-installation weekly limit in LECTAV.
+            // OpenAI enforces the real quota; its quota/usage errors still
+            // stop generation. Never fall back to a paid API key.
             val connection = URL("https://api.openai.com/v1/responses")
                 .openConnection() as HttpURLConnection
             try {
