@@ -168,15 +168,12 @@ internal object LectavBackup {
                 .put("origin",file.origin).put("sessionKey",file.sessionKey)
                 .put("entry","files/" + i.toString().padStart(4,'0') + extension))
         }
-        val quota = usage.state.value
         val metadata = JSONObject().put("version",1)
             .put("settings",settingsToJson(settings))
             .put("plans",plansRepo.snapshotRaw())
             .put("locale",language.take(80))
             .put("generator",generatorPrefs(context))
             .put("curriculum",curricularSources(context))
-            .put("usage",JSONObject().put("limit",quota.weeklyLimit)
-                .put("attempts",quota.attempts).put("week",quota.weekStart))
             .put("chatgptHint",ChatGPTAuth.state.value.email.take(254))
             .put("materials",infos)
         val manifest = metadata.toString().toByteArray(Charsets.UTF_8)
@@ -355,9 +352,9 @@ internal object LectavBackup {
                 library.restoreBackup(restored)
                 restoreSources(context,curriculum)
                 restoreGeneratorPrefs(context,manifest.optJSONObject("generator") ?: JSONObject())
-                val q=manifest.getJSONObject("usage")
-                usage.restoreBackupLimit(
-                    q.optInt("limit",3),q.optInt("attempts"),q.optString("week"))
+                // Backups from <= 0.9.0 may contain the deprecated local
+                // usage counter. Ignore it; never restore a local block.
+                // Actual account quotas are controlled exclusively by OpenAI.
                 val hint=manifest.optString("chatgptHint").take(254)
                 context.getSharedPreferences(
                     "lectav_restored_chatgpt",Context.MODE_PRIVATE
