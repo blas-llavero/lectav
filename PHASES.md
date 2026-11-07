@@ -68,6 +68,12 @@
 - [x] v0.8.9 — live optional XTEC PDF retrieval for ESO Biology-Geology and Mathematics without packaged curriculum documents or consuming ChatGPT plan usage.
 - [ ] On-device check of newly generated unit/session indices, programme updates, source citations and backup/restore across APK reinstalls.
 
+- [x] v0.9.0 — link theory/exercises/solutions PDF resources to stable per-term, per-unit, per-session IDs, and add exact session names and resource counters in Temari.
+- [x] v0.9.0 — import existing avatar MP4 per session (generation of avatar MP4 is NOT implemented); include session associations in encrypted backup archives.
+- [ ] Next: resumable local generation queue by trimester/unit/session/resource, existing-file deduplication and explicit billing/quota gating before each user-approved batch; never imply unlimited free credits.
+- [ ] Next: FOSS locally rendered avatar/TTS/video pipeline and genuine per-session MP4 generation (subject to hardware capabilities).
+- [ ] Validate PDF names and resources linked to each session on a real Android tablet, including restoration from .lectavbak.
+
 ## Short-term phases — initial Catalonia rollout
 
 - [x] 1A. Initial, explicitly partial and source-attributed 2026–2027 subject selection for ESO and Batxillerat: common, school-dependent, optional and modality distinctions; user-visible official source links.
