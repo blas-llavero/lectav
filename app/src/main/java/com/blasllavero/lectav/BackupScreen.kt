@@ -85,7 +85,7 @@ internal fun BackupScreen(
     Text(
         "Important: la sessió i els tokens de ChatGPT NO es poden copiar " +
         "de manera segura entre instal·lacions. Es conserva la pista del " +
-        "compte i el límit local d'intents, però després de restaurar " +
+        "compte i les preferències del generador, però després de restaurar " +
         "hauràs d'iniciar sessió de nou.",
         style = MaterialTheme.typography.bodySmall
     )
