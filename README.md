@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current Android prototype (v0.9.0)
+## Current Android prototype (v0.9.1)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -21,6 +21,32 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## v0.9.1 — no local ChatGPT attempt cap, session-first names and direct resource access
+
+Removed the historic **per-installation weekly ChatGPT attempts limit**.
+LECTAV no longer disables generators when a local counter reaches zero,
+and restoring older `.lectavbak` files cannot reactivate that cap.
+OpenAI's **real plan limits and authorized credits still apply**, with
+an explicit pre-generation confirmation and no paid-API fallback.
+
+Session-linked PDFs and MP4s now use filenames like:
+`Sessió 1 - Fraccions i decimals - diagnosi inicial - Teoria.pdf`,
+`... - Exercicis.pdf`, `... - Solucions.pdf` and
+`... - Avatar.mp4`. Android-incompatible filename characters are
+normalised, and re-exporting does not duplicate labels.
+
+In **Programació i sessions**, every session has a dedicated **Open**
+action for its existing theory, exercises, solutions and avatar files,
+with access to other saved versions. Teachers can manually link an
+older unassigned PDF or MP4 from the course library to the correct
+session, without regeneration or guessing by filename. These links
+are included in the existing encrypted backups.
+
+**Important:** avatar MP4 generation is still not implemented.
+ChatGPT creates educational *text* and LECTAV saves PDFs; videos
+must currently be imported. See
+[the v0.9.1 session resource and quota changes](docs/SESSION_ACCESS_NO_LOCAL_LIMIT_V0_9_1.md).
 
 ## v0.9.0 — curriculum first; topic-matched teaching resources per session
 
