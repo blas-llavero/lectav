@@ -257,8 +257,8 @@ internal fun TrimesterPlanGeneratorScreen(
         }
     } else {
         Text(
-            "Intents locals restants de LECTAV: ${usage.remaining}. " +
-            "No representa la quota ni el saldo real de ChatGPT.",
+            "LECTAV no limita els intents locals. La quota real i " +
+            "els crèdits del teu compte es gestionen des de ChatGPT.",
             style = MaterialTheme.typography.bodySmall
         )
         if (modelBusy) CircularProgressIndicator()
@@ -280,7 +280,7 @@ internal fun TrimesterPlanGeneratorScreen(
         }
         Button(
             modifier = Modifier.fillMaxWidth(),
-            enabled = !loading && !modelBusy && !sourceBusy && !usage.blocked &&
+            enabled = !loading && !modelBusy && !sourceBusy &&
                 models.any { it.slug == chosenModel } &&
                 (sessionsWanted.toIntOrNull() ?: 0) in 6..48 &&
                 academicYear.length >= 4 && course.role == "teacher",
