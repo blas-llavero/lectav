@@ -74,6 +74,10 @@
 - [ ] Next: FOSS locally rendered avatar/TTS/video pipeline and genuine per-session MP4 generation (subject to hardware capabilities).
 - [ ] Validate PDF names and resources linked to each session on a real Android tablet, including restoration from .lectavbak.
 
+- [x] v0.9.1 — remove LECTAV's arbitrary weekly request cap and all local attempt blocks; retain OpenAI account quota enforcement and explicit consent before AI requests.
+- [x] v0.9.1 — use canonical «Sessió N - Tema - Teoria/Exercicis/Solucions/Avatar» names for saved/exported materials; access each type directly from the course programme, with manual linking of old unassigned files.
+- [ ] Test upgraded app, available quota and backup restores on the Android tablet; add actual FOSS avatar-video generation separately and a resumable batch queue with costs acknowledged.
+
 ## Short-term phases — initial Catalonia rollout
 
 - [x] 1A. Initial, explicitly partial and source-attributed 2026–2027 subject selection for ESO and Batxillerat: common, school-dependent, optional and modality distinctions; user-visible official source links.
