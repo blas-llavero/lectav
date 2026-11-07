@@ -191,7 +191,9 @@ internal fun CurriculumSourceScreen(
                 Text("Connecta i autoritza ChatGPT")
             }
         } else {
-            Text("Intents locals restants: ${useCount.remaining}",style=MaterialTheme.typography.bodySmall)
+            Text("LECTAV no limita els intents locals; comprova la quota i " +
+                "els crèdits reals a Configuració → Ús de ChatGPT.",
+                style=MaterialTheme.typography.bodySmall)
             Box(modifier=Modifier.fillMaxWidth()) {
                 OutlinedButton(
                     onClick={menu=true}, modifier=Modifier.fillMaxWidth(),
@@ -212,7 +214,7 @@ internal fun CurriculumSourceScreen(
             if(modelError.isNotBlank()) Text(modelError,color=MaterialTheme.colorScheme.error)
             Button(
                 modifier=Modifier.fillMaxWidth(),
-                enabled=!loading && !aiBusy && !useCount.blocked &&
+                enabled=!loading && !aiBusy &&
                     models.any { it.slug==chosenModel },
                 onClick={showConsent=true}
             ) {
