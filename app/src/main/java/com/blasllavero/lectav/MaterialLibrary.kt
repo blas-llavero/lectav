@@ -15,7 +15,8 @@ internal data class LocalMaterial(
     val id: String, val courseKey: String, val uri: String,
     val name: String, val type: String, val opened: Boolean, val completed: Boolean,
     val origin: String = "imported",
-    val lastExportUri: String = ""
+    val lastExportUri: String = "",
+    val sessionKey: String = ""
 )
 
 internal fun courseKey(course: SavedCourse) =
@@ -33,7 +34,8 @@ internal class MaterialLibrary(context: Context) {
             LocalMaterial(j.optString("id"), j.optString("courseKey"), uri,
                 j.optString("name"), j.optString("type"),
                 j.optBoolean("opened"), j.optBoolean("completed"),
-                j.optString("origin", "imported"), j.optString("lastExportUri"))
+                j.optString("origin", "imported"), j.optString("lastExportUri"),
+                j.optString("sessionKey"))
         }
     }.getOrDefault(emptyList())
     private fun encode(items: List<LocalMaterial>): String {
@@ -45,6 +47,7 @@ internal class MaterialLibrary(context: Context) {
                 put("opened",m.opened); put("completed",m.completed)
                 put("origin",m.origin)
                 put("lastExportUri",m.lastExportUri)
+                put("sessionKey",m.sessionKey)
             })
         }
         return arr.toString()
@@ -57,7 +60,8 @@ internal class MaterialLibrary(context: Context) {
                 it.uri.startsWith("content://") &&
                 it.name.length in 1..160 &&
                 it.type in listOf("lesson", "exercise", "solutions", "video") &&
-                it.origin in listOf("generated", "restored")
+                it.origin in listOf("generated", "restored") &&
+                it.sessionKey.length <= 150
         }) { "La biblioteca restaurada conté elements invàlids." }
         store.edit { p ->
             p[key] = encode(items.distinctBy { it.id })
@@ -65,17 +69,19 @@ internal class MaterialLibrary(context: Context) {
     }
 
     suspend fun add(course: SavedCourse, uri: String, name: String, type: String,
-        origin: String = "imported") {
+        origin: String = "imported", sessionKey: String = "") {
         require(origin in listOf("imported","generated","restored"))
         require(type in listOf("lesson","exercise","solutions","video"))
         require(uri.startsWith("content://"))
+        require(sessionKey.length <= 150)
         store.edit { p ->
             val items=decode(p[key] ?: "[]")
             if(items.size >= 500 || items.any {
                 it.courseKey==courseKey(course) && it.uri==uri && it.type==type
             }) return@edit
             p[key]=encode(items+LocalMaterial(UUID.randomUUID().toString(),
-                courseKey(course),uri,name.take(160),type,false,false,origin))
+                courseKey(course),uri,name.take(160),type,false,false,origin,
+                sessionKey=sessionKey))
         }
     }
     suspend fun update(id: String, opened: Boolean? = null, completed: Boolean? = null) {
