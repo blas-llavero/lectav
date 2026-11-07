@@ -25,6 +25,7 @@ internal fun CoursePlanScreen(
     onDone: (String, Int, Boolean) -> Unit,
     onGenerateMaterial: (String, String, String) -> Unit,
     onOpenMaterial: (String) -> Unit,
+    onLinkMaterial: (String, String) -> Unit,
     onImportVideo: (String, String, String) -> Unit,
     onCurriculum: () -> Unit,
     onAiProgramme: () -> Unit
@@ -213,6 +214,34 @@ internal fun CoursePlanScreen(
                                     matching.forEach { file ->
                                         TextButton(onClick={onOpenMaterial(file.id)}) {
                                             Text(file.name)
+                                        }
+                                    }
+                                }
+                                if(course.role=="teacher") {
+                                    val available=files.filter { it.sessionKey.isBlank() }
+                                    if(available.isNotEmpty()) {
+                                        var showAssign by remember(sessionId) {
+                                            mutableStateOf(false)
+                                        }
+                                        Box(modifier=Modifier.fillMaxWidth()) {
+                                            OutlinedButton(
+                                                onClick={showAssign=true},
+                                                modifier=Modifier.fillMaxWidth()
+                                            ) { Text("Vincula un document anterior a aquesta sessió") }
+                                            DropdownMenu(
+                                                expanded=showAssign,
+                                                onDismissRequest={showAssign=false}
+                                            ) {
+                                                available.take(40).forEach { previous ->
+                                                    DropdownMenuItem(
+                                                        text={Text(previous.name)},
+                                                        onClick={
+                                                            showAssign=false
+                                                            onLinkMaterial(previous.id,sessionId)
+                                                        }
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                 }
