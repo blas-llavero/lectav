@@ -10,46 +10,47 @@ import androidx.compose.ui.platform.LocalContext
 
 @Composable
 internal fun ChatGPTUsageConfirmDialog(
-    guard: ChatGPTUsageGuard,
+    @Suppress("UNUSED_PARAMETER") guard: ChatGPTUsageGuard,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
-    val usage by guard.state.collectAsState()
-    var checked by remember { mutableStateOf(false) }
+    var acknowledged by remember { mutableStateOf(false) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Abans de generar amb ChatGPT") },
+        title = { Text("Generació amb ChatGPT") },
         text = {
             Column {
                 Text(
-                    "LECTAV farà una petició amb el teu pla ChatGPT. " +
-                    "Resten ${usage.remaining} intents segons el teu límit LOCAL. " +
-                    "Això no és el saldo real de ChatGPT."
+                    "LECTAV no limita el nombre de peticions, però ChatGPT " +
+                    "aplica la quota del compte. La generació podria " +
+                    "consumir crèdits si els has autoritzat al compte."
                 )
                 Text(
-                    "Si l'ús de crèdits està activat al compte, " +
-                    "una petició podria consumir-ne. LECTAV no pot " +
-                    "consultar ni bloquejar directament aquest saldo."
+                    "Per impedir l'ús de crèdits addicionals, revisa els " +
+                    "límits de l'aplicació a la configuració de ChatGPT. " +
+                    "LECTAV no pot veure el teu saldo real."
                 )
                 OutlinedButton(onClick = {
                     context.startActivity(Intent(
                         Intent.ACTION_VIEW, Uri.parse("https://chatgpt.com/")
                     ))
-                }) { Text("Revisa la quota i els crèdits a ChatGPT") }
+                }) { Text("Revisa els límits a ChatGPT") }
                 Row {
-                    Checkbox(checked = checked, onCheckedChange = { checked = it })
+                    Checkbox(
+                        checked = acknowledged,
+                        onCheckedChange = { acknowledged = it }
+                    )
                     Text(
-                        "He comprovat que el límit de LECTAV a ChatGPT és " +
-                        "inferior al 100% i que no vull utilitzar crèdits " +
-                        "ni compres automàtiques per aquesta petició."
+                        "He revisat la configuració d'ús i crèdits " +
+                        "del meu compte i autoritzo aquesta generació."
                     )
                 }
             }
         },
         confirmButton = {
-            TextButton(enabled = checked && !usage.blocked, onClick = onConfirm) {
-                Text("Genera amb la quota del meu pla")
+            TextButton(enabled = acknowledged, onClick = onConfirm) {
+                Text("Genera el contingut")
             }
         },
         dismissButton = {
