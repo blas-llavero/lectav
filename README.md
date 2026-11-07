@@ -8,7 +8,7 @@
 
 LECTAV is open-source. Anyone may study, modify, share or use it for charitable and other lawful purposes, subject to the **GNU General Public License version 3 or later**. The source code is provided under `GPL-3.0-or-later`; all third-party dependencies and future media must have independently verified compatible licences. The aim is accessible education regardless of geography, language, disability or financial resources.
 
-## Current Android prototype (v0.8.9)
+## Current Android prototype (v0.9.0)
 
 - Native Android app written in Kotlin with Jetpack Compose.
 - Five pathway choices: ESO, Batxillerat, intermediate vocational training (CFGM), higher vocational training (CFGS), professional certificates.
@@ -21,6 +21,36 @@ LECTAV is open-source. Anyone may study, modify, share or use it for charitable 
 - Respect for Android navigation and status bars using Compose safe-area insets; designed for phones and tablets.
 - Lesson PDF, exercise PDF and avatar buttons are **intentionally disabled**, because the generation engines have not been developed yet.
 - No user account, network access, telemetry, advertisements or cloud service in this prototype. The manifest requests **no INTERNET permission**.
+
+## v0.9.0 — curriculum first; topic-matched teaching resources per session
+
+**The default teaching workflow is now planning → unit → session → materials.**
+Open **Els meus cursos → Programació i sessions** and expand a unit to
+generate **Temari**, **Exercicis** or **Solucions** for the exact lesson
+title. The PDF generator preselects the selected type and a topic like
+**Sessió 1 - Fraccions i decimals: diagnosi inicial**, and the resulting
+PDF is linked to the same course, trimester, unit and session.
+Each session shows its linked resource counts and links to open PDFs.
+Previously saved unassociated materials remain in the general library.
+
+Existing MP4 videos can be attached to a specific lesson using
+**Importa un vídeo de l'avatar**, with suggested names starting
+**Avatar - Sessió N - …**. **Automatic avatar video generation is
+not implemented yet**; the corresponding action is visibly disabled,
+rather than implying ChatGPT has created a video.
+
+The session-material links are stored locally, remain stable when a
+session title is edited and are included in existing encrypted
+`.lectavbak` export/import archives. Uninstalling the app still requires
+a prior backup to preserve private files.
+
+**Later**, a persistent, resumable queue could offer course-wide
+generation in supervised batches with quota checks, stop/retry and
+duplicate avoidance. **Batching does not make ChatGPT usage free or
+provide unlimited credits.** A separate FOSS avatar/TTS/rendering engine
+is needed to create video; text-only ChatGPT responses cannot directly
+create a full avatar MP4. See
+[session organisation and future batching design](docs/SESSION_MATERIALS_V0_9_0.md).
 
 ## v0.8.9 — direct trimester planning from course and subject selection
 
