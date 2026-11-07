@@ -4,6 +4,11 @@
  */
 package com.blasllavero.lectav
 
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,19 +19,52 @@ import androidx.compose.ui.unit.dp
 internal fun CoursePlanScreen(
     course: SavedCourse,
     plan: CoursePlan?,
+    files: List<LocalMaterial>,
     onRename: (String, String) -> Unit,
     onRenameSession: (String, Int, String) -> Unit,
     onDone: (String, Int, Boolean) -> Unit,
-    onGenerate: (String) -> Unit,
+    onGenerateMaterial: (String, String, String) -> Unit,
+    onOpenMaterial: (String) -> Unit,
+    onImportVideo: (String, String, String) -> Unit,
     onCurriculum: () -> Unit,
     onAiProgramme: () -> Unit
 ) {
+    val context = LocalContext.current
+    var pendingVideoKey by remember { mutableStateOf("") }
+    var pendingVideoName by remember { mutableStateOf("") }
+    var importError by remember { mutableStateOf("") }
+    val videoPicker=rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if(uri!=null && pendingVideoKey.isNotBlank()) {
+            val result=runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+                val kind=context.contentResolver.getType(uri).orEmpty()
+                require(kind=="video/mp4" ||
+                    uri.toString().lowercase().endsWith(".mp4")) {
+                    "Selecciona un vídeo en format MP4."
+                }
+                onImportVideo(uri.toString(), pendingVideoName, pendingVideoKey)
+            }
+            importError=result.exceptionOrNull()?.localizedMessage.orEmpty()
+        }
+        pendingVideoKey=""
+        pendingVideoName=""
+    }
     Text("Programació didàctica · Índex de sessions",
         style = MaterialTheme.typography.titleLarge)
     Text(
-        "Tres trimestres, unitats i títol concret de cada sessió. " +
-        "És una seqüenciació editable, no l'ordre obligatori d'una llei.",
+        "Pas 1: genera i revisa la programació trimestral. " +
+        "Pas 2: per a cada sessió, crea teoria, exercicis i solucions " +
+        "amb el mateix títol; els documents queden vinculats " +
+        "a la sessió. També hi pots associar un vídeo MP4. " +
+        "La generació automàtica de l'avatar encara està pendent.",
         style = MaterialTheme.typography.bodySmall
+    )
+    if(importError.isNotBlank()) Text(
+        importError, color=MaterialTheme.colorScheme.error
     )
     if (course.role == "teacher") {
         Button(onClick = onAiProgramme, modifier = Modifier.fillMaxWidth()) {
@@ -110,26 +148,70 @@ internal fun CoursePlanScreen(
                             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                                 Text("Sessió ${trimesterSessionOffset + number} · $lesson",
                                     style = MaterialTheme.typography.bodyMedium)
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                val sessionNumber=trimesterSessionOffset + number
+                                val sessionId="$term|${unit.id}|$number"
+                                val sessionTopic="Sessió $sessionNumber - $lesson"
+                                val attached=files.filter {
+                                    it.sessionKey == sessionId
+                                }
+                                Text(
+                                    "Materials: " + listOf(
+                                        "Teoria ${attached.count { it.type=="lesson" }}",
+                                        "Exercicis ${attached.count { it.type=="exercise" }}",
+                                        "Solucions ${attached.count { it.type=="solutions" }}",
+                                        "Avatar ${attached.count { it.type=="video" }}"
+                                    ).joinToString(" · "),
+                                    style=MaterialTheme.typography.bodySmall
+                                )
+                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                     if (course.role == "student") {
                                         Checkbox(
                                             checked = number in unit.completedSessions,
-                                            onCheckedChange = {
-                                                onDone(unit.id, number, it)
-                                            }
+                                            onCheckedChange = { onDone(unit.id, number, it) }
                                         )
                                     }
-                                    TextButton(onClick = {
-                                        onGenerate(
-                                            "${unit.title} — Sessió ${trimesterSessionOffset + number}: $lesson"
-                                        )
-                                    }) { Text("Genera materials") }
                                     if (course.role == "teacher") {
                                         TextButton(onClick = { editing = !editing }) {
                                             Text(if (editing) "Tanca" else "Edita el tema")
                                         }
                                     }
                                 }
+                                Row(
+                                    modifier=Modifier.fillMaxWidth(),
+                                    horizontalArrangement=Arrangement.spacedBy(6.dp)
+                                ) {
+                                    OutlinedButton(
+                                        modifier=Modifier.weight(1f),
+                                        onClick={onGenerateMaterial(sessionId,sessionTopic,"lesson")}
+                                    ) { Text("Teoria") }
+                                    OutlinedButton(
+                                        modifier=Modifier.weight(1f),
+                                        onClick={onGenerateMaterial(sessionId,sessionTopic,"exercise")}
+                                    ) { Text("Exercicis") }
+                                    OutlinedButton(
+                                        modifier=Modifier.weight(1f),
+                                        onClick={onGenerateMaterial(sessionId,sessionTopic,"solutions")}
+                                    ) { Text("Solucions") }
+                                }
+                                attached.forEach { file ->
+                                    TextButton(onClick={onOpenMaterial(file.id)}) {
+                                        Text("Obre ${file.name}")
+                                    }
+                                }
+                                OutlinedButton(
+                                    modifier=Modifier.fillMaxWidth(),
+                                    onClick={
+                                        pendingVideoKey=sessionId
+                                        pendingVideoName=MaterialFileNames.avatarSession(
+                                            sessionTopic
+                                        )
+                                        videoPicker.launch(arrayOf("video/mp4"))
+                                    }
+                                ) { Text("Importa un vídeo de l'avatar (MP4)") }
+                                OutlinedButton(
+                                    enabled=false, onClick={},
+                                    modifier=Modifier.fillMaxWidth()
+                                ) { Text("Genera el vídeo de l'avatar (fase futura)") }
                                 if (course.role == "teacher" && editing) {
                                     OutlinedTextField(
                                         value = edited,
