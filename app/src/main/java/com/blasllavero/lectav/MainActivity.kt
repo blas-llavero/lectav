@@ -245,6 +245,11 @@ private fun LectavApp() {
                                 screen="viewer"
                                 scope.launch { fileRepository.update(id,opened=true) }
                             },
+                            onLinkMaterial={ id,sessionId ->
+                                scope.launch {
+                                    fileRepository.linkExistingToSession(selected,id,sessionId)
+                                }
+                            },
                             onImportVideo={ uri, name, sessionId ->
                                 scope.launch {
                                     fileRepository.add(
