@@ -46,6 +46,11 @@ i els noms antics dels fitxers NO es canvien automàticament.
 Els materials generats en versions anteriors apareixen a la biblioteca
 general perquè no tenen aquest identificador de sessió.
 
+Si el professor **regenera un trimestre**, les unitats noves reben
+identificadors diferents: els fitxers antics no s'assignen a temes
+que podrien ser diferents. Continuen disponibles a la biblioteca
+general «Materials» i no s'esborren automàticament.
+
 La clau també forma part de la còpia xifrada `.lectavbak`,
 de manera que les relacions entre sessions i recursos persisteixen
 en exportar i restaurar els cursos. Els arxius antics (sense aquesta
