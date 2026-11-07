@@ -99,7 +99,7 @@ internal class MaterialLibrary(context: Context) {
     suspend fun linkExistingToSession(
         course: SavedCourse, materialId: String, newSessionKey: String
     ) {
-        require(newSessionKey.matches(Regex("""[1-3]\\|[^|]{1,120}\\|\\d{1,2}"""))) {
+        require(newSessionKey.matches(Regex("""[1-3]\|[^|]{1,120}\|\d{1,2}"""))) {
             "Identificador de sessió incorrecte."
         }
         store.edit { prefs ->
