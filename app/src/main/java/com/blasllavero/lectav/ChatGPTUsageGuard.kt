@@ -1,5 +1,5 @@
 /*
- * LECTAV — voluntary local request cap. Does NOT read ChatGPT plan balances.
+ * LECTAV — backward-compatible bridge for legacy local usage preferences.
  * Copyright (C) 2026 Blas Llavero
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -8,85 +8,36 @@ package com.blasllavero.lectav
 import android.content.Context
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.temporal.TemporalAdjusters
 
+/**
+ * LECTAV 0.9.1 no tracks or enforces an arbitrary number of local requests.
+ * Only OpenAI controls the account's actual plan usage and access.
+ * Kept for compatibility with previously exported encrypted .lectavbak files.
+ */
 internal data class LocalUsageSnapshot(
-    val weeklyLimit: Int,
-    val attempts: Int,
-    val weekStart: String
+    val weeklyLimit: Int = 0,
+    val attempts: Int = 0,
+    val weekStart: String = ""
 ) {
-    val remaining get() = (weeklyLimit - attempts).coerceAtLeast(0)
-    val blocked get() = remaining == 0
+    val remaining: Int get() = Int.MAX_VALUE // Legacy API; never shown as real quota.
+    val blocked: Boolean get() = false
 }
 
-internal class ChatGPTUsageGuard(context: Context) {
-    // Per-installation safety limit, independent of OpenAI's real quotas.
-    // All accounts on this installation share the same conservative cap.
-    private val prefs = context.applicationContext.getSharedPreferences(
-        "lectav_chatgpt_request_cap", Context.MODE_PRIVATE
-    )
-    private val mutable = MutableStateFlow(snapshot())
+internal class ChatGPTUsageGuard(@Suppress("UNUSED_PARAMETER") context: Context) {
+    private val mutable = MutableStateFlow(LocalUsageSnapshot())
     val state = mutable.asStateFlow()
 
-    private fun weekStart(): String = LocalDate.now()
-        .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).toString()
+    fun refresh() = Unit
 
-    @Synchronized
-    private fun snapshot(): LocalUsageSnapshot {
-        val week = weekStart()
-        val previousWeek = prefs.getString("week", null)
-        return LocalUsageSnapshot(
-            weeklyLimit = prefs.getInt("limit", 3).coerceIn(0, 30),
-            attempts = if (previousWeek == week) prefs.getInt("attempts", 0)
-                .coerceAtLeast(0) else 0,
-            weekStart = week
-        )
-    }
+    @Suppress("UNUSED_PARAMETER")
+    fun setWeeklyLimit(value: Int): Boolean = false
 
-    @Synchronized
-    fun refresh() {
-        mutable.value = snapshot()
-    }
+    // A restored backup from LECTAV <= 0.9.0 can contain 0..30 local attempts.
+    // They are deliberately ignored so restoring never re-enables a local lock.
+    @Suppress("UNUSED_PARAMETER")
+    fun restoreBackupLimit(limit: Int, attempts: Int, backupWeek: String) = Unit
 
-    @Synchronized
-    fun setWeeklyLimit(value: Int): Boolean {
-        val valid = value.coerceIn(0, 30)
-        val ok = prefs.edit().putInt("limit", valid).commit()
-        refresh()
-        return ok
-    }
-
-    @Synchronized
-    fun restoreBackupLimit(limit: Int, attempts: Int, backupWeek: String) {
-        // Never lower this installation's existing counter for the same week.
-        val now = snapshot()
-        val oldAttempts = if (backupWeek == now.weekStart) attempts.coerceAtLeast(0) else 0
-        val merged = maxOf(now.attempts, oldAttempts)
-        val actualLimit = limit.coerceIn(0, 30)
-        check(prefs.edit()
-            .putInt("limit", actualLimit)
-            .putInt("attempts", merged)
-            .putString("week", now.weekStart)
-            .commit()) { "No s'ha pogut restaurar el límit de ChatGPT." }
-        refresh()
-    }
-
-    @Synchronized
-    fun reserveAttempt(): Boolean {
-        val now = snapshot()
-        if (now.blocked) {
-            mutable.value = now
-            return false
-        }
-        // Reserve before any network request, even if it later fails. Count
-        // attempts, NOT tokens, money or billable use; never invent a balance.
-        val persisted = prefs.edit()
-            .putString("week", now.weekStart)
-            .putInt("attempts", now.attempts + 1)
-            .commit()
-        mutable.value = snapshot()
-        return persisted
-    }
+    // Older generators still call this function at the request boundary.
+    // It never blocks and never records a request.
+    fun reserveAttempt(): Boolean = true
 }
