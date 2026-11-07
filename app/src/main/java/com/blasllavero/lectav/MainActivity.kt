@@ -78,6 +78,10 @@ private fun LectavApp() {
     }
     val allPlans by planningRepository.plans.collectAsState(initial=emptyList())
     var suggestedSessionTopic by rememberSaveable { mutableStateOf("") }
+    var requestedMaterialKind by rememberSaveable { mutableStateOf("lesson") }
+    var requestedSessionKey by rememberSaveable { mutableStateOf("") }
+    var generatorBackScreen by rememberSaveable { mutableStateOf("materials") }
+    var viewerBackScreen by rememberSaveable { mutableStateOf("materials") }
     var selectedCourseId by rememberSaveable { mutableStateOf("") }
     var selectedFileId by rememberSaveable { mutableStateOf("") }
     var screen by rememberSaveable { mutableStateOf("home") }
@@ -113,10 +117,10 @@ private fun LectavApp() {
                         } else {
                             TextButton(onClick = {
                                 screen = when(screen) {
-                                    "viewer" -> "materials"
+                                    "viewer" -> viewerBackScreen
                                     "chatgpt" -> authReturnScreen
                                     "backup" -> "settings"
-                                    "generator" -> "materials"
+                                    "generator" -> generatorBackScreen
                                     "course-plan" -> "library"
                                     "term-plan" -> "course-plan"
                                     "curriculum" -> "course-plan"
@@ -185,6 +189,9 @@ private fun LectavApp() {
                             files = files.filter { it.courseKey == courseKey(chosen) },
                             onGenerate = {
                                 suggestedSessionTopic=""
+                                requestedMaterialKind="lesson"
+                                requestedSessionKey=""
+                                generatorBackScreen="materials"
                                 screen = "generator"
                             },
                             onAdd = { uri,name,kind ->
@@ -192,6 +199,7 @@ private fun LectavApp() {
                             },
                             onOpen = { id ->
                                 selectedFileId = id
+                                viewerBackScreen="materials"
                                 screen = "viewer"
                                 scope.launch { fileRepository.update(id,opened=true) }
                             },
@@ -210,6 +218,7 @@ private fun LectavApp() {
                         else CoursePlanScreen(
                             course=selected,
                             plan=allPlans.firstOrNull { it.courseKey==courseKey(selected) },
+                            files=files.filter { it.courseKey==courseKey(selected) },
                             onRename={ id, title ->
                                 scope.launch { planningRepository.saveTopicTitle(selected,id,title) }
                             },
@@ -223,9 +232,25 @@ private fun LectavApp() {
                                     planningRepository.setSessionDone(selected,id,session,done)
                                 }
                             },
-                            onGenerate={ title ->
+                            onGenerateMaterial={ sessionId, title, kind ->
                                 suggestedSessionTopic=title
+                                requestedMaterialKind=kind
+                                requestedSessionKey=sessionId
+                                generatorBackScreen="course-plan"
                                 screen="generator"
+                            },
+                            onOpenMaterial={ id ->
+                                selectedFileId=id
+                                viewerBackScreen="course-plan"
+                                screen="viewer"
+                                scope.launch { fileRepository.update(id,opened=true) }
+                            },
+                            onImportVideo={ uri, name, sessionId ->
+                                scope.launch {
+                                    fileRepository.add(
+                                        selected,uri,name,"video","imported",sessionId
+                                    )
+                                }
                             },
                             onCurriculum={ screen="curriculum" },
                             onAiProgramme={ screen="term-plan" }
@@ -329,6 +354,8 @@ private fun LectavApp() {
                                     authReturnScreen = "generator"
                                     screen = "chatgpt"
                                 },
+                                preferredKind = requestedMaterialKind,
+                                sessionKey = requestedSessionKey,
                                 suggestedTopic = suggestedSessionTopic.ifBlank {
                                     allPlans.firstOrNull { it.courseKey==courseKey(chosen) }
                                         ?.topics?.sortedBy { it.trimester }?.firstOrNull()
@@ -337,9 +364,11 @@ private fun LectavApp() {
                                                 ?.takeIf { it.isNotBlank() } ?: unit.title
                                         }.orEmpty()
                                 },
-                                onSaved = { uri, name, kind, origin ->
+                                onSaved = { uri, name, kind, origin, sessionId ->
                                     scope.launch {
-                                        fileRepository.add(chosen, uri, name, kind, origin)
+                                        fileRepository.add(
+                                            chosen, uri, name, kind, origin, sessionId
+                                        )
                                     }
                                 }
                             )
