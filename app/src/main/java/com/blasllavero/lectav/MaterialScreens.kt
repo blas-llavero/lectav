@@ -1,6 +1,7 @@
 package com.blasllavero.lectav
 
 import android.content.Intent
+import android.media.MediaPlayer
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
@@ -48,8 +49,11 @@ internal fun MaterialsScreen(
                     if(c.moveToFirst()) c.getString(0) else null
                 } ?: "Document"
                 val mime=resolver.getType(uri).orEmpty()
-                val valid=if(kind=="video") mime=="video/mp4" || name.endsWith(".mp4",true)
-                    else mime=="application/pdf" || name.endsWith(".pdf",true)
+                val valid=when(kind) {
+                    "video" -> mime=="video/mp4" || name.endsWith(".mp4",true)
+                    "audio", "podcast" -> mime in setOf("audio/mpeg","audio/mp3") || name.endsWith(".mp3",true)
+                    else -> mime=="application/pdf" || name.endsWith(".pdf",true)
+                }
                 if(!valid) error("Invalid document type")
                 onAdd(uri.toString(),name,kind)
             }.isFailure
@@ -75,13 +79,26 @@ internal fun MaterialsScreen(
     OutlinedButton(onClick={kind="video";picker.launch(arrayOf("video/mp4"))}) {
         Text(stringResource(R.string.material_import_video))
     }
+    OutlinedButton(onClick={kind="audio";picker.launch(arrayOf("audio/mpeg"))}) {
+        Text("Importa àudio MP3")
+    }
+    OutlinedButton(onClick={kind="podcast";picker.launch(arrayOf("audio/mpeg"))}) {
+        Text("Importa podcast MP3")
+    }
+    OutlinedButton(onClick={kind="transcript";picker.launch(arrayOf("application/pdf"))}) {
+        Text("Importa transcripció PDF")
+    }
     if(importError) Text(stringResource(R.string.material_error),color=MaterialTheme.colorScheme.error)
     if(files.isEmpty()) Text(stringResource(R.string.materials_empty))
     files.forEach { file ->
         Card(modifier=Modifier.fillMaxWidth()) {
             Column(Modifier.padding(12.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
                 Text(file.name,style=MaterialTheme.typography.titleMedium)
-                Text(stringResource(when(file.type) {
+                Text(if(file.type in setOf("audio","podcast","transcript")) when(file.type) {
+                    "audio" -> "Àudio MP3"
+                    "podcast" -> "Podcast MP3"
+                    else -> "Transcripció PDF"
+                } else stringResource(when(file.type) {
                     "video"->R.string.material_kind_video
                     "exercise"->R.string.material_kind_exercise
                     else->R.string.material_kind_lesson
@@ -94,7 +111,7 @@ internal fun MaterialsScreen(
                     }))
                 }
                 if (file.origin == "generated") {
-                    Text("PDF creat amb LECTAV · esborrany")
+                    Text("Material creat amb LECTAV · esborrany")
                 }
                 Text(
                     MaterialLocation.source(context, file),
@@ -112,7 +129,7 @@ internal fun MaterialsScreen(
                     OutlinedButton(onClick={
                         runCatching {
                             val intent=Intent(Intent.ACTION_SEND).apply {
-                                type = if(file.type=="video") "video/mp4" else "application/pdf"
+                                type = materialMime(file.type)
                                 putExtra(Intent.EXTRA_STREAM, Uri.parse(file.uri))
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
@@ -129,7 +146,7 @@ internal fun MaterialsScreen(
                     mime = materialMime(file.type),
                     onExported = { destination -> onExported(file.id, destination) }
                 )
-                if(course.role=="student" && file.type!="video") OutlinedButton(
+                if(course.role=="student" && file.type !in setOf("video","audio","podcast")) OutlinedButton(
                     onClick={onUpdate(file.id,!file.completed)}
                 ) {
                     Text(stringResource(if(file.completed) R.string.material_mark_pending
@@ -170,7 +187,9 @@ internal fun MaterialViewer(file: LocalMaterial, onExported: (String) -> Unit = 
         mime=materialMime(file.type),
         onExported=onExported
     )
-    if(file.type=="video") {
+    if(file.type=="audio" || file.type=="podcast") {
+        AudioMaterialPlayer(file)
+    } else if(file.type=="video") {
         var failed by remember(file.id){mutableStateOf(false)}
         val video=remember(file.id){
             VideoView(context).apply {
@@ -232,6 +251,59 @@ internal fun MaterialViewer(file: LocalMaterial, onExported: (String) -> Unit = 
             }
             Image(bitmap=image!!.asImageBitmap(),contentDescription=null,
                 modifier=Modifier.fillMaxWidth())
+        }
+    }
+}
+
+/** Local MP3 playback; no online services or audio upload. */
+@Composable
+private fun AudioMaterialPlayer(file: LocalMaterial) {
+    val context = LocalContext.current
+    var playing by remember(file.id) { mutableStateOf(false) }
+    var speed by remember(file.id) { mutableFloatStateOf(1f) }
+    var error by remember(file.id) { mutableStateOf("") }
+    val player = remember(file.id) { MediaPlayer() }
+    DisposableEffect(player, file.uri) {
+        runCatching {
+            player.setDataSource(context, Uri.parse(file.uri))
+            player.setOnCompletionListener { playing = false }
+            player.prepare()
+            player.playbackParams = player.playbackParams.setSpeed(speed)
+        }.onFailure { error = it.localizedMessage ?: "No es pot obrir l'àudio" }
+        onDispose {
+            runCatching { player.stop() }
+            player.release()
+        }
+    }
+    if(error.isNotBlank()) {
+        Text(error, color=MaterialTheme.colorScheme.error)
+    } else {
+        Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+            Button(onClick={
+                runCatching {
+                    if (player.isPlaying) player.pause()
+                    else player.start()
+                    playing = player.isPlaying
+                }.onFailure { error=it.localizedMessage ?: "Error reproduint l'àudio" }
+            }) { Text(if(playing) "Pausa" else "Reprodueix") }
+            OutlinedButton(onClick={
+                runCatching {
+                    player.seekTo(0)
+                    player.pause()
+                    playing=false
+                }.onFailure { error=it.localizedMessage ?: "No s'ha pogut reiniciar" }
+            }) { Text("Inici") }
+        }
+        Text("Velocitat de reproducció")
+        Row(horizontalArrangement=Arrangement.spacedBy(4.dp)) {
+            listOf(0.75f,1f,1.25f,1.5f,2f).forEach { rate ->
+                TextButton(onClick={
+                    runCatching {
+                        player.playbackParams=player.playbackParams.setSpeed(rate)
+                        speed=rate
+                    }.onFailure { error=it.localizedMessage ?: "Velocitat no compatible" }
+                }) { Text("${rate}×") }
+            }
         }
     }
 }
