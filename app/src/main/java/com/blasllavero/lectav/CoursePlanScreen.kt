@@ -176,26 +176,44 @@ internal fun CoursePlanScreen(
                                         }
                                     }
                                 }
-                                Row(
-                                    modifier=Modifier.fillMaxWidth(),
-                                    horizontalArrangement=Arrangement.spacedBy(6.dp)
-                                ) {
-                                    OutlinedButton(
-                                        modifier=Modifier.weight(1f),
-                                        onClick={onGenerateMaterial(sessionId,sessionTopic,"lesson")}
-                                    ) { Text("Teoria") }
-                                    OutlinedButton(
-                                        modifier=Modifier.weight(1f),
-                                        onClick={onGenerateMaterial(sessionId,sessionTopic,"exercise")}
-                                    ) { Text("Exercicis") }
-                                    OutlinedButton(
-                                        modifier=Modifier.weight(1f),
-                                        onClick={onGenerateMaterial(sessionId,sessionTopic,"solutions")}
-                                    ) { Text("Solucions") }
-                                }
-                                attached.forEach { file ->
-                                    TextButton(onClick={onOpenMaterial(file.id)}) {
-                                        Text("Obre ${file.name}")
+                                // Each saved material is accessible directly
+                                // from the originating session, independently
+                                // of its filename or later lesson title edits.
+                                listOf(
+                                    "lesson" to "Teoria",
+                                    "exercise" to "Exercicis",
+                                    "solutions" to "Solucions",
+                                    "video" to "Avatar"
+                                ).forEach { (type, label) ->
+                                    val matching=attached.filter { it.type==type }
+                                    val latest=matching.lastOrNull()
+                                    Row(
+                                        modifier=Modifier.fillMaxWidth(),
+                                        horizontalArrangement=Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(label, modifier=Modifier.weight(1f),
+                                            style=MaterialTheme.typography.bodyMedium)
+                                        if(latest!=null) {
+                                            Button(onClick={onOpenMaterial(latest.id)}) {
+                                                Text("Obre")
+                                            }
+                                        }
+                                        if(type!="video") {
+                                            OutlinedButton(onClick={
+                                                onGenerateMaterial(sessionId,sessionTopic,type)
+                                            }) {
+                                                Text(if(latest==null) "Genera" else "Nou")
+                                            }
+                                        } else if(latest==null) {
+                                            Text("Pendent",style=MaterialTheme.typography.bodySmall)
+                                        }
+                                    }
+                                    // Older versions remain accessible; no
+                                    // automatically overwritten PDF/MP4 files.
+                                    matching.forEach { file ->
+                                        TextButton(onClick={onOpenMaterial(file.id)}) {
+                                            Text(file.name)
+                                        }
                                     }
                                 }
                                 OutlinedButton(
