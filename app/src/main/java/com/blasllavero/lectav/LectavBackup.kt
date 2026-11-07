@@ -165,7 +165,7 @@ internal object LectavBackup {
                 .put("id",file.id).put("courseKey",file.courseKey)
                 .put("name",file.name).put("type",file.type)
                 .put("opened",file.opened).put("completed",file.completed)
-                .put("origin",file.origin)
+                .put("origin",file.origin).put("sessionKey",file.sessionKey)
                 .put("entry","files/" + i.toString().padStart(4,'0') + extension))
         }
         val quota = usage.state.value
@@ -342,7 +342,8 @@ internal object LectavBackup {
                         completed=obj.optBoolean("completed"),
                         origin=if(obj.optString("origin")=="generated")
                             "generated" else "restored",
-                        lastExportUri="" // previous content:// grants can no longer be valid
+                        lastExportUri="", // previous content:// grants can no longer be valid
+                        sessionKey=obj.optString("sessionKey").take(150)
                     ))
                 }
                 // The archive and every file are authenticated/validated now.
