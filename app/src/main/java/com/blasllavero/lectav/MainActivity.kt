@@ -187,6 +187,7 @@ private fun LectavApp() {
                         if(chosen != null) MaterialsScreen(
                             course = chosen,
                             files = files.filter { it.courseKey == courseKey(chosen) },
+                            plan = allPlans.firstOrNull { it.courseKey==courseKey(chosen) },
                             onGenerate = {
                                 suggestedSessionTopic=""
                                 requestedMaterialKind="lesson"
@@ -402,6 +403,7 @@ private fun LectavApp() {
                         val file = files.firstOrNull { it.id == selectedFileId }
                         if(file != null) MaterialViewer(
                             file,
+                            plan = allPlans.firstOrNull { it.courseKey==file.courseKey },
                             onExported = { destination ->
                                 scope.launch { fileRepository.recordExport(file.id, destination) }
                             }
