@@ -14,6 +14,7 @@ import com.tom_roush.pdfbox.text.PDFTextStripper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -34,8 +35,15 @@ internal object SessionSpeech {
             ?: error("No es pot obrir el PDF de teoria.")
         raw.use { source ->
             // Bound in-memory work (PDFBox may use more RAM while parsing).
-            val bytes = source.readNBytes(12 * 1024 * 1024 + 1)
-            require(bytes.size <= 12 * 1024 * 1024) { "El PDF supera els 12 MB." }
+            val buffer = ByteArray(8192)
+            val bytesOutput = ByteArrayOutputStream()
+            while (true) {
+                val n = source.read(buffer)
+                if (n == -1) break
+                require(bytesOutput.size() + n <= 12 * 1024 * 1024) { "El PDF supera els 12 MB." }
+                bytesOutput.write(buffer,0,n)
+            }
+            val bytes = bytesOutput.toByteArray()
             PDDocument.load(bytes).use { document ->
                 require(document.numberOfPages in 1..30) { "El PDF supera les 30 pàgines." }
                 PDFTextStripper().getText(document)
