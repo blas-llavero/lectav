@@ -135,11 +135,35 @@ internal fun SessionSpeechScreen(
         }
     ) { Text(if(busy) "Generant amb Piper…" else "Genera i desa MP3") }
     if(busy) LinearProgressIndicator(modifier=Modifier.fillMaxWidth())
+    OutlinedButton(
+        enabled=!busy && text.trim().isNotBlank() && theory!=null && hasTheory,
+        modifier=Modifier.fillMaxWidth(),
+        onClick={
+            busy=true;message=""
+            scope.launch {
+                runCatching {
+                    TypesetPdfExporter.save(
+                        context,
+                        MaterialFileNames.forSessionStem(filenameStem,"transcript").removeSuffix(".pdf"),
+                        text.trim()
+                    )
+                }.onSuccess { uri ->
+                    onSaved(
+                        uri.toString(),
+                        MaterialFileNames.forSessionStem(filenameStem,"transcript"),
+                        "transcript"
+                    )
+                    message="Guió revisat desat com a transcripció PDF de la sessió."
+                }.onFailure { message=it.localizedMessage ?: "No s'ha pogut desar el PDF." }
+                busy=false
+            }
+        }
+    ) { Text("Desa el guió actual com a transcripció PDF") }
     if(message.isNotBlank()) Text(message,style=MaterialTheme.typography.bodySmall)
     Text(
-        "El guió revisat es pot desar com a transcripció PDF des de la secció " +
-            "«Transcripció» de la sessió. La sincronització automàtica entre " +
-            "MP3 i PDF serà una millora posterior.",
+        "Aquest PDF conté exactament el text revisat a la pantalla; " +
+            "no és reconeixement automàtic de veu. Desa'l després d'editar " +
+            "el guió i abans o després de generar el MP3.",
         style=MaterialTheme.typography.bodySmall
     )
 }
