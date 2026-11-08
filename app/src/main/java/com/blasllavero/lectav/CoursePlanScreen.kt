@@ -28,6 +28,7 @@ internal fun CoursePlanScreen(
     onLinkMaterial: (String, String) -> Unit,
     onImportVideo: (String, String, String) -> Unit,
     onImportAudio: (String, String, String, String) -> Unit,
+    onGenerateSpeech: (String, String, String) -> Unit,
     onCurriculum: () -> Unit,
     onAiProgramme: () -> Unit
 ) {
@@ -281,6 +282,11 @@ internal fun CoursePlanScreen(
                                     }
                                 ) { Text("Importa un vídeo de l'avatar (MP4)") }
                                 if(course.role == "teacher") {
+                                    OutlinedButton(
+                                        modifier=Modifier.fillMaxWidth(),
+                                        enabled=attached.any { it.type=="lesson" },
+                                        onClick={onGenerateSpeech(sessionId,fileStem,sessionTopic)}
+                                    ) { Text("Genera àudio o podcast des de la teoria (Piper)") }
                                     listOf("audio" to "àudio", "podcast" to "podcast").forEach { (type, label) ->
                                         OutlinedButton(
                                             modifier=Modifier.fillMaxWidth(),
@@ -297,8 +303,6 @@ internal fun CoursePlanScreen(
                                     enabled=false, onClick={},
                                     modifier=Modifier.fillMaxWidth()
                                 ) { Text("Genera el vídeo de l'avatar (fase futura)") }
-                                Text("Generació automàtica de podcast: pendent del motor de veu FOSS.",
-                                    style=MaterialTheme.typography.bodySmall)
                                 if (course.role == "teacher" && editing) {
                                     OutlinedTextField(
                                         value = edited,

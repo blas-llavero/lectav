@@ -77,6 +77,9 @@ private fun LectavApp() {
         CoursePlanningRepository(context.applicationContext)
     }
     val allPlans by planningRepository.plans.collectAsState(initial=emptyList())
+    var speechSessionKey by rememberSaveable { mutableStateOf("") }
+    var speechFileStem by rememberSaveable { mutableStateOf("") }
+    var speechSessionTitle by rememberSaveable { mutableStateOf("") }
     var suggestedSessionTopic by rememberSaveable { mutableStateOf("") }
     var requestedMaterialKind by rememberSaveable { mutableStateOf("lesson") }
     var requestedSessionKey by rememberSaveable { mutableStateOf("") }
@@ -251,6 +254,12 @@ private fun LectavApp() {
                                     fileRepository.linkExistingToSession(selected,id,sessionId)
                                 }
                             },
+                            onGenerateSpeech={ sessionId, filenameStem, title ->
+                                speechSessionKey=sessionId
+                                speechFileStem=filenameStem
+                                speechSessionTitle=title
+                                screen="session-speech"
+                            },
                             onImportAudio={ uri, name, sessionId, type ->
                                 scope.launch { fileRepository.add(selected,uri,name,type,"imported",sessionId) }
                             },
@@ -264,6 +273,22 @@ private fun LectavApp() {
                             onCurriculum={ screen="curriculum" },
                             onAiProgramme={ screen="term-plan" }
                         )
+                    }
+                    "session-speech" -> saved?.let { state ->
+                        val selected=state.savedCourses.firstOrNull { it.id==selectedCourseId }
+                        if(selected!=null) SessionSpeechScreen(
+                            sessionTitle=speechSessionTitle,
+                            filenameStem=speechFileStem,
+                            sessionKey=speechSessionKey,
+                            materials=files.filter {
+                                it.courseKey==courseKey(selected) && it.sessionKey==speechSessionKey
+                            },
+                            onSaved={ uri,name,kind ->
+                                scope.launch {
+                                    fileRepository.add(selected,uri,name,kind,"generated",speechSessionKey)
+                                }
+                            }
+                        ) else Text("Curs no disponible")
                     }
                     "term-plan" -> saved?.let { state ->
                         val selected = state.savedCourses.firstOrNull {
