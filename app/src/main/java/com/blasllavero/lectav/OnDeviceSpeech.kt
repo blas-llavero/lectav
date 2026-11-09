@@ -43,7 +43,7 @@ internal object OnDeviceSpeech {
             check(withTimeout(30000) { ready.await() } == TextToSpeech.SUCCESS) {
                 "Instal·la Piper Android, configura una veu i torna-ho a provar."
             }
-            check(tts.defaultEngine == PIPER_PACKAGE) {
+            check(tts.currentEngine == PIPER_PACKAGE) {
                 "No s'ha activat Piper. No es farà servir cap motor alternatiu."
             }
             action(tts)
