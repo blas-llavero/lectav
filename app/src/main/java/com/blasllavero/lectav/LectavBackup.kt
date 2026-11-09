@@ -305,7 +305,7 @@ internal object LectavBackup {
                         "audio", "podcast" -> if(obj.getString("name").endsWith(".wav",true)) ".wav" else ".mp3"
                         else -> ".pdf"
                     }
-                    require(fileName.matches(Regex("""files/\d{4}\.(pdf|mp4)""")) &&
+                    require(fileName.matches(Regex("""files/\d{4}\.(pdf|mp4|mp3|wav)""")) &&
                         fileName.endsWith(suffix) && usedNames.add(fileName))
                     val zipEntry=zip.getEntry(fileName)
                         ?: error("Falta el document " + fileName)
