@@ -234,6 +234,9 @@ internal object TypesetPdfExporter {
                         withContext(Dispatchers.IO) {
                             destination.outputStream().buffered().use { pdf.writeTo(it) }
                             checkNotBlank(destination, pageCount)
+                            // Keep the reviewed source for reliable future narration.
+                            // Canvas-drawn PDFs may lack an extractable text layer.
+                            LocalPdfSource.saveForGeneratedPdf(destination, body)
                         }
                     } finally {
                         pdf.close()
