@@ -43,3 +43,7 @@ correctament. La mida de 17 MB no determina si conté text seleccionable.
   el text original no es troba mapat a les pàgines.
 - Un ús prolongat requerirà fragments amb continuació i codificació eficient
   per no esgotar la RAM/emmagatzematge de la tauleta.
+
+Nota de compatibilitat: una teoria prèvia sense guió ni text seleccionable
+necessita un guió nou o una transcripció manual. Els arxius de còpia anteriors
+continuen essent compatibles amb el nou lector de còpies.
