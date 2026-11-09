@@ -59,10 +59,10 @@ internal object MaterialLocation {
     }
 }
 
-internal fun materialMime(kind: String): String =
+internal fun materialMime(kind: String, name: String = ""): String =
     when (kind) {
         "video" -> "video/mp4"
-        "audio", "podcast" -> "audio/mpeg"
+        "audio", "podcast" -> if(name.endsWith(".wav",true)) "audio/wav" else "audio/mpeg"
         else -> "application/pdf"
     }
 
@@ -128,6 +128,7 @@ internal fun ExportDocumentButton(
             val ext = when(mime) {
                 "video/mp4" -> ".mp4"
                 "audio/mpeg" -> ".mp3"
+                "audio/wav" -> ".wav"
                 else -> ".pdf"
             }
             create.launch(if (safeName.endsWith(ext, true)) safeName else safeName + ext)
