@@ -162,7 +162,7 @@ internal object LectavBackup {
             require(file.type in setOf("lesson","exercise","solutions","video","audio","podcast","transcript"))
             val extension = when(file.type) {
                 "video" -> ".mp4"
-                "audio", "podcast" -> ".mp3"
+                "audio", "podcast" -> if(file.name.endsWith(".wav",true)) ".wav" else ".mp3"
                 else -> ".pdf"
             }
             infos.put(JSONObject()
@@ -302,7 +302,7 @@ internal object LectavBackup {
                     val fileName=obj.getString("entry")
                     val suffix=when(type) {
                         "video" -> ".mp4"
-                        "audio", "podcast" -> ".mp3"
+                        "audio", "podcast" -> if(obj.getString("name").endsWith(".wav",true)) ".wav" else ".mp3"
                         else -> ".pdf"
                     }
                     require(fileName.matches(Regex("""files/\d{4}\.(pdf|mp4)""")) &&
