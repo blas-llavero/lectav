@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import kotlinx.coroutines.launch
@@ -32,6 +33,8 @@ internal fun BackupScreen(
     val scope = rememberCoroutineScope()
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var restorePassword by remember { mutableStateOf("") }
+    val chatGPTStatus by ChatGPTAuth.state.collectAsState()
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
@@ -71,7 +74,12 @@ internal fun BackupScreen(
     val importPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri ->
-        selectedBackup = uri
+        if (uri != null) {
+            selectedBackup = uri
+            restorePassword = password
+            error = ""
+            message = ""
+        }
     }
 
     Text("Còpia de seguretat de LECTAV", style = MaterialTheme.typography.titleLarge)
@@ -91,7 +99,8 @@ internal fun BackupScreen(
     )
     Text(
         "L'arxiu de còpia estarà xifrat amb una contrasenya de 10 caràcters " +
-        "o més. Si l'oblides, no podràs recuperar els materials.",
+        "o més. Si l'oblides, no podràs recuperar els materials. " +
+        "En restaurar, podràs introduir-la després de seleccionar el fitxer.",
         style = MaterialTheme.typography.bodySmall
     )
 
@@ -131,24 +140,54 @@ internal fun BackupScreen(
     )
     OutlinedButton(
         modifier = Modifier.fillMaxWidth(),
-        enabled = !busy && password.length >= 10,
+        enabled = !busy,
         onClick = { error = ""; message = ""; importPicker.launch(arrayOf("*/*")) }
     ) { Text("Selecciona un fitxer .lectavbak…") }
 
     if (selectedBackup != null) {
         AlertDialog(
-            onDismissRequest = { selectedBackup = null },
+            onDismissRequest = {
+                selectedBackup = null
+                restorePassword = ""
+            },
             title = { Text("Confirma la restauració") },
-            text = { Text(
-                "Es verificaran la contrasenya i els documents abans de " +
-                "substituir la configuració i la biblioteca actuals. " +
-                "Torna a iniciar sessió amb ChatGPT després."
-            ) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        "Es verificaran la contrasenya i els documents abans de " +
+                        "substituir la configuració i la biblioteca actuals. " +
+                        "Torna a iniciar sessió amb ChatGPT després."
+                    )
+                    OutlinedTextField(
+                        value = restorePassword,
+                        onValueChange = { restorePassword = it.take(200) },
+                        visualTransformation = PasswordVisualTransformation(),
+                        label = { Text("Contrasenya del fitxer seleccionat") },
+                        supportingText = {
+                            Text("Introdueix la contrasenya de la còpia (mínim 10 caràcters).")
+                        },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (chatGPTStatus.connected) {
+                        Text(
+                            "Abans de restaurar, desconnecta el compte ChatGPT " +
+                                "des de Configuració → Compte ChatGPT. " +
+                                "Això evita substituir dades mentre hi ha una sessió activa.",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            },
             confirmButton = {
-                TextButton(onClick = {
+                TextButton(
+                    enabled = !busy && restorePassword.length >= 10 && !chatGPTStatus.connected,
+                    onClick = {
                     val uri = selectedBackup!!
                     selectedBackup = null
-                    val pass = password
+                    val pass = restorePassword
+                    restorePassword = ""
                     busy = true
                     error = ""; message = ""
                     scope.launch {
@@ -178,7 +217,10 @@ internal fun BackupScreen(
                 }) { Text("Restaura") }
             },
             dismissButton = {
-                TextButton(onClick = { selectedBackup = null }) {
+                TextButton(onClick = {
+                    selectedBackup = null
+                    restorePassword = ""
+                }) {
                     Text("Cancel·la")
                 }
             }
