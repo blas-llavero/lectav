@@ -97,14 +97,14 @@ internal object SessionSpeech {
                         startPage = page
                         endPage = page
                     }.getText(doc)
-                    val normalized = pageText.replace(Regex("""[ \\t]{2,}"""), " ").trim()
+                    val normalized = pageText.replace(Regex("""[ \t]{2,}"""), " ").trim()
                     if (normalized.isEmpty()) continue
                     val room = MAX_SCRIPT_CHARS - buffer.length
                     if (room <= 0) {
                         truncated = true
                         break
                     }
-                    val separator = if (buffer.isNotEmpty()) "\\n\\n" else ""
+                    val separator = if (buffer.isNotEmpty()) "\n\n" else ""
                     val addition = separator + normalized
                     if (addition.length > room) {
                         buffer.append(addition.take(room))
