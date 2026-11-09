@@ -54,6 +54,38 @@ internal object LocalPdfSource {
         }
     }
 
+    private val materialIdPattern = Regex("""[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}""")
+
+    private fun forMaterialId(context: Context, id: String): File {
+        require(materialIdPattern.matches(id)) { "Identificador de material incorrecte." }
+        val folder = File(context.filesDir, "speech_sources")
+        check(folder.isDirectory || folder.mkdirs()) { "No es pot crear la carpeta de guions." }
+        return File(folder, "$id.txt")
+    }
+
+    /** Associate an approved transcript to an older/generated/imported PDF. */
+    suspend fun saveForMaterial(context: Context, material: LocalMaterial, text: String) =
+        withContext(Dispatchers.IO) {
+            require(material.type == "lesson" || material.type == "transcript")
+            atomicWrite(forMaterialId(context, material.id), text)
+        }
+
+    suspend fun saveForMaterialId(context: Context, id: String, text: String) =
+        withContext(Dispatchers.IO) {
+            atomicWrite(forMaterialId(context, id), text)
+        }
+
+    suspend fun readForMaterial(context: Context, material: LocalMaterial): String? =
+        withContext(Dispatchers.IO) {
+            if(material.type != "lesson" && material.type != "transcript")
+                return@withContext null
+            val file = runCatching { forMaterialId(context,material.id) }.getOrNull()
+            if(file != null && file.isFile && file.length() in 1..(MAX_CHARS * 4L)) {
+                return@withContext file.readText(Charsets.UTF_8).takeIf { it.length in 1..MAX_CHARS }
+            }
+            read(context, material.uri)
+        }
+
     suspend fun saveForGeneratedPdf(pdf: File, text: String) = withContext(Dispatchers.IO) {
         atomicWrite(sidecarForGeneratedFile(pdf), text)
     }
