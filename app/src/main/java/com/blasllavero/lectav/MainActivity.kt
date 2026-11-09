@@ -199,7 +199,7 @@ private fun LectavApp() {
                                 screen = "generator"
                             },
                             onAdd = { uri,name,kind ->
-                                scope.launch { fileRepository.add(chosen,uri,name,kind) }
+                                fileRepository.add(chosen,uri,name,kind)
                             },
                             onOpen = { id ->
                                 selectedFileId = id
