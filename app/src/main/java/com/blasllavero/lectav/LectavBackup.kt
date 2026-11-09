@@ -160,7 +160,7 @@ internal object LectavBackup {
         // Generated source text is included in the encrypted backup.
         val sources = documents.map { file ->
             if(file.type=="lesson" || file.type=="transcript")
-                LocalPdfSource.read(context,file.uri)
+                LocalPdfSource.readForMaterial(context,file)
             else null
         }
         val infos = JSONArray()
@@ -375,6 +375,11 @@ internal object LectavBackup {
                         require(original.length in 1..LocalPdfSource.MAX_CHARS)
                         LocalPdfSource.saveForGeneratedPdf(local,original)
                         newFiles.add(LocalPdfSource.sidecarForGeneratedFile(local))
+                        // Restore separately linked scripts for older PDFs as well.
+                        val id=obj.getString("id")
+                        if(id.matches(Regex("""[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"""))) {
+                            LocalPdfSource.saveForMaterialId(context,id,original)
+                        }
                     }
                     val link=FileProvider.getUriForFile(
                         context,context.packageName+".files",local
