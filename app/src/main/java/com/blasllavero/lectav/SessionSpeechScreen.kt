@@ -30,6 +30,7 @@ internal fun SessionSpeechScreen(
     var pageStart by remember(sessionKey) { mutableStateOf("1") }
     var pageEnd by remember(sessionKey) { mutableStateOf("") }
     var pdfPageCount by remember(sessionKey) { mutableIntStateOf(0) }
+    var isSavingTheory by remember(sessionKey) { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf("") }
     var voiceList by remember { mutableStateOf<List<OnDeviceSpeech.OfflineVoice>>(emptyList()) }
@@ -79,7 +80,7 @@ internal fun SessionSpeechScreen(
                     val end=pageEnd.toIntOrNull() ?: 0
                     runCatching {
                         val savedSource=if(start==1 && end==0)
-                            LocalPdfSource.read(context,theory.uri) else null
+                            LocalPdfSource.readForMaterial(context,theory) else null
                         if(savedSource!=null) {
                             Triple(savedSource.take(8000),savedSource.length>8000,true)
                         } else {
@@ -140,6 +141,26 @@ internal fun SessionSpeechScreen(
         modifier=Modifier.fillMaxWidth())
     Text("${script.length} / 8.000 caràcters",
         style=MaterialTheme.typography.bodySmall)
+    if(theory!=null && script.isNotBlank()) {
+        OutlinedButton(
+            enabled=!busy && !isSavingTheory,
+            modifier=Modifier.fillMaxWidth(),
+            onClick={
+                isSavingTheory=true
+                scope.launch {
+                    runCatching {
+                        LocalPdfSource.saveForMaterial(context,theory,script.trim())
+                    }.onSuccess {
+                        message="Guió desat localment amb la teoria. Es recuperarà en tornar a obrir aquesta sessió."
+                    }.onFailure {
+                        message="No s'ha pogut conservar el guió: " +
+                            (it.localizedMessage ?: "Error de desament")
+                    }
+                    isSavingTheory=false
+                }
+            }
+        ) { Text("Conserva aquest guió amb la teoria") }
+    }
 
     if(voiceList.isEmpty()) {
         Text("No hi ha veus Piper disponibles. Instal·la Piper Android, " +
