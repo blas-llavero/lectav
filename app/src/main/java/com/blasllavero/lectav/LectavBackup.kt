@@ -157,6 +157,12 @@ internal object LectavBackup {
         val settings = settingsRepo.snapshot()
         val documents = library.files.first()
         require(documents.size <= MAX_ITEMS)
+        // Generated source text is included in the encrypted backup.
+        val sources = documents.map { file ->
+            if(file.type=="lesson" || file.type=="transcript")
+                LocalPdfSource.read(context,file.uri)
+            else null
+        }
         val infos = JSONArray()
         documents.forEachIndexed { i, file ->
             require(file.type in setOf("lesson","exercise","solutions","video","audio","podcast","transcript"))
@@ -170,7 +176,11 @@ internal object LectavBackup {
                 .put("name",file.name).put("type",file.type)
                 .put("opened",file.opened).put("completed",file.completed)
                 .put("origin",file.origin).put("sessionKey",file.sessionKey)
-                .put("entry","files/" + i.toString().padStart(4,'0') + extension))
+                .put("entry","files/" + i.toString().padStart(4,'0') + extension)
+                .apply {
+                    if(sources[i]!=null)
+                        put("sourceEntry","sources/" + i.toString().padStart(4,'0') + ".txt")
+                })
         }
         val metadata = JSONObject().put("version",1)
             .put("settings",settingsToJson(settings))
@@ -220,6 +230,15 @@ internal object LectavBackup {
                             zip.write(buf,0,n)
                         }
                         require(size > 0) { "Document buit: " + file.name }
+                        zip.closeEntry()
+                    }
+                    sources[index]?.let { sourceText ->
+                        val sourceEntry=infos.getJSONObject(index).getString("sourceEntry")
+                        val content=sourceText.toByteArray(Charsets.UTF_8)
+                        total+=content.size
+                        require(total<=MAX_SIZE) { "La còpia supera el límit de 250 MB." }
+                        zip.putNextEntry(ZipEntry(sourceEntry))
+                        zip.write(content)
                         zip.closeEntry()
                     }
                 }
@@ -287,7 +306,11 @@ internal object LectavBackup {
                 require(plans.length <= 350_000)
                 val curriculum=manifest.getJSONObject("curriculum")
                 val items=manifest.getJSONArray("materials")
-                require(items.length() <= MAX_ITEMS && zip.size()==items.length()+1) {
+                val sourceEntries=(0 until items.length()).count {
+                    items.getJSONObject(it).has("sourceEntry")
+                }
+                require(items.length() <= MAX_ITEMS &&
+                    zip.size()==items.length()+sourceEntries+1) {
                     "La còpia conté fitxers inesperats."
                 }
                 val usedNames=HashSet<String>()
@@ -333,6 +356,25 @@ internal object LectavBackup {
                         require(header.toString(Charsets.US_ASCII)=="%PDF") {
                             "S'ha trobat un PDF invàlid."
                         }
+                    }
+                    if(obj.has("sourceEntry")) {
+                        val sourceEntry=obj.getString("sourceEntry")
+                        require(suffix==".pdf" &&
+                            sourceEntry=="sources/" + i.toString().padStart(4,'0') + ".txt") {
+                            "Índex de text original invàlid."
+                        }
+                        val entry=zip.getEntry(sourceEntry)
+                            ?: error("Falta el text original de " + fileName)
+                        require(!entry.isDirectory && entry.size in 1..200_000) {
+                            "Text original invàlid o excessiu."
+                        }
+                        val bytes=zip.getInputStream(entry).use { stream ->
+                            stream.readBytes().also { require(it.size in 1..200_000) }
+                        }
+                        val original=bytes.toString(Charsets.UTF_8)
+                        require(original.length in 1..LocalPdfSource.MAX_CHARS)
+                        LocalPdfSource.saveForGeneratedPdf(local,original)
+                        newFiles.add(LocalPdfSource.sidecarForGeneratedFile(local))
                     }
                     val link=FileProvider.getUriForFile(
                         context,context.packageName+".files",local
