@@ -52,7 +52,7 @@ internal fun MaterialsScreen(
                 val mime=resolver.getType(uri).orEmpty()
                 val valid=when(kind) {
                     "video" -> mime=="video/mp4" || name.endsWith(".mp4",true)
-                    "audio", "podcast" -> mime in setOf("audio/mpeg","audio/mp3") || name.endsWith(".mp3",true)
+                    "audio", "podcast" -> mime in setOf("audio/mpeg","audio/mp3","audio/wav","audio/x-wav") || name.endsWith(".mp3",true) || name.endsWith(".wav",true)
                     else -> mime=="application/pdf" || name.endsWith(".pdf",true)
                 }
                 if(!valid) error("Invalid document type")
@@ -80,11 +80,11 @@ internal fun MaterialsScreen(
     OutlinedButton(onClick={kind="video";picker.launch(arrayOf("video/mp4"))}) {
         Text(stringResource(R.string.material_import_video))
     }
-    OutlinedButton(onClick={kind="audio";picker.launch(arrayOf("audio/mpeg"))}) {
-        Text("Importa àudio MP3")
+    OutlinedButton(onClick={kind="audio";picker.launch(arrayOf("audio/*"))}) {
+        Text("Importa àudio MP3/WAV")
     }
     OutlinedButton(onClick={kind="podcast";picker.launch(arrayOf("audio/mpeg"))}) {
-        Text("Importa podcast MP3")
+        Text("Importa podcast MP3/WAV")
     }
     OutlinedButton(onClick={kind="transcript";picker.launch(arrayOf("application/pdf"))}) {
         Text("Importa transcripció PDF")
@@ -96,8 +96,8 @@ internal fun MaterialsScreen(
             Column(Modifier.padding(12.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
                 Text(file.name,style=MaterialTheme.typography.titleMedium)
                 Text(if(file.type in setOf("audio","podcast","transcript")) when(file.type) {
-                    "audio" -> "Àudio MP3"
-                    "podcast" -> "Podcast MP3"
+                    "audio" -> "Àudio"
+                    "podcast" -> "Podcast"
                     else -> "Transcripció PDF"
                 } else stringResource(when(file.type) {
                     "video"->R.string.material_kind_video
@@ -130,7 +130,7 @@ internal fun MaterialsScreen(
                     OutlinedButton(onClick={
                         runCatching {
                             val intent=Intent(Intent.ACTION_SEND).apply {
-                                type = materialMime(file.type)
+                                type = materialMime(file.type,file.name)
                                 putExtra(Intent.EXTRA_STREAM, Uri.parse(file.uri))
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
@@ -144,7 +144,7 @@ internal fun MaterialsScreen(
                 ExportDocumentButton(
                     sourceUri = file.uri,
                     displayName = MaterialFileNames.forMaterial(file, plan),
-                    mime = materialMime(file.type),
+                    mime = materialMime(file.type,file.name),
                     onExported = { destination -> onExported(file.id, destination) }
                 )
                 if(course.role=="student" && file.type !in setOf("video","audio","podcast")) OutlinedButton(
@@ -185,7 +185,7 @@ internal fun MaterialViewer(file: LocalMaterial, plan: CoursePlan? = null, onExp
     ExportDocumentButton(
         sourceUri=file.uri,
         displayName=MaterialFileNames.forMaterial(file,plan),
-        mime=materialMime(file.type),
+        mime=materialMime(file.type,file.name),
         onExported=onExported
     )
     if(file.type=="audio" || file.type=="podcast") {

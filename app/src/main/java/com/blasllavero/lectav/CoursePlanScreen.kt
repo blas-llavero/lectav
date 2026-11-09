@@ -64,8 +64,8 @@ internal fun CoursePlanScreen(
             val result = runCatching {
                 context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 val mime = context.contentResolver.getType(uri).orEmpty()
-                require(mime == "audio/mpeg" || mime == "audio/mp3") {
-                    "Selecciona un fitxer d’àudio MP3."
+                require(mime in setOf("audio/mpeg","audio/mp3","audio/wav","audio/x-wav")) {
+                    "Selecciona un fitxer d’àudio MP3 o WAV."
                 }
                 onImportAudio(uri.toString(), pendingAudioName, pendingAudioKey, pendingAudioType)
             }
@@ -286,7 +286,7 @@ internal fun CoursePlanScreen(
                                         modifier=Modifier.fillMaxWidth(),
                                         enabled=attached.any { it.type=="lesson" },
                                         onClick={onGenerateSpeech(sessionId,fileStem,sessionTopic)}
-                                    ) { Text("Genera àudio o podcast des de la teoria (Piper)") }
+                                    ) { Text("Genera àudio/podcast a la tauleta (Piper)") }
                                     listOf("audio" to "àudio", "podcast" to "podcast").forEach { (type, label) ->
                                         OutlinedButton(
                                             modifier=Modifier.fillMaxWidth(),
@@ -294,9 +294,9 @@ internal fun CoursePlanScreen(
                                                 pendingAudioKey=sessionId
                                                 pendingAudioType=type
                                                 pendingAudioName=MaterialFileNames.forSessionStem(fileStem,type)
-                                                audioPicker.launch(arrayOf("audio/mpeg"))
+                                                audioPicker.launch(arrayOf("audio/*"))
                                             }
-                                        ) { Text("Importa un $label (MP3)") }
+                                        ) { Text("Importa un $label (MP3/WAV)") }
                                     }
                                 }
                                 OutlinedButton(

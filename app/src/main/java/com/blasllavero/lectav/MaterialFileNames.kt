@@ -35,7 +35,7 @@ internal object MaterialFileNames {
     )
 
     private fun safeStem(name: String): String = name.trim()
-        .replace(Regex("""(?i)\.(pdf|mp4|mp3)$"""), "")
+        .replace(Regex("""(?i)\.(pdf|mp4|mp3|wav)$"""), "")
         .replace(oldPrefix, "")
         .replace(Regex("""\s*:\s*"""), " - ")
         .replace(Regex("""[\\/*?"<>|\u0000-\u001F]"""), "_")
@@ -67,6 +67,8 @@ internal object MaterialFileNames {
      * is used only to suggest a name when the user exports a new copy.
      */
     fun forMaterial(material: LocalMaterial, plan: CoursePlan?): String {
+        fun adjustExt(s: String) = if(material.type in setOf("audio","podcast") &&
+            material.name.endsWith(".wav",ignoreCase=true)) s.removeSuffix(".mp3")+".wav" else s
         val parts = material.sessionKey.split('|')
         if (parts.size == 3 && plan != null) {
             val trimester = parts[0].toIntOrNull()
@@ -80,17 +82,17 @@ internal object MaterialFileNames {
                 val termIndex = termUnits.indexOfFirst { it.id == unit.id }
                 if (termIndex >= 0) {
                     val sessionNumber = termUnits.take(termIndex).sumOf { it.sessions } + localNumber
-                    return forSession(unitIndex + 1, sessionNumber, unit.sessionTitle(localNumber), material.type)
+                    return adjustExt(forSession(unitIndex + 1, sessionNumber, unit.sessionTitle(localNumber), material.type))
                 }
             }
         }
-        return forExport(material.name, material.type)
+        return adjustExt(forExport(material.name, material.type))
     }
 
     fun forDraft(topic: String, type: String): String = forExport(topic, type)
 
     fun forExport(original: String, type: String): String {
-        val ext = extension(type)
+        val ext = if(type in setOf("audio","podcast") && original.endsWith(".wav",true)) ".wav" else extension(type)
         val base = safeStem(original)
         val canonical = canonicalSuffix.matchEntire(base)
         if (canonical != null) {
