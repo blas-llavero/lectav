@@ -27,6 +27,9 @@ internal fun SessionSpeechScreen(
     var mode by remember { mutableStateOf("audio") }
     var script by remember(sessionKey) { mutableStateOf("") }
     var loadedTheory by remember(sessionKey) { mutableStateOf(false) }
+    var pageStart by remember(sessionKey) { mutableStateOf("1") }
+    var pageEnd by remember(sessionKey) { mutableStateOf("") }
+    var pdfPageCount by remember(sessionKey) { mutableIntStateOf(0) }
     var busy by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf("") }
     var voiceList by remember { mutableStateOf<List<OnDeviceSpeech.OfflineVoice>>(emptyList()) }
@@ -54,6 +57,16 @@ internal fun SessionSpeechScreen(
             "Instal·la primer Piper Android i les veus lliures compatibles.",
         style=MaterialTheme.typography.bodySmall
     )
+    if(theory!=null) {
+        Text("Pàgines que vols convertir en àudio",style=MaterialTheme.typography.titleSmall)
+        Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(value=pageStart,onValueChange={pageStart=it.filter(Char::isDigit).take(3)},
+                label={Text("Des de")},singleLine=true,modifier=Modifier.weight(1f))
+            OutlinedTextField(value=pageEnd,onValueChange={pageEnd=it.filter(Char::isDigit).take(3)},
+                label={Text("Fins a (buit = final)")},singleLine=true,modifier=Modifier.weight(1f))
+        }
+        if(pdfPageCount>0) Text("Aquest PDF té $pdfPageCount pàgines.",style=MaterialTheme.typography.bodySmall)
+    }
     if(theory==null) {
         Text("Primer cal generar o vincular la teoria PDF de la sessió.")
     } else {
@@ -62,9 +75,22 @@ internal fun SessionSpeechScreen(
             onClick={
                 busy=true;message=""
                 scope.launch {
-                    runCatching { SessionSpeech.extractPdf(context,theory.uri) }
-                        .onSuccess { script=it.take(8000);loadedTheory=true
-                            message="Teoria carregada. Revisa el guió i les fórmules." }
+                    runCatching {
+                        SessionSpeech.extractPdf(
+                            context,theory.uri,
+                            pageStart=pageStart.toIntOrNull() ?: 1,
+                            pageEnd=pageEnd.toIntOrNull() ?: 0
+                        )
+                    }.onSuccess { result ->
+                        script=result.text
+                        pdfPageCount=result.pages
+                        loadedTheory=true
+                        message=if(result.wasTruncated)
+                            "S’ha carregat el màxim de 8.000 caràcters del rang triat. " +
+                            "La resta no s’inclourà a l’àudio. Per narrar-la, selecciona " +
+                            "un rang més curt o un altre conjunt de pàgines."
+                        else "Teoria carregada de les pàgines ${result.startPage}–${result.endPage}. Revisa les fórmules."
+                    }
                         .onFailure { message=it.localizedMessage ?: "No es pot llegir la teoria PDF." }
                     busy=false
                 }
