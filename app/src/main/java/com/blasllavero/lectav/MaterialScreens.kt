@@ -7,6 +7,7 @@ import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.widget.MediaController
+import android.widget.Toast
 import android.widget.VideoView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
@@ -28,7 +30,7 @@ internal fun MaterialsScreen(
     course: SavedCourse,
     files: List<LocalMaterial>,
     plan: CoursePlan?,
-    onAdd: (String,String,String) -> Unit,
+    onAdd: suspend (String,String,String) -> Boolean,
     onOpen: (String) -> Unit,
     onUpdate: (String,Boolean) -> Unit,
     onRemove: (String) -> Unit,
@@ -36,6 +38,7 @@ internal fun MaterialsScreen(
     onExported: (String, String) -> Unit
 ) {
     val context=LocalContext.current
+    val scope=rememberCoroutineScope()
     var kind by remember { mutableStateOf("lesson") }
     var importError by remember { mutableStateOf(false) }
     var removeId by remember { mutableStateOf<String?>(null) }
@@ -56,7 +59,25 @@ internal fun MaterialsScreen(
                     else -> mime=="application/pdf" || name.endsWith(".pdf",true)
                 }
                 if(!valid) error("Invalid document type")
-                onAdd(uri.toString(),name,kind)
+                scope.launch {
+                    runCatching { onAdd(uri.toString(),name,kind) }
+                        .onSuccess { added ->
+                            Toast.makeText(
+                                context,
+                                if(added) "Fitxer importat correctament: $name"
+                                else "Aquest fitxer ja existeix o la biblioteca és plena.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                        .onFailure {
+                            Toast.makeText(
+                                context,
+                                "No s'ha pogut importar el fitxer: " +
+                                    (it.localizedMessage ?: "Error desconegut"),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                }
             }.isFailure
         }
     }
