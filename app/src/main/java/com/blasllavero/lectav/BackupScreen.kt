@@ -6,6 +6,7 @@
 package com.blasllavero.lectav
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
@@ -198,6 +199,12 @@ internal fun BackupScreen(
                             )
                         }
                         result.onSuccess {
+                            // Non-blocking, temporary confirmation: no Accept button.
+                            Toast.makeText(
+                                context,
+                                "Importació completada: ${it.courses} cursos i ${it.files} materials.",
+                                Toast.LENGTH_LONG
+                            ).show()
                             message = "Restauració completada: " + it.courses +
                                 " cursos i " + it.files +
                                 " materials. " + (if (it.accountHint.isNotBlank())
