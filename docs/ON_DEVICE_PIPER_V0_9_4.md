@@ -18,7 +18,8 @@ falls back to Google or another closed-source/cloud provider.
 2. Open Piper, download or import a compatible offline voice for the language
    you intend to use. Ensure each voice's license and pronunciation are
    appropriate. For a two-speaker podcast, install two distinct voices.
-3. Return to LECTAV → Els meus cursos → Programació i sessions.
+3. In Android Settings → Text-to-speech output, select **Piper** as the preferred/default engine. This is required so LECTAV never silently selects another installed engine.
+4. Return to LECTAV → Els meus cursos → Programació i sessions.
 4. Open a session with an existing theory PDF and choose the Piper audio button.
 5. Load the PDF text, review formulas and proper nouns, select the voice(s),
    and press **Genera i desa àudio WAV**.
