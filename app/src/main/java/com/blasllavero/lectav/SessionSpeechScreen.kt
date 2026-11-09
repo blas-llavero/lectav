@@ -30,6 +30,7 @@ internal fun SessionSpeechScreen(
     var pageStart by remember(sessionKey) { mutableStateOf("1") }
     var pageEnd by remember(sessionKey) { mutableStateOf("") }
     var pdfPageCount by remember(sessionKey) { mutableIntStateOf(0) }
+    var isSavingTheory by remember(sessionKey) { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf("") }
     var voiceList by remember { mutableStateOf<List<OnDeviceSpeech.OfflineVoice>>(emptyList()) }
@@ -75,27 +76,42 @@ internal fun SessionSpeechScreen(
             onClick={
                 busy=true;message=""
                 scope.launch {
+                    val start=pageStart.toIntOrNull() ?: 1
+                    val end=pageEnd.toIntOrNull() ?: 0
                     runCatching {
-                        SessionSpeech.extractPdf(
-                            context,theory.uri,
-                            pageStart=pageStart.toIntOrNull() ?: 1,
-                            pageEnd=pageEnd.toIntOrNull() ?: 0
-                        )
-                    }.onSuccess { result ->
-                        script=result.text
-                        pdfPageCount=result.pages
+                        val savedSource=if(start==1 && end==0)
+                            LocalPdfSource.readForMaterial(context,theory) else null
+                        if(savedSource!=null) {
+                            Triple(savedSource.take(8000),savedSource.length>8000,true)
+                        } else {
+                            val pdf=SessionSpeech.extractPdf(context,theory.uri,start,end)
+                            pdfPageCount=pdf.pages
+                            Triple(pdf.text,pdf.wasTruncated,false)
+                        }
+                    }.onSuccess { (result,cut,fromSource) ->
+                        script=result
                         loadedTheory=true
-                        message=if(result.wasTruncated)
-                            "S’ha carregat el màxim de 8.000 caràcters del rang triat. " +
-                            "La resta no s’inclourà a l’àudio. Per narrar-la, selecciona " +
-                            "un rang més curt o un altre conjunt de pàgines."
-                        else "Teoria carregada de les pàgines ${result.startPage}–${result.endPage}. Revisa les fórmules."
+                        message=when {
+                            cut -> "S'han recuperat 8.000 caràcters, però en queden més. " +
+                                "Per narrar la resta, divideix el contingut en fragments."
+                            fromSource -> "Text original recuperat! Revisa'l abans de narrar."
+                            else -> "Text extret del PDF. Revisa'l abans de narrar."
+                        }
+                    }.onFailure {
+                        loadedTheory=false
+                        message="No s'ha pogut extreure el text: " +
+                            (it.localizedMessage ?: "Format no accessible") +
+                            ". Pots enganxar manualment el guió a l'editor inferior."
                     }
-                        .onFailure { message=it.localizedMessage ?: "No es pot llegir la teoria PDF." }
                     busy=false
                 }
             }
         ) { Text("Carrega la teoria del PDF") }
+        if(message.isNotBlank()) Text(
+            message,style=MaterialTheme.typography.bodySmall,
+            color=if(message.startsWith("No s'ha pogut"))
+                MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+        )
     }
     Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
         FilterChip(selected=mode=="audio",onClick={mode="audio"},
@@ -117,11 +133,34 @@ internal fun SessionSpeechScreen(
             Text("Prepara un esborrany de dues veus")
         }
     }
+    Text("Si el PDF no conté text seleccionable, enganxa aquí el text de la " +
+        "teoria. Els PDFs nous conservaran també el text original.",
+        style=MaterialTheme.typography.bodySmall)
     OutlinedTextField(value=script,onValueChange={script=it.take(8000)},
         label={Text("Guió revisable")},minLines=6,maxLines=12,
         modifier=Modifier.fillMaxWidth())
     Text("${script.length} / 8.000 caràcters",
         style=MaterialTheme.typography.bodySmall)
+    if(theory!=null && script.isNotBlank()) {
+        OutlinedButton(
+            enabled=!busy && !isSavingTheory,
+            modifier=Modifier.fillMaxWidth(),
+            onClick={
+                isSavingTheory=true
+                scope.launch {
+                    runCatching {
+                        LocalPdfSource.saveForMaterial(context,theory,script.trim())
+                    }.onSuccess {
+                        message="Guió desat localment amb la teoria. Es recuperarà en tornar a obrir aquesta sessió."
+                    }.onFailure {
+                        message="No s'ha pogut conservar el guió: " +
+                            (it.localizedMessage ?: "Error de desament")
+                    }
+                    isSavingTheory=false
+                }
+            }
+        ) { Text("Conserva aquest guió amb la teoria") }
+    }
 
     if(voiceList.isEmpty()) {
         Text("No hi ha veus Piper disponibles. Instal·la Piper Android, " +
@@ -164,7 +203,7 @@ internal fun SessionSpeechScreen(
         style=MaterialTheme.typography.bodySmall
     )
     Button(
-        enabled=!busy && loadedTheory && script.trim().length >= 10 &&
+        enabled=!busy && script.trim().length >= 10 &&
             voiceA.isNotBlank() && (mode!="podcast" ||
                 (voiceB.isNotBlank() && voiceA!=voiceB)),
         modifier=Modifier.fillMaxWidth(),
@@ -185,7 +224,7 @@ internal fun SessionSpeechScreen(
     ) { Text(if(busy) "Generant WAV localment…" else "Genera i desa àudio WAV") }
     if(busy) LinearProgressIndicator(modifier=Modifier.fillMaxWidth())
     OutlinedButton(
-        enabled=!busy && loadedTheory && script.trim().isNotEmpty(),
+        enabled=!busy && script.trim().isNotEmpty(),
         modifier=Modifier.fillMaxWidth(),
         onClick={
             busy=true;message=""
@@ -203,5 +242,5 @@ internal fun SessionSpeechScreen(
             }
         }
     ) { Text("Desa el guió com a transcripció PDF") }
-    if(message.isNotBlank()) Text(message,style=MaterialTheme.typography.bodySmall)
+    if(theory==null && message.isNotBlank()) Text(message,style=MaterialTheme.typography.bodySmall)
 }
