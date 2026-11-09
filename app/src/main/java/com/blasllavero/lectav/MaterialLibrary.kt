@@ -68,12 +68,18 @@ internal class MaterialLibrary(context: Context) {
         }
     }
 
+    /**
+     * True only if this import created a new library entry. Import callers
+     * use this result to avoid showing a false success message for duplicate
+     * items or when the 500-material limit is reached.
+     */
     suspend fun add(course: SavedCourse, uri: String, name: String, type: String,
-        origin: String = "imported", sessionKey: String = "") {
+        origin: String = "imported", sessionKey: String = ""): Boolean {
         require(origin in listOf("imported","generated","restored"))
         require(type in listOf("lesson","exercise","solutions","video","audio","podcast","transcript"))
         require(uri.startsWith("content://"))
         require(sessionKey.length <= 150)
+        var added = false
         store.edit { p ->
             val items=decode(p[key] ?: "[]")
             if(items.size >= 500 || items.any {
@@ -82,7 +88,9 @@ internal class MaterialLibrary(context: Context) {
             p[key]=encode(items+LocalMaterial(UUID.randomUUID().toString(),
                 courseKey(course),uri,name.take(160),type,false,false,origin,
                 sessionKey=sessionKey))
+            added = true
         }
+        return added
     }
     suspend fun update(id: String, opened: Boolean? = null, completed: Boolean? = null) {
         store.edit { p ->
