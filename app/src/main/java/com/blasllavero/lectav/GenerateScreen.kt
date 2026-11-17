@@ -73,15 +73,19 @@ internal fun GenerateScreen(
     var modelBusy by remember { mutableStateOf(false) }
     var modelError by remember { mutableStateOf("") }
     var expandedModels by remember { mutableStateOf(false) }
-    LaunchedEffect(mode, chatGPTStatus.connected, chatGPTStatus.inferenceAllowed) {
+    LaunchedEffect(mode, kind, sessionKey, course.id, chatGPTStatus.connected, chatGPTStatus.inferenceAllowed) {
         if (mode == "chatgpt" && chatGPTStatus.inferenceAllowed) {
             modelBusy = true
             modelError = ""
             val result = runCatching { ChatGPTInference.availableModels() }
             availableModels = result.getOrDefault(emptyList())
-            if (selectedModel !in availableModels.map { it.slug }) {
-                selectedModel = availableModels.firstOrNull()?.slug.orEmpty()
-            }
+            val preferred=AutoGenerationConfig.resolvedModel(
+                context,courseKey(course),sessionKey,kind)
+            selectedModel = availableModels.firstOrNull { it.slug==preferred }?.slug
+                ?: selectedModel.takeIf { existing ->
+                    availableModels.any { it.slug==existing }
+                }
+                ?: availableModels.firstOrNull()?.slug.orEmpty()
             modelError = result.exceptionOrNull()?.localizedMessage ?: ""
             modelBusy = false
         }
@@ -245,6 +249,14 @@ internal fun GenerateScreen(
                                 text = { Text(modelEntry.name) },
                                 onClick = {
                                     selectedModel = modelEntry.slug
+                                    if(sessionKey.isNotBlank()) {
+                                        AutoGenerationConfig.setOverride(
+                                            context,courseKey(course),sessionKey,
+                                            kind,modelEntry.slug)
+                                    } else {
+                                        AutoGenerationConfig.setKindModel(
+                                            context,kind,modelEntry.slug)
+                                    }
                                     expandedModels = false
                                 }
                             )

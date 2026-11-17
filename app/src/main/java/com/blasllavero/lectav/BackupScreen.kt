@@ -240,7 +240,7 @@ internal fun BackupScreen(
     if (error.isNotBlank()) Text(error, color = MaterialTheme.colorScheme.error)
     if (message.isNotBlank()) Text(message, style = MaterialTheme.typography.bodyMedium)
     Text(
-        "Mida màxima per còpia: 250 MB de materials. Si tens MP4 molt grans, " +
+        "Mida màxima per còpia: 1 GB de materials. Si tens MP4 molt grans, " +
         "exporta'ls individualment a la SD. " +
         "No es recuperen automàticament fitxers d'una instal·lació " +
         "ja desinstal·lada sense còpia prèvia.",

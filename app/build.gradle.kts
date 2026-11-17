@@ -12,8 +12,8 @@ android {
         applicationId = "com.blasllavero.lectav"
         minSdk = 26
         targetSdk = 36
-        versionCode = 26
-        versionName = "0.9.8"
+        versionCode = 27
+        versionName = "0.9.9"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
