@@ -267,4 +267,5 @@ internal fun AutomaticCourseScreen(
         "Si tanques l'app o Android la suspèn, reprèn manualment la cua; " +
         "no es garanteix l'execució en segon pla.",
         style=MaterialTheme.typography.bodySmall)
+    GeneratedFilesHistory(files=files,courses=courses,plans=plans)
 }
