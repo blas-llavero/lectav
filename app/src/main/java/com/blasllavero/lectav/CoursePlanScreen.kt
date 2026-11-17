@@ -249,7 +249,7 @@ internal fun CoursePlanScreen(
                                                 OutlinedButton(
                                                     enabled=autoModels.isNotEmpty(),
                                                     onClick={expandedModel=true}
-                                                ) { Text("IA ▾") }
+                                                ) { Text((if(configured.isBlank()) "IA" else configured.take(9))+" ▾") }
                                                 DropdownMenu(
                                                     expanded=expandedModel,
                                                     onDismissRequest={expandedModel=false}
