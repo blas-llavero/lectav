@@ -249,12 +249,13 @@ internal fun GenerateScreen(
                                 text = { Text(modelEntry.name) },
                                 onClick = {
                                     selectedModel = modelEntry.slug
-                                    AutoGenerationConfig.setKindModel(
-                                        context,kind,modelEntry.slug)
                                     if(sessionKey.isNotBlank()) {
                                         AutoGenerationConfig.setOverride(
                                             context,courseKey(course),sessionKey,
                                             kind,modelEntry.slug)
+                                    } else {
+                                        AutoGenerationConfig.setKindModel(
+                                            context,kind,modelEntry.slug)
                                     }
                                     expandedModels = false
                                 }
