@@ -178,6 +178,7 @@ internal object LectavBackup {
                 .put("id",file.id).put("courseKey",file.courseKey)
                 .put("name",file.name).put("type",file.type)
                 .put("opened",file.opened).put("completed",file.completed)
+                .put("createdAt",file.createdAt)
                 .put("origin",file.origin).put("sessionKey",file.sessionKey)
                 .put("entry","files/" + i.toString().padStart(4,'0') + extension)
                 .apply {
@@ -398,7 +399,8 @@ internal object LectavBackup {
                         origin=if(obj.optString("origin")=="generated")
                             "generated" else "restored",
                         lastExportUri="", // previous content:// grants can no longer be valid
-                        sessionKey=obj.optString("sessionKey").take(150)
+                        sessionKey=obj.optString("sessionKey").take(150),
+                        createdAt=obj.optLong("createdAt",0L).coerceAtLeast(0L)
                     ))
                 }
                 // The archive and every file are authenticated/validated now.
