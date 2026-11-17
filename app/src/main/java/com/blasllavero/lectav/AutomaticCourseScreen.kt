@@ -126,6 +126,7 @@ internal fun AutomaticCourseScreen(
     }
     if(loading) LinearProgressIndicator(modifier=Modifier.fillMaxWidth())
     if(error.isNotBlank()) Text(error,color=MaterialTheme.colorScheme.error)
+    if(refresh == -1) Text("Model actualitzat")
     Text("Documents PDF pendents: "+tasks.size,style=MaterialTheme.typography.titleMedium)
     Text("La configuració següent s'aplicarà a tots els cursos i s'inclourà " +
         "a la còpia xifrada .lectavbak.")
