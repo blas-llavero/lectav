@@ -82,7 +82,8 @@ internal fun CoursePlanScreen(
         pendingAudioKey = ""
         pendingAudioName = ""
     }
-    if(modelVersion < 0) Text("Model canviat")
+    val currentModelVersion = modelVersion
+    if(currentModelVersion == -1) Text("Model anterior")
     Text("Programació didàctica · Índex de sessions",
         style = MaterialTheme.typography.titleLarge)
     Text(
@@ -248,8 +249,7 @@ internal fun CoursePlanScreen(
                                                 OutlinedButton(
                                                     enabled=autoModels.isNotEmpty(),
                                                     onClick={expandedModel=true}
-                                                ) { Text(if(configured.isBlank())
-                                                        "IA: global/tipus" else "IA: propi") }
+                                                ) { Text("IA ▾") }
                                                 DropdownMenu(
                                                     expanded=expandedModel,
                                                     onDismissRequest={expandedModel=false}
