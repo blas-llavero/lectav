@@ -16,7 +16,9 @@ internal data class LocalMaterial(
     val name: String, val type: String, val opened: Boolean, val completed: Boolean,
     val origin: String = "imported",
     val lastExportUri: String = "",
-    val sessionKey: String = ""
+    val sessionKey: String = "",
+    // Actual creation/import date from this app. Zero for older records with no timestamp.
+    val createdAt: Long = 0L
 )
 
 internal fun courseKey(course: SavedCourse) =
@@ -35,7 +37,8 @@ internal class MaterialLibrary(context: Context) {
                 j.optString("name"), j.optString("type"),
                 j.optBoolean("opened"), j.optBoolean("completed"),
                 j.optString("origin", "imported"), j.optString("lastExportUri"),
-                j.optString("sessionKey"))
+                j.optString("sessionKey"),
+                j.optLong("createdAt", 0L).coerceAtLeast(0L))
         }
     }.getOrDefault(emptyList())
     private fun encode(items: List<LocalMaterial>): String {
@@ -48,6 +51,7 @@ internal class MaterialLibrary(context: Context) {
                 put("origin",m.origin)
                 put("lastExportUri",m.lastExportUri)
                 put("sessionKey",m.sessionKey)
+                put("createdAt",m.createdAt)
             })
         }
         return arr.toString()
@@ -87,7 +91,7 @@ internal class MaterialLibrary(context: Context) {
             }) return@edit
             p[key]=encode(items+LocalMaterial(UUID.randomUUID().toString(),
                 courseKey(course),uri,name.take(160),type,false,false,origin,
-                sessionKey=sessionKey))
+                sessionKey=sessionKey,createdAt=System.currentTimeMillis()))
             added = true
         }
         return added
