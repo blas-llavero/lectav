@@ -40,7 +40,7 @@ internal data class RestoredBackup(
 internal object LectavBackup {
     private val magic = "LECTAVB1".toByteArray(Charsets.US_ASCII)
     private val random = SecureRandom()
-    private const val MAX_SIZE = 250L * 1024 * 1024
+    private const val MAX_SIZE = 1024L * 1024 * 1024
     private const val MAX_ITEMS = 500
     private const val MAX_MANIFEST = 1_200_000
 
@@ -133,10 +133,11 @@ internal object LectavBackup {
 
     private fun generatorPrefs(context: Context): JSONObject {
         val prefs=context.getSharedPreferences("lectav_generator",Context.MODE_PRIVATE)
-        val names=listOf("language","kind","mode","endpoint","ollamaModel","chatgptModel")
+        val names=AutoGenerationConfig.backupKeys
         val result=JSONObject()
         names.forEach { name ->
-            result.put(name,prefs.getString(name,"").orEmpty().take(120))
+            result.put(name,prefs.getString(name,"").orEmpty().take(
+                if(name=="autoOverrides") 400_000 else 400))
         }
         return result
     }
@@ -144,8 +145,10 @@ internal object LectavBackup {
     private fun restoreGeneratorPrefs(context: Context, values: JSONObject) {
         val prefs=context.getSharedPreferences("lectav_generator",Context.MODE_PRIVATE)
         val edit=prefs.edit().clear()
-        listOf("language","kind","mode","endpoint","ollamaModel","chatgptModel")
-            .forEach { name -> edit.putString(name,values.optString(name).take(120)) }
+        AutoGenerationConfig.backupKeys
+            .forEach { name -> edit.putString(name,values.optString(name).take(
+                if(name=="autoOverrides") 400_000 else 400)) }
+        edit.putString("autoAuthorized","false")
         check(edit.commit()) { "No s'han restaurat les preferències del generador." }
     }
 
@@ -224,7 +227,7 @@ internal object LectavBackup {
                             size += n
                             total += n
                             require(total <= MAX_SIZE) {
-                                "Còpia massa gran (màxim 250 MB). " +
+                                "Còpia massa gran (màxim 1 GB). " +
                                 "Exporta els vídeos grans a la SD per separat."
                             }
                             zip.write(buf,0,n)
@@ -236,7 +239,7 @@ internal object LectavBackup {
                         val sourceEntry=infos.getJSONObject(index).getString("sourceEntry")
                         val content=sourceText.toByteArray(Charsets.UTF_8)
                         total+=content.size
-                        require(total<=MAX_SIZE) { "La còpia supera el límit de 250 MB." }
+                        require(total<=MAX_SIZE) { "La còpia supera el límit d\'1 GB." }
                         zip.putNextEntry(ZipEntry(sourceEntry))
                         zip.write(content)
                         zip.closeEntry()
