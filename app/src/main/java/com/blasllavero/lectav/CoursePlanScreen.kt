@@ -39,6 +39,14 @@ internal fun CoursePlanScreen(
     var pendingAudioName by remember { mutableStateOf("") }
     var pendingAudioType by remember { mutableStateOf("podcast") }
     var importError by remember { mutableStateOf("") }
+    var autoModels by remember { mutableStateOf(emptyList<ChatGPTModel>()) }
+    var modelVersion by remember { mutableIntStateOf(0) }
+    LaunchedEffect(ChatGPTAuth.state.value.inferenceAllowed) {
+        if(ChatGPTAuth.state.value.inferenceAllowed) {
+            runCatching { ChatGPTInference.availableModels() }
+                .onSuccess { autoModels=it }
+        }
+    }
     val videoPicker=rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri ->
@@ -74,6 +82,7 @@ internal fun CoursePlanScreen(
         pendingAudioKey = ""
         pendingAudioName = ""
     }
+    if(modelVersion < 0) Text("Model canviat")
     Text("Programació didàctica · Índex de sessions",
         style = MaterialTheme.typography.titleLarge)
     Text(
@@ -225,6 +234,48 @@ internal fun CoursePlanScreen(
                                         if(latest!=null) {
                                             Button(onClick={onOpenMaterial(latest.id)}) {
                                                 Text("Obre")
+                                            }
+                                        }
+                                        if(course.role=="teacher") {
+                                            var expandedModel by remember(sessionId,type) {
+                                                mutableStateOf(false)
+                                            }
+                                            val configured=AutoGenerationConfig.explicitOverride(
+                                                context,courseKey(course),sessionId,type)
+                                            val inherited=AutoGenerationConfig.resolvedModel(
+                                                context,courseKey(course),sessionId,type)
+                                            Box {
+                                                OutlinedButton(
+                                                    enabled=autoModels.isNotEmpty(),
+                                                    onClick={expandedModel=true}
+                                                ) { Text(if(configured.isBlank())
+                                                        "IA: global/tipus" else "IA: propi") }
+                                                DropdownMenu(
+                                                    expanded=expandedModel,
+                                                    onDismissRequest={expandedModel=false}
+                                                ) {
+                                                    DropdownMenuItem(
+                                                        text={Text("Hereta el model global o del tipus")},
+                                                        onClick={
+                                                            AutoGenerationConfig.setOverride(
+                                                                context,courseKey(course),sessionId,type,"")
+                                                            modelVersion++
+                                                            expandedModel=false
+                                                        }
+                                                    )
+                                                    autoModels.forEach { entry ->
+                                                        DropdownMenuItem(
+                                                            text={Text(entry.name)},
+                                                            onClick={
+                                                                AutoGenerationConfig.setOverride(
+                                                                    context,courseKey(course),sessionId,
+                                                                    type,entry.slug)
+                                                                modelVersion++
+                                                                expandedModel=false
+                                                            }
+                                                        )
+                                                    }
+                                                }
                                             }
                                         }
                                         if(type=="lesson" || type=="exercise" || type=="solutions" || type=="transcript") {
