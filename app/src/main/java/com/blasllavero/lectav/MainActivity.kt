@@ -443,6 +443,21 @@ private fun LectavApp() {
                                 !chatGPTStatus.inferenceAllowed) },
                         onSignOut = { ChatGPTAuth.signOut() }
                     )
+                    "automatic" -> saved?.let { snapshot ->
+                        AutomaticCourseScreen(
+                            courses=snapshot.savedCourses,
+                            plans=allPlans,
+                            files=files,
+                            library=fileRepository,
+                            usageGuard=chatGPTGuard,
+                            connected=chatGPTStatus.connected,
+                            inferenceAllowed=chatGPTStatus.inferenceAllowed,
+                            onConnect={
+                                authReturnScreen="automatic"
+                                screen="chatgpt"
+                            }
+                        )
+                    }
                     "backup" -> BackupScreen(
                         settingsRepo = repository,
                         plansRepo = planningRepository,
@@ -452,6 +467,7 @@ private fun LectavApp() {
                     "settings" -> saved?.let {
                         SettingsScreen(
                             settings = it,
+                            chatGPTStatus=chatGPTStatus,
                             onClear = { scope.launch { repository.clearSelection() } },
                             onCalibration = { screen = "calibration" },
                             onChatGPT = {
@@ -476,6 +492,20 @@ private fun LectavApp() {
                             fontWeight = FontWeight.Bold
                         )
                         Text(stringResource(R.string.introduction))
+                        Text("Mode de treball",style=MaterialTheme.typography.titleMedium)
+                        Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+                            Button(onClick={
+                                AutoGenerationConfig.saveHomeMode(context,"manual")
+                            },modifier=Modifier.weight(1f)) { Text("Mode manual") }
+                            OutlinedButton(onClick={
+                                AutoGenerationConfig.saveHomeMode(context,"automatic")
+                                screen="automatic"
+                            },modifier=Modifier.weight(1f)) { Text("Mode automàtic") }
+                        }
+                        Text("Manual: genera i revisa els materials un per un. " +
+                            "Automàtic: continua pels PDFs dels cursos i sessions configurats, " +
+                            "amb un únic consentiment per execució.",
+                            style=MaterialTheme.typography.bodySmall)
                         Text(stringResource(R.string.catalogue_region), style = MaterialTheme.typography.labelMedium)
                         Button(
                             onClick = { screen = "library" },
@@ -812,6 +842,7 @@ private val appLanguages = listOf(
 @Composable
 private fun SettingsScreen(
     settings: SavedSettings,
+    chatGPTStatus: ChatGPTAuthState,
     onClear: () -> Unit,
     onCalibration: () -> Unit,
     onChatGPT: () -> Unit,
@@ -825,6 +856,17 @@ private fun SettingsScreen(
         else appLanguages.firstOrNull { it.code.equals(currentTag, ignoreCase = true) }?.code
             ?: "system"
     var expanded by remember { mutableStateOf(false) }
+    val context=LocalContext.current
+    var models by remember { mutableStateOf(emptyList<ChatGPTModel>()) }
+    var modelError by remember { mutableStateOf("") }
+    var revision by remember { mutableIntStateOf(0) }
+    LaunchedEffect(chatGPTStatus.inferenceAllowed) {
+        if(chatGPTStatus.inferenceAllowed) {
+            runCatching { ChatGPTInference.availableModels() }
+                .onSuccess { models=it;modelError="" }
+                .onFailure { modelError=it.localizedMessage ?: "Error consultant els models." }
+        }
+    }
 
     Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.titleLarge)
     Text(stringResource(R.string.settings_saved_note))
@@ -860,6 +902,30 @@ private fun SettingsScreen(
     OutlinedButton(onClick = onChatGPT, modifier = Modifier.fillMaxWidth()) {
         Text("Compte ChatGPT · connexió opcional")
     }
+    HorizontalDivider()
+    Text("Configuració de generació automàtica",style=MaterialTheme.typography.titleMedium)
+    Text("Selecciona el model per defecte de tots els cursos. " +
+        "Els models per tipus o sessió tenen prioritat. " +
+        "Totes aquestes preferències s'exporten dins la còpia xifrada.")
+    if(modelError.isNotBlank()) Text(modelError,color=MaterialTheme.colorScheme.error)
+    Text("Canvis de models desats: "+revision,
+        style=MaterialTheme.typography.bodySmall)
+    ModelChoice("Model global de ChatGPT",models,
+        AutoGenerationConfig.globalModel(context),
+        enabled=models.isNotEmpty(),
+        onSelect={ AutoGenerationConfig.setGlobalModel(context,it);revision++ })
+    AutoGenerationConfig.materialTypes.forEach { kind ->
+        ModelChoice(AutoGenerationConfig.title(kind),models,
+            AutoGenerationConfig.kindModel(context,kind),
+            enabled=models.isNotEmpty(),allowInherit=true,
+            onSelect={
+                AutoGenerationConfig.setKindModel(context,kind,it)
+                revision++
+            })
+    }
+    Text("Màxim per bloc automàtic: "+AutoGenerationConfig.maxRequests(context))
+    Text("És un límit de protecció de LECTAV, no un saldo real de ChatGPT.",
+        style=MaterialTheme.typography.bodySmall)
     HorizontalDivider()
     Text(stringResource(R.string.saved_education), style = MaterialTheme.typography.titleMedium)
     Text("${stringResource(R.string.settings_country)}: ${stringResource(R.string.settings_spain)}")
