@@ -141,7 +141,6 @@ internal fun TrimesterPlanGeneratorScreen(
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
-    var consentDialog by remember { mutableStateOf(false) }
     var saveDialog by remember { mutableStateOf(false) }
     var proposal by remember { mutableStateOf(emptyList<TopicPlan>()) }
     val usage by usageGuard.state.collectAsState()
@@ -278,24 +277,16 @@ internal fun TrimesterPlanGeneratorScreen(
                 }
             }
         }
+        val authorized=AutoGenerationConfig.isChatGPTAuthorized(
+            context,chatGPTStatus.email)
         Button(
             modifier = Modifier.fillMaxWidth(),
             enabled = !loading && !modelBusy && !sourceBusy &&
-                models.any { it.slug == chosenModel } &&
+                authorized && models.any { it.slug == chosenModel } &&
                 (sessionsWanted.toIntOrNull() ?: 0) in 6..48 &&
                 academicYear.length >= 4 && course.role == "teacher",
-            onClick = { consentDialog = true }
-        ) {
-            Text(if (loading) "Generant programació…" else
-                "Genera els temes i les sessions del trimestre amb ChatGPT")
-        }
-    }
-    if (consentDialog) {
-        ChatGPTUsageConfirmDialog(
-            guard = usageGuard,
-            onDismiss = { consentDialog = false },
-            onConfirm = {
-                consentDialog = false
+            onClick = {
+                AutoGenerationConfig.requireChatGPTAuthorized(context,chatGPTStatus.email)
                 loading = true
                 proposal = emptyList()
                 error = ""; message = ""
@@ -338,7 +329,13 @@ internal fun TrimesterPlanGeneratorScreen(
                     loading = false
                 }
             }
-        )
+        ) {
+            Text(if (loading) "Generant programació…" else
+                "Genera els temes i les sessions del trimestre amb ChatGPT")
+        }
+        if(!authorized) Text(
+            "Activa l'autorització persistent de ChatGPT a Configuració.",
+            color=MaterialTheme.colorScheme.error)
     }
     if (loading) {
         LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
