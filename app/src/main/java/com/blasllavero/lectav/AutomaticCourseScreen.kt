@@ -89,7 +89,8 @@ internal fun AutomaticCourseScreen(
     }
     DisposableEffect(Unit) { onDispose { runningJob?.cancel() } }
 
-    val tasks=remember(courses,plans,files) {
+    val voiceAvailable=EmbeddedSpeech.installed(context).isNotEmpty()
+    val tasks=remember(courses,plans,files,voiceAvailable) {
         buildList {
             courses.filter { it.role=="teacher" }.forEach { c ->
                 val plan=plans.firstOrNull { it.courseKey==courseKey(c) }
@@ -102,7 +103,9 @@ internal fun AutomaticCourseScreen(
                         if(topic.length<3 || "Contingut pendent de concretar" in topic) continue
                         val sessionId=unit.trimester.toString()+"|"+unit.id+"|"+n
                         val stem=MaterialFileNames.sessionStem(unitIndex+1,offset+n,topic)
-                        AutoGenerationConfig.automaticPdfTypes.forEach { kind ->
+                        val kinds=AutoGenerationConfig.automaticPdfTypes +
+                            if(voiceAvailable) listOf("audio") else emptyList()
+                        kinds.forEach { kind ->
                             if(files.none { it.courseKey==courseKey(c) &&
                                 it.sessionKey==sessionId && it.type==kind })
                                 add(AutoPdfTask(c,sessionId,stem,topic,kind))
@@ -115,10 +118,12 @@ internal fun AutomaticCourseScreen(
 
     Text("Mode automàtic",style=MaterialTheme.typography.titleLarge)
     Text("Cua de cursos i sessions desats: Teoria → Exercicis → Solucions → " +
-        "Transcripció. Desa cada PDF i passa al següent sense més preguntes. " +
-        "Si es talla, pots reprendre des dels materials que ja existeixen.")
-    Text("El vídeo/avatar, l'àudio i el podcast encara no tenen generador " +
-        "automàtic complet a LECTAV: queden pendents, no es creen fitxers ficticis.",
+        "Transcripció → Àudio WAV (si has descarregat una veu local). " +
+        "Els fitxers s'associen a la sessió sense passos intermedis.")
+    Text(if(voiceAvailable) "Motor lliure d'àudio instal·lat: àudio inclòs a la cua."
+        else "Per activar els WAV automàtics, descarrega primer una veu " +
+            "des de Genera àudio de qualsevol sessió. " +
+            "Els vídeos d'avatar i els podcasts continuen pendents.",
         style=MaterialTheme.typography.bodySmall)
     if(!connected || !inferenceAllowed) {
         Text("Connecta i autoritza ChatGPT.",color=MaterialTheme.colorScheme.error)
@@ -127,7 +132,7 @@ internal fun AutomaticCourseScreen(
     if(loading) LinearProgressIndicator(modifier=Modifier.fillMaxWidth())
     if(error.isNotBlank()) Text(error,color=MaterialTheme.colorScheme.error)
     if(refresh == -1) Text("Model actualitzat")
-    Text("Documents PDF pendents: "+tasks.size,style=MaterialTheme.typography.titleMedium)
+    Text("Materials pendents (PDF i WAV): "+tasks.size,style=MaterialTheme.typography.titleMedium)
     Text("La configuració següent s'aplicarà a tots els cursos i s'inclourà " +
         "a la còpia xifrada .lectavbak.")
     ModelChoice("Model global",models,AutoGenerationConfig.globalModel(context),
@@ -149,11 +154,20 @@ internal fun AutomaticCourseScreen(
         "Abans d'iniciar una cua, autoritza la creació de contingut amb " +
             "ChatGPT a Configuració. No hauràs de repetir-ho en cada execució.",
         color=MaterialTheme.colorScheme.error)
-    val queued=tasks.take(cap)
+    val queued=buildList {
+        var chatgptCalls=0
+        for(task in tasks) {
+            if(task.kind!="audio" && chatgptCalls>=cap) break
+            add(task)
+            if(task.kind!="audio") chatgptCalls++
+        }
+    }
     val invalid=queued.any { task ->
+        if(task.kind=="audio") false else {
         val model=AutoGenerationConfig.resolvedModel(context,
             courseKey(task.course),task.sessionId,task.kind)
         model.isBlank() || models.none { it.slug==model }
+        }
     }
     if(invalid) Text("Cal seleccionar models disponibles per a tots els tipus " +
         "de contingut abans d'iniciar la cua.",color=MaterialTheme.colorScheme.error)
@@ -186,6 +200,32 @@ internal fun AutomaticCourseScreen(
                             AutoGenerationConfig.recordProgress(context,progress)
                             if(library.files.first().any { it.courseKey==courseKey(task.course) &&
                                 it.sessionKey==task.sessionId && it.type==task.kind }) {
+                                completed++
+                                continue
+                            }
+                            if(task.kind=="audio") {
+                                val source=library.files.first().lastOrNull {
+                                    it.courseKey==courseKey(task.course) &&
+                                    it.sessionKey==task.sessionId &&
+                                    it.type=="transcript"
+                                } ?: error("Falta el guió PDF per a "+jobName)
+                                val text=LocalPdfSource.readForMaterial(context,source)
+                                    ?: error("No s'ha recuperat el guió de narració.")
+                                require(text.length in 10..50000) {
+                                    "Guió buit o superior a 50.000 caràcters."
+                                }
+                                val preferred=EmbeddedSpeech.preferredVoiceId(context)
+                                val voice=EmbeddedSpeech.installed(context)
+                                    .firstOrNull { it.id==preferred }
+                                    ?: EmbeddedSpeech.installed(context).firstOrNull()
+                                    ?: error("No hi ha cap veu integrada instal·lada.")
+                                val uri=EmbeddedSpeech.synthesize(context,text,voice.id)
+                                val filename=MaterialFileNames.forSessionStem(
+                                    task.stem,"audio").removeSuffix(".mp3")+".wav"
+                                check(library.add(task.course,uri,filename,"audio",
+                                    "generated",task.sessionId)) {
+                                    "No s'ha pogut indexar l'àudio de "+jobName
+                                }
                                 completed++
                                 continue
                             }

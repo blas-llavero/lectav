@@ -36,6 +36,10 @@ internal fun SessionSpeechScreen(
     var voiceList by remember { mutableStateOf<List<OnDeviceSpeech.OfflineVoice>>(emptyList()) }
     var voiceA by remember { mutableStateOf("") }
     var voiceB by remember { mutableStateOf("") }
+    var offlineVoice by remember { mutableStateOf(EmbeddedSpeech.preferredVoiceId(context)) }
+    var downloadedVoices by remember { mutableStateOf(EmbeddedSpeech.installed(context)) }
+    var downloadingVoice by remember { mutableStateOf(false) }
+    var voicePickerOpen by remember { mutableStateOf(false) }
     var aExpanded by remember { mutableStateOf(false) }
     var bExpanded by remember { mutableStateOf(false) }
 
@@ -162,6 +166,73 @@ internal fun SessionSpeechScreen(
         ) { Text("Conserva aquest guió amb la teoria") }
     }
 
+    HorizontalDivider()
+    Text("Generació integrada a LECTAV (sense Piper extern)",
+        style=MaterialTheme.typography.titleMedium)
+    Text("Instal·la una veu lliure directament a LECTAV. " +
+        "Després de la descàrrega, el guió es transforma en WAV " +
+        "sense PC, serveis en línia ni una altra app.",
+        style=MaterialTheme.typography.bodySmall)
+    Box {
+        OutlinedButton(onClick={voicePickerOpen=true},enabled=!busy && !downloadingVoice,
+            modifier=Modifier.fillMaxWidth()) {
+            Text(EmbeddedSpeech.catalog.firstOrNull{it.id==offlineVoice}?.label
+                ?: "Escull una veu")
+        }
+        DropdownMenu(expanded=voicePickerOpen,onDismissRequest={voicePickerOpen=false}) {
+            EmbeddedSpeech.catalog.forEach { item ->
+                DropdownMenuItem(text={Text(item.label)},onClick={
+                    offlineVoice=item.id
+                    EmbeddedSpeech.setPreferredVoiceId(context,item.id)
+                    voicePickerOpen=false
+                })
+            }
+        }
+    }
+    val isInstalled=downloadedVoices.any { it.id==offlineVoice }
+    if(!isInstalled) {
+        OutlinedButton(enabled=!busy && !downloadingVoice,
+            onClick={
+                downloadingVoice=true
+                message="Descarregant i instal·lant la veu lliure..."
+                scope.launch {
+                    runCatching { EmbeddedSpeech.install(context,offlineVoice) }
+                        .onSuccess {
+                            downloadedVoices=EmbeddedSpeech.installed(context)
+                            message="Veu instal·lada a LECTAV. Ja pots generar àudio."
+                        }.onFailure {
+                            message="No s'ha pogut instal·lar la veu: " +
+                                (it.localizedMessage ?: "Error de descàrrega")
+                        }
+                    downloadingVoice=false
+                }
+            },modifier=Modifier.fillMaxWidth()) { Text("Descarrega aquesta veu a LECTAV") }
+    } else Text("Veu disponible sense connexió.",
+        style=MaterialTheme.typography.bodySmall)
+    if(downloadingVoice) LinearProgressIndicator(modifier=Modifier.fillMaxWidth())
+    Button(enabled=!busy && !downloadingVoice && isInstalled &&
+        script.trim().length>=10 && mode=="audio",
+        modifier=Modifier.fillMaxWidth(),
+        onClick={
+            busy=true;message=""
+            scope.launch {
+                runCatching { EmbeddedSpeech.synthesize(context,script.trim(),offlineVoice) }
+                    .onSuccess { uri ->
+                        val filename=MaterialFileNames.forSessionStem(filenameStem,"audio")
+                            .removeSuffix(".mp3")+".wav"
+                        onSaved(uri,filename,"audio")
+                        message="Àudio WAV generat per LECTAV i vinculat a la sessió."
+                    }.onFailure { message=it.localizedMessage ?: "Error de síntesi de veu." }
+                busy=false
+            }
+        }) { Text("Genera àudio amb LECTAV") }
+    if(mode=="podcast") Text("El motor de podcasts de dues veus " +
+        "s'afegirà a la generació integrada posteriorment. " +
+        "L'opció Piper externa es manté temporalment com a alternativa.",
+        style=MaterialTheme.typography.bodySmall)
+    HorizontalDivider()
+    Text("Motor Piper d'Android (alternativa antiga)",
+        style=MaterialTheme.typography.titleMedium)
     if(voiceList.isEmpty()) {
         Text("No hi ha veus Piper disponibles. Instal·la Piper Android, " +
             "descarrega una veu a la seva aplicació i torna a entrar a la sessió.",
