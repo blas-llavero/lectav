@@ -102,6 +102,21 @@ internal class CoursePlanningRepository(context: Context) {
     suspend fun snapshotRaw(): String =
         encodePlans(plans.first())
 
+    /** Merge plans by courseKey; never erase programs in unselected courses. */
+    suspend fun mergeBackup(raw: String) {
+        require(raw.length <= 350_000)
+        val incoming=decodePlans(raw)
+        require(raw.trim()=="[]" || incoming.isNotEmpty())
+        store.edit { prefs ->
+            val previous=decodePlans(prefs[key] ?: "[]")
+            val merged=LinkedHashMap<String,CoursePlan>()
+            previous.forEach { merged[it.courseKey]=it }
+            incoming.forEach { merged[it.courseKey]=it }
+            require(merged.size<=100)
+            prefs[key]=encodePlans(merged.values.toList())
+        }
+    }
+
     suspend fun restoreBackup(raw: String) {
         require(raw.length <= 350_000) { "El pla curricular supera el límit." }
         val valid = decodePlans(raw)
