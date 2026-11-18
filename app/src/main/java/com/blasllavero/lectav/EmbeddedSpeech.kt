@@ -141,7 +141,7 @@ internal object EmbeddedSpeech {
         val txt=original.replace(Regex("""<[^>]+>""")," ")
             .replace(Regex("""[\*_#]+""")," ")
             .replace(Regex("""\s+""")," ").trim()
-        require(txt.length in 10..8000){"Guió: de 10 a 8.000 caràcters."}
+        require(txt.length in 10..50000){"Guió: de 10 a 50.000 caràcters."}
         val chunks=mutableListOf<String>()
         var current=""
         for(word in txt.split(" ")){
@@ -151,7 +151,7 @@ internal object EmbeddedSpeech {
             current=if(current.isBlank())word else current+" "+word
         }
         if(current.isNotBlank())chunks.add(current)
-        require(chunks.size<=60)
+        require(chunks.size<=250)
         return chunks
     }
 
@@ -178,7 +178,7 @@ internal object EmbeddedSpeech {
                             ?:error("No s'ha generat un fragment de veu.")
                         require(pcm.isNotEmpty() && pcm.size%2==0)
                         count+=pcm.size
-                        require(count<=100L*1024*1024)
+                        require(count<=350L*1024*1024)
                         wav.write(pcm)
                     }
                     require(count>0)
