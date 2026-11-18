@@ -39,7 +39,6 @@ internal fun GenerateScreen(
         context.applicationContext.getSharedPreferences("lectav_generator", android.content.Context.MODE_PRIVATE)
     }
     val usage by usageGuard.state.collectAsState()
-    var showUsageConfirm by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { usageGuard.refresh() }
     var topic by rememberSaveable(course.id, suggestedTopic) { mutableStateOf(suggestedTopic) }
     var language by rememberSaveable { mutableStateOf(generatorPrefs.getString("language","Català") ?: "Català") }
@@ -117,6 +116,8 @@ internal fun GenerateScreen(
                     when (mode) {
                         "ollama" -> OnDemandGenerator.generateWithOllama(endpoint, model, request)
                         "chatgpt" -> {
+                            AutoGenerationConfig.requireChatGPTAuthorized(
+                                context, chatGPTStatus.email)
                             val selected = availableModels.firstOrNull { it.slug == selectedModel }
                                 ?: error("No hi ha cap model ChatGPT seleccionat.")
                             ChatGPTInference.generate(selected, request, usageGuard)
@@ -278,22 +279,17 @@ internal fun GenerateScreen(
         modifier = Modifier.fillMaxWidth(),
         enabled = !busy && topic.trim().length >= 3 &&
             (mode != "chatgpt" || (
-                chatGPTStatus.inferenceAllowed && !modelBusy &&
+                chatGPTStatus.inferenceAllowed &&
+                AutoGenerationConfig.isChatGPTAuthorized(context,chatGPTStatus.email) &&
+                !modelBusy &&
                 availableModels.any { it.slug == selectedModel }
             )),
-        onClick = {
-            if (mode == "chatgpt") showUsageConfirm = true else generateDraft()
-        }
+        onClick = { generateDraft() }
     ) { Text(if (busy) "Generant…" else "Genera l'esborrany") }
-    if (showUsageConfirm) {
-        ChatGPTUsageConfirmDialog(
-            guard = usageGuard,
-            onConfirm = {
-                showUsageConfirm = false
-                generateDraft()
-            },
-            onDismiss = { showUsageConfirm = false }
-        )
+    if(mode=="chatgpt" && chatGPTStatus.inferenceAllowed &&
+        !AutoGenerationConfig.isChatGPTAuthorized(context,chatGPTStatus.email)) {
+        Text("Cal autoritzar la creació de contingut amb ChatGPT a Configuració.",
+            color=MaterialTheme.colorScheme.error)
     }
     if (busy) CircularProgressIndicator()
     if (error.isNotBlank()) {
