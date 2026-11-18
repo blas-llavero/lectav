@@ -42,6 +42,30 @@ internal fun BackupScreen(
     var selectedBackup by remember { mutableStateOf<Uri?>(null) }
     var pendingPassword by remember { mutableStateOf("") }
     var pendingLanguage by remember { mutableStateOf("") }
+    var pendingSelection by remember { mutableStateOf<BackupSelection?>(null) }
+
+    val saved by settingsRepo.settings.collectAsState(initial=SavedSettings())
+    val materials by library.files.collectAsState(initial=emptyList())
+    val courses=saved.savedCourses.distinctBy { courseKey(it) }
+    val supportedTypes=linkedMapOf(
+        "lesson" to "Teoria",
+        "exercise" to "Exercicis",
+        "solutions" to "Solucions",
+        "video" to "Avatar / vídeo",
+        "audio" to "Àudio",
+        "podcast" to "Podcast",
+        "transcript" to "Transcripció"
+    )
+    var selectedCourses by remember { mutableStateOf<Set<String>?>(null) }
+    var selectedTypes by remember { mutableStateOf<Set<String>?>(null) }
+    var excludedMaterials by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var expandedCourses by remember { mutableStateOf<Set<String>>(emptySet()) }
+    val effectiveCourses=selectedCourses ?: courses.map(::courseKey).toSet()
+    val effectiveTypes=selectedTypes ?: supportedTypes.keys
+    val candidateFiles=materials.filter { it.courseKey in effectiveCourses
+        && it.type in effectiveTypes && it.id !in excludedMaterials }
+    val activeSelection=BackupSelection(effectiveCourses,candidateFiles.map { it.id }.toSet())
+
 
     val exportPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/octet-stream")
@@ -49,14 +73,16 @@ internal fun BackupScreen(
         if (uri != null) {
             val pass = pendingPassword
             val locale = pendingLanguage
+            val selection = pendingSelection
             pendingPassword = ""
+            pendingSelection = null
             busy = true
             error = ""
             scope.launch {
                 val result = runCatching {
                     LectavBackup.export(
                         context, uri, pass, settingsRepo, plansRepo, library,
-                        usageGuard, locale
+                        usageGuard, locale, selection
                     )
                 }
                 result.onSuccess {
@@ -119,24 +145,125 @@ internal fun BackupScreen(
         label = { Text("Repeteix la contrasenya per exportar") },
         singleLine = true
     )
+    HorizontalDivider()
+    Text("Selecciona cursos, assignatures i materials",
+        style=MaterialTheme.typography.titleMedium)
+    Text("Pots exportar tota la biblioteca o només determinats cursos, " +
+        "assignatures, tipus de material i fitxers individuals. " +
+        "Les còpies parcials no substitueixen els altres cursos en importar-les.",
+        style=MaterialTheme.typography.bodySmall)
+    Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+        OutlinedButton(
+            enabled=!busy,
+            onClick={
+                selectedCourses=null
+                selectedTypes=null
+                excludedMaterials=emptySet()
+            }
+        ){Text("Selecciona-ho tot")}
+        OutlinedButton(
+            enabled=!busy,
+            onClick={ selectedCourses=emptySet() }
+        ){Text("Cap curs")}
+    }
+    Text("Tipus de contingut",style=MaterialTheme.typography.titleSmall)
+    supportedTypes.forEach { (type,display) ->
+        val checked=type in effectiveTypes
+        Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
+            Checkbox(
+                checked=checked,enabled=!busy,
+                onCheckedChange={ value ->
+                    val next=effectiveTypes.toMutableSet()
+                    if(value)next.add(type) else next.remove(type)
+                    selectedTypes=next
+                }
+            )
+            Text(display)
+        }
+    }
+    Text("Cursos i assignatures",style=MaterialTheme.typography.titleSmall)
+    if(courses.isEmpty())Text("Encara no hi ha cap curs desat.")
+    courses.forEach { course ->
+        val key=courseKey(course)
+        val checked=key in effectiveCourses
+        val files=materials.filter { it.courseKey==key }
+        Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
+            Checkbox(
+                checked=checked,enabled=!busy,
+                onCheckedChange={ value ->
+                    val next=effectiveCourses.toMutableSet()
+                    if(value)next.add(key) else next.remove(key)
+                    selectedCourses=next
+                }
+            )
+            Text(
+                "${course.pathway.uppercase(Locale.ROOT)} · ${course.course} · ${course.subject}",
+                modifier=Modifier.weight(1f)
+            )
+            TextButton(onClick={
+                expandedCourses=if(key in expandedCourses)expandedCourses-key
+                    else expandedCourses+key
+            }){Text(if(key in expandedCourses)"Amaga" else "Elements (${files.size})")}
+        }
+        if(key in expandedCourses){
+            if(files.isEmpty())Text("Sense materials desats.",
+                style=MaterialTheme.typography.bodySmall)
+            files.forEach { file ->
+                val active=checked && file.type in effectiveTypes
+                Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically,
+                    modifier=Modifier.padding(start=22.dp)) {
+                    Checkbox(
+                        checked=active && file.id !in excludedMaterials,
+                        enabled=!busy && active,
+                        onCheckedChange={ value ->
+                            excludedMaterials=if(value)excludedMaterials-file.id
+                                else excludedMaterials+file.id
+                        }
+                    )
+                    Text("${supportedTypes[file.type] ?: file.type}: ${file.name}",
+                        style=MaterialTheme.typography.bodySmall,
+                        modifier=Modifier.weight(1f))
+                }
+            }
+        }
+    }
+    Text("Selecció: ${effectiveCourses.size} assignatures i " +
+        "${candidateFiles.size} materials.",
+        style=MaterialTheme.typography.bodyMedium)
+
     Button(
         modifier = Modifier.fillMaxWidth(),
-        enabled = !busy && password.length >= 10 && password == confirmPassword,
+        enabled = !busy && password.length >= 10 && password == confirmPassword
+            && effectiveCourses.isNotEmpty(),
         onClick = {
             error = ""; message = ""
             pendingPassword = password
             pendingLanguage = AppCompatDelegate.getApplicationLocales().toLanguageTags()
+            pendingSelection = activeSelection
             val today = SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.ROOT).format(Date())
-            exportPicker.launch("LECTAV-backup-" + today + ".lectavbak")
+            exportPicker.launch("LECTAV-seleccio-" + today + ".lectavbak")
         }
-    ) { Text("Exporta configuració i materials…") }
+    ) { Text("Exporta només la selecció…") }
+    OutlinedButton(
+        modifier=Modifier.fillMaxWidth(),
+        enabled=!busy && password.length>=10 && password==confirmPassword,
+        onClick={
+            error="";message=""
+            pendingPassword=password
+            pendingLanguage=AppCompatDelegate.getApplicationLocales().toLanguageTags()
+            pendingSelection=null
+            val today=SimpleDateFormat("yyyy-MM-dd_HH-mm",Locale.ROOT).format(Date())
+            exportPicker.launch("LECTAV-backup-complet-"+today+".lectavbak")
+        }
+    ){Text("Exporta-ho tot (configuració + cursos + materials)…")}
 
     HorizontalDivider()
     Text("Restaura una còpia anterior", style = MaterialTheme.typography.titleMedium)
     Text(
-        "La restauració REEMPLAÇARÀ les llistes de cursos, els plans i els " +
-        "materials indexats d'aquesta instal·lació. " +
-        "No desinstal·lis LECTAV abans d'haver comprovat que la còpia existeix.",
+        "Còpia completa: substitueix els cursos i materials locals. " +
+        "Còpia selectiva: afegeix o actualitza només els cursos i materials " +
+        "inclòsos en el fitxer; els altres cursos es conserven. " +
+        "No desinstal·lis LECTAV abans de comprovar la còpia.",
         style = MaterialTheme.typography.bodySmall
     )
     OutlinedButton(
