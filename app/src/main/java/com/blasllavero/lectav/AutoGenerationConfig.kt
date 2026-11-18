@@ -7,6 +7,8 @@ package com.blasllavero.lectav
 
 import android.content.Context
 import org.json.JSONObject
+import java.security.MessageDigest
+import java.util.Locale
 
 /**
  * Config values contain no OAuth access/refresh token. The encrypted backup
@@ -95,12 +97,50 @@ internal object AutoGenerationConfig {
             .ifBlank { globalModel(context) }
     }
 
-    fun automaticAuthorized(context: Context): Boolean =
-        prefs(context).getString("autoAuthorized","false") == "true"
+    /**
+     * Persistent, revocable and account-scoped approval for content creation
+     * with the signed-in ChatGPT account. Do not export or restore consent:
+     * an installed account must explicitly authorize its own device.
+     *
+     * The opaque SHA-256 digest avoids storing an email address a second time.
+     * The email itself comes from the authenticated account state.
+     */
+    private fun accountFingerprint(email: String): String {
+        val normalized=email.trim().lowercase(Locale.ROOT)
+        if(normalized.isBlank()) return ""
+        val hash=MessageDigest.getInstance("SHA-256")
+            .digest(normalized.toByteArray(Charsets.UTF_8))
+        return hash.joinToString("") { "%02x".format(it.toInt() and 0xff) }
+    }
 
-    fun setAutomaticAuthorized(context: Context, authorized: Boolean) {
-        check(prefs(context).edit()
-            .putString("autoAuthorized",authorized.toString()).commit())
+    fun isChatGPTAuthorized(context: Context, email: String): Boolean {
+        val account=accountFingerprint(email)
+        return account.isNotBlank() &&
+            prefs(context).getString("chatgptConsentAccount","") == account &&
+            prefs(context).getBoolean("chatgptConsentGranted",false)
+    }
+
+    fun setChatGPTAuthorized(context: Context, email: String, authorized: Boolean) {
+        val account=accountFingerprint(email)
+        require(!authorized || account.isNotBlank()) {
+            "Connecta un compte ChatGPT abans d'autoritzar-ne l'ús."
+        }
+        val editor=prefs(context).edit()
+        if(authorized) {
+            editor.putString("chatgptConsentAccount",account)
+                .putBoolean("chatgptConsentGranted",true)
+        } else {
+            editor.remove("chatgptConsentAccount")
+                .remove("chatgptConsentGranted")
+        }
+        check(editor.commit()) { "No s'ha desat l'autorització de ChatGPT." }
+    }
+
+    fun requireChatGPTAuthorized(context: Context, email: String) {
+        check(isChatGPTAuthorized(context,email)) {
+            "Activa a Configuració «He revisat la configuració d'ús i crèdits " +
+                "del meu compte i autoritzo la creació de contingut amb ChatGPT»."
+        }
     }
 
     fun maxRequests(context: Context): Int =
@@ -126,9 +166,8 @@ internal object AutoGenerationConfig {
     }
 
     /**
-     * Non-secret preferences included in .lectavbak. 'autoAuthorized' is
-     * deliberately NOT restored as true; re-authorize bulk billing/usage
-     * when using the backup on a new installation.
+     * Only non-secret UI preferences are exported. Account-scoped consent
+     * is never backed up or restored, even if a different account is connected.
      */
     val backupKeys: List<String> = listOf(
         "language","kind","mode","endpoint","ollamaModel","chatgptModel",
