@@ -211,9 +211,8 @@ internal fun AutomaticCourseScreen(
                                 } ?: error("Falta el guió PDF per a "+jobName)
                                 val text=LocalPdfSource.readForMaterial(context,source)
                                     ?: error("No s'ha recuperat el guió de narració.")
-                                require(text.length<=8000) {
-                                    "El guió supera 8.000 caràcters. " +
-                                    "Divideix-lo en fragments abans de generar l'àudio."
+                                require(text.length in 10..50000) {
+                                    "Guió buit o superior a 50.000 caràcters."
                                 }
                                 val preferred=EmbeddedSpeech.preferredVoiceId(context)
                                 val voice=EmbeddedSpeech.installed(context)
