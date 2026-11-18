@@ -210,6 +210,29 @@ internal fun SessionSpeechScreen(
     } else Text("Veu disponible sense connexió.",
         style=MaterialTheme.typography.bodySmall)
     if(downloadingVoice) LinearProgressIndicator(modifier=Modifier.fillMaxWidth())
+    if(isInstalled && mode=="audio") {
+        OutlinedButton(
+            enabled=!busy && !downloadingVoice,
+            modifier=Modifier.fillMaxWidth(),
+            onClick={
+                busy=true
+                message="Comprovant el motor amb una frase sense fórmules..."
+                scope.launch {
+                    runCatching {
+                        EmbeddedSpeech.synthesize(
+                            context,"Hola, sóc la veu de prova de LECTAV.",offlineVoice)
+                    }.onSuccess {
+                        message="Motor de veu funcional amb text senzill. " +
+                            "Pots provar ara el guió de matemàtiques."
+                    }.onFailure {
+                        message="Error del motor de veu amb text senzill: " +
+                            (it.localizedMessage ?: it.javaClass.simpleName)
+                    }
+                    busy=false
+                }
+            }
+        ) { Text("Comprova el motor amb una frase curta") }
+    }
     Button(enabled=!busy && !downloadingVoice && isInstalled &&
         script.trim().length>=10 && mode=="audio",
         modifier=Modifier.fillMaxWidth(),
@@ -222,7 +245,8 @@ internal fun SessionSpeechScreen(
                             .removeSuffix(".mp3")+".wav"
                         onSaved(uri,filename,"audio")
                         message="Àudio WAV generat per LECTAV i vinculat a la sessió."
-                    }.onFailure { message=it.localizedMessage ?: "Error de síntesi de veu." }
+                    }.onFailure { message="Error de generació WAV: " +
+                        (it.localizedMessage ?: it.javaClass.simpleName) }
                 busy=false
             }
         }) { Text("Genera àudio amb LECTAV") }
