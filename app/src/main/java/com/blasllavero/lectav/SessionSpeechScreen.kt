@@ -313,5 +313,7 @@ internal fun SessionSpeechScreen(
             }
         }
     ) { Text("Desa el guió com a transcripció PDF") }
-    if(theory==null && message.isNotBlank()) Text(message,style=MaterialTheme.typography.bodySmall)
+    if(message.isNotBlank()) Text(message,style=MaterialTheme.typography.bodySmall,
+        color=if(message.contains("Error",ignoreCase=true) || message.contains("No s\u0027ha pogut"))
+            MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
 }
