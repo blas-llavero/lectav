@@ -60,6 +60,7 @@ internal fun AutomaticCourseScreen(
     library: MaterialLibrary,
     usageGuard: ChatGPTUsageGuard,
     connected: Boolean,
+    accountEmail: String,
     inferenceAllowed: Boolean,
     onConnect: () -> Unit
 ) {
@@ -75,7 +76,6 @@ internal fun AutomaticCourseScreen(
     var completed by remember { mutableIntStateOf(0) }
     var batchSize by remember { mutableIntStateOf(0) }
     var cap by remember { mutableIntStateOf(AutoGenerationConfig.maxRequests(context)) }
-    var consent by remember { mutableStateOf(false) }
 
     LaunchedEffect(connected,inferenceAllowed) {
         models=emptyList()
@@ -143,13 +143,12 @@ internal fun AutomaticCourseScreen(
     Slider(value=cap.toFloat(),onValueChange={cap=it.toInt().coerceIn(1,500)},
         valueRange=1f..500f,enabled=!active)
     Text("És un límit local per execució, no el saldo real del compte ChatGPT. " +
-        "Comprova els crèdits i límits al teu compte abans d'autoritzar.")
-    Row {
-        Checkbox(checked=consent,enabled=!active,onCheckedChange={consent=it})
-        Text("Autoritzo fins a "+cap+" peticions de ChatGPT en aquesta execució, " +
-            "sense confirmacions individuals. No s'hi han d'incloure dades d'alumnes.",
-            modifier=Modifier.weight(1f))
-    }
+        "L'autorització general es gestiona a Configuració i es pot revocar.")
+    val authorized=AutoGenerationConfig.isChatGPTAuthorized(context,accountEmail)
+    if(!authorized) Text(
+        "Abans d'iniciar una cua, autoritza la creació de contingut amb " +
+            "ChatGPT a Configuració. No hauràs de repetir-ho en cada execució.",
+        color=MaterialTheme.colorScheme.error)
     val queued=tasks.take(cap)
     val invalid=queued.any { task ->
         val model=AutoGenerationConfig.resolvedModel(context,
@@ -169,9 +168,10 @@ internal fun AutomaticCourseScreen(
         }
     } else {
         Button(modifier=Modifier.fillMaxWidth(),
-            enabled=consent && queued.isNotEmpty() && !invalid && !loading &&
+            enabled=authorized && queued.isNotEmpty() && !invalid && !loading &&
                 connected && inferenceAllowed && models.isNotEmpty(),
             onClick={
+                AutoGenerationConfig.requireChatGPTAuthorized(context,accountEmail)
                 AutoGenerationConfig.setMaxRequests(context,cap)
                 active=true
                 completed=0
@@ -179,6 +179,7 @@ internal fun AutomaticCourseScreen(
                 runningJob=scope.launch {
                     try {
                         for(task in queued) {
+                            AutoGenerationConfig.requireChatGPTAuthorized(context,accountEmail)
                             val jobName=task.course.course+" · "+task.topic+" · "+
                                 AutoGenerationConfig.title(task.kind)
                             progress="Generant "+jobName
@@ -258,7 +259,6 @@ internal fun AutomaticCourseScreen(
                         AutoGenerationConfig.recordProgress(context,progress)
                         active=false
                         runningJob=null
-                        consent=false
                     }
                 }
             }) { Text("Inicia / continua la generació") }
