@@ -36,7 +36,7 @@ internal fun SessionSpeechScreen(
     var voiceList by remember { mutableStateOf<List<OnDeviceSpeech.OfflineVoice>>(emptyList()) }
     var voiceA by remember { mutableStateOf("") }
     var voiceB by remember { mutableStateOf("") }
-    var offlineVoice by remember { mutableStateOf("ca-ona") }
+    var offlineVoice by remember { mutableStateOf(EmbeddedSpeech.preferredVoiceId(context)) }
     var downloadedVoices by remember { mutableStateOf(EmbeddedSpeech.installed(context)) }
     var downloadingVoice by remember { mutableStateOf(false) }
     var voicePickerOpen by remember { mutableStateOf(false) }
@@ -183,6 +183,7 @@ internal fun SessionSpeechScreen(
             EmbeddedSpeech.catalog.forEach { item ->
                 DropdownMenuItem(text={Text(item.label)},onClick={
                     offlineVoice=item.id
+                    EmbeddedSpeech.setPreferredVoiceId(context,item.id)
                     voicePickerOpen=false
                 })
             }
