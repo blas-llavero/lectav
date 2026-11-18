@@ -138,9 +138,7 @@ internal object EmbeddedSpeech {
     }
 
     private fun chunks(original:String):List<String>{
-        val txt=original.replace(Regex("""<[^>]+>""")," ")
-            .replace(Regex("""[\*_#]+""")," ")
-            .replace(Regex("""\s+""")," ").trim()
+        val txt=MathSpeechNormalizer.normalize(original)
         require(txt.length in 10..50000){"Guió: de 10 a 50.000 caràcters."}
         val chunks=mutableListOf<String>()
         var current=""
@@ -168,7 +166,7 @@ internal object EmbeddedSpeech {
                 val status=engine.loadModel(ctx,files.first.absolutePath,files.second.absolutePath)
                 require(status=="Success"){"Error motor de veu: "+status}
                 val sampleRate=engine.sampleRate
-                require(sampleRate in 8000..48000)
+                require(sampleRate in 8000..48000) { "Freqüència de veu no vàlida." }
                 RandomAccessFile(output,"rw").use{wav->
                     wav.setLength(0);wav.write(ByteArray(44))
                     var count=0L
