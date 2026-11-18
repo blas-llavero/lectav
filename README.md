@@ -1,3 +1,11 @@
+## Selective export and restore of courses, subjects and learning materials
+
+From **Backup / Còpia de seguretat**, LECTAV now displays course/subject checkboxes, material-type checkboxes and individual file checkboxes within expandable courses. Choose **Selecciona-ho tot** or select individual courses and subjects, then optionally export only **Teoria**, **Exercicis**, **Solucions**, **Avatar/vídeo**, **Àudio**, **Podcast** and **Transcripció**. Each material can also be included or excluded individually. Choose **Exporta només la selecció…** for a portable, encrypted `.lectavbak`, or **Exporta-ho tot…** for the pre-existing complete backup. Both formats retain the existing password-protected AES-256-GCM envelope and require a password of at least 10 characters; neither exports ChatGPT account secrets.
+
+On another Android tablet, choose the encrypted backup file in the Restore section and supply its password. **A selective backup merges only its selected courses, their plans and files** into the existing library, preserving unrelated courses and materials. A **complete backup** retains the existing replace-all behavior. As before, you must disconnect your ChatGPT account before restoring; account sessions cannot be copied between devices. The currently stored source PDFs, audio, podcasts and MP4 files must remain accessible when exporting; the operation reports an error if a source document cannot be read. Existing backup files from previous versions remain restorable.
+
+**Limitations:** material selection operates on files that are actually present in the LECTAV library. An avatar or podcast that has not been generated or stored cannot be exported. The local materials limit remains 500 files; full backups are limited to 1 GB, so very large videos may need separate export. This feature is for **LECTAV**, not BIOQRA's research-challenge archives.
+
 # LECTAV — Open Learning Avatar
 
 **Education without barriers.** LECTAV is a free, open-source Android educational application under development. Its goal is to offer official Catalonian curricula (ESO, Batxillerat, CFGM, CFGS and professional certificates) through accessible AI-assisted lessons, exercises and an educational avatar. This repository initially contains a **navigation and subtitle-calibration prototype**, not the finished AI application.
