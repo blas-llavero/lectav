@@ -12,8 +12,8 @@ android {
         applicationId = "com.blasllavero.lectav"
         minSdk = 26
         targetSdk = 36
-        versionCode = 30
-        versionName = "0.9.12"
+        versionCode = 31
+        versionName = "0.9.13"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -44,4 +44,5 @@ dependencies {
     implementation("com.github.k2-fsa:sherpa-onnx:1.13.4")
     // Apache-2.0: safe streaming extraction of official .tar.bz2 voice packages.
     implementation("org.apache.commons:commons-compress:1.27.1")
+    testImplementation("junit:junit:4.13.2")
 }
