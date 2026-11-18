@@ -30,6 +30,11 @@ import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
 internal data class BackupResult(val files: Int, val courses: Int, val bytes: Long)
+
+internal data class BackupSelection(
+    val courseKeys: Set<String>,
+    val materialIds: Set<String>
+)
 internal data class RestoredBackup(
     val files: Int, val courses: Int, val languageTag: String, val accountHint: String
 )
@@ -155,11 +160,21 @@ internal object LectavBackup {
     suspend fun export(
         context: Context, destination: Uri, password: String,
         settingsRepo: SettingsRepository, plansRepo: CoursePlanningRepository,
-        library: MaterialLibrary, usage: ChatGPTUsageGuard, language: String
+        library: MaterialLibrary, usage: ChatGPTUsageGuard, language: String,
+        selection: BackupSelection? = null
     ): BackupResult = withContext(Dispatchers.IO) {
-        val settings = settingsRepo.snapshot()
-        val documents = library.files.first()
-        require(documents.size <= MAX_ITEMS)
+        val snapshot = settingsRepo.snapshot()
+        val settings = if(selection==null) snapshot else snapshot.copy(
+            savedCourses=snapshot.savedCourses.filter { courseKey(it) in selection.courseKeys }
+        )
+        val documents = library.files.first().filter {
+            selection==null || (it.courseKey in selection.courseKeys
+                && it.id in selection.materialIds)
+        }
+        require(documents.size <= MAX_ITEMS && settings.savedCourses.size <= MAX_ITEMS)
+        if(selection!=null)require(settings.savedCourses.isNotEmpty()) {
+            "Selecciona almenys una assignatura."
+        }
         // Generated source text is included in the encrypted backup.
         val sources = documents.map { file ->
             if(file.type=="lesson" || file.type=="transcript")
@@ -186,12 +201,23 @@ internal object LectavBackup {
                         put("sourceEntry","sources/" + i.toString().padStart(4,'0') + ".txt")
                 })
         }
+        val fullPlans = plansRepo.snapshotRaw()
+        val subsetPlans = if(selection==null) fullPlans else {
+            val original=JSONArray(fullPlans)
+            JSONArray().apply {
+                for(i in 0 until original.length()) {
+                    val item=original.getJSONObject(i)
+                    if(item.optString("key") in selection.courseKeys)put(item)
+                }
+            }.toString()
+        }
         val metadata = JSONObject().put("version",1)
+            .put("partial",selection!=null)
             .put("settings",settingsToJson(settings))
-            .put("plans",plansRepo.snapshotRaw())
-            .put("locale",language.take(80))
-            .put("generator",generatorPrefs(context))
-            .put("curriculum",curricularSources(context))
+            .put("plans",subsetPlans)
+            .put("locale",if(selection==null)language.take(80) else "")
+            .put("generator",if(selection==null)generatorPrefs(context) else JSONObject())
+            .put("curriculum",if(selection==null)curricularSources(context) else JSONObject())
             .put("chatgptHint",ChatGPTAuth.state.value.email.take(254))
             .put("materials",infos)
         val manifest = metadata.toString().toByteArray(Charsets.UTF_8)
@@ -407,11 +433,18 @@ internal object LectavBackup {
                 // If a later preference write fails, keep staged files so
                 // previously written library URIs cannot point to deleted files.
                 changesStarted=true
-                plansRepo.restoreBackup(plans)
-                settingsRepo.restoreBackup(restoredSettings)
-                library.restoreBackup(restored)
-                restoreSources(context,curriculum)
-                restoreGeneratorPrefs(context,manifest.optJSONObject("generator") ?: JSONObject())
+                if(manifest.optBoolean("partial",false)){
+                    // Selective imports merge, retaining unrelated local courses.
+                    plansRepo.mergeBackup(plans)
+                    settingsRepo.mergeBackupCourses(restoredSettings.savedCourses)
+                    library.mergeBackup(restored)
+                }else{
+                    plansRepo.restoreBackup(plans)
+                    settingsRepo.restoreBackup(restoredSettings)
+                    library.restoreBackup(restored)
+                    restoreSources(context,curriculum)
+                    restoreGeneratorPrefs(context,manifest.optJSONObject("generator") ?: JSONObject())
+                }
                 // Backups from <= 0.9.0 may contain the deprecated local
                 // usage counter. Ignore it; never restore a local block.
                 // Actual account quotas are controlled exclusively by OpenAI.
