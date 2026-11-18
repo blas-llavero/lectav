@@ -8,6 +8,10 @@ On another Android tablet, choose the encrypted backup file in the Restore secti
 
 # LECTAV — Open Learning Avatar
 
+![LECTAV — approved educational avatar logo](assets/branding/lectav-logo-approved.webp)
+
+**Official approved LECTAV visual identity:** the dBNora-inspired educator presents a landscape tablet labelled LECTAV, with Programació didàctica, Teoria, Exercicis, Solucions, Avatar, Àudio, Podcast and Transcripció. This logo is used on the Android home screen and as the basis of the adaptive app launcher icon. The approved illustration is optimized as WebP for repository and APK size; the authored artwork remains available separately. No voice/video assets were added by this branding change.
+
 **Education without barriers.** LECTAV is a free, open-source Android educational application under development. Its goal is to offer official Catalonian curricula (ESO, Batxillerat, CFGM, CFGS and professional certificates) through accessible AI-assisted lessons, exercises and an educational avatar. This repository initially contains a **navigation and subtitle-calibration prototype**, not the finished AI application.
 
 **APK installation location (immediately below the description):** After the first successful GitHub Actions build, open **Actions → Build Android debug APK → latest successful run → Artifacts → `lectav-debug-apk`** and unzip the downloaded artifact to obtain `app-debug.apk`. The local build output is `app/build/outputs/apk/debug/app-debug.apk`. **The first debug APK was successfully compiled on 4 November 2026** ([successful GitHub Actions run](https://github.com/blas-llavero/lectav/actions/runs/41831051287)); a production release has not yet been published. A future approved release may provide `lectav.apk` under GitHub **Releases**.
