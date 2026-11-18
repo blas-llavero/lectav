@@ -57,6 +57,26 @@ internal class MaterialLibrary(context: Context) {
         return arr.toString()
     }
     val files = store.data.map { decode(it[key] ?: "[]") }
+    /** Merge imported selected items; leave all other course materials intact. */
+    suspend fun mergeBackup(items: List<LocalMaterial>) {
+        require(items.size <= 500)
+        require(items.all {
+            it.id.isNotBlank() && it.courseKey.length in 1..200 &&
+                it.uri.startsWith("content://") && it.name.length in 1..160 &&
+                it.type in listOf("lesson","exercise","solutions","video",
+                    "audio","podcast","transcript") &&
+                it.sessionKey.length<=150
+        })
+        store.edit { p ->
+            val existing=decode(p[key] ?: "[]")
+            val merged=LinkedHashMap<String,LocalMaterial>()
+            existing.forEach { merged[it.id]=it }
+            items.forEach { merged[it.id]=it }
+            require(merged.size<=500) { "La biblioteca supera els 500 materials." }
+            p[key]=encode(merged.values.toList())
+        }
+    }
+
     suspend fun restoreBackup(items: List<LocalMaterial>) {
         require(items.size <= 500)
         require(items.all {
