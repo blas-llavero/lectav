@@ -125,6 +125,22 @@ internal class SettingsRepository(context: Context) {
 
     suspend fun snapshot(): SavedSettings = settings.first()
 
+    /**
+     * Selective backups merge only the chosen courses/subjects. Keep device-wide
+     * preferences, other courses and the current user's active selection intact.
+     */
+    suspend fun mergeBackupCourses(courses: List<SavedCourse>) {
+        require(courses.size <= 500)
+        store.edit { p ->
+            val previous = readSavedCourses(p[Keys.bookmarks] ?: "[]")
+            val byId = LinkedHashMap<String, SavedCourse>()
+            previous.forEach { byId[it.id] = it }
+            courses.forEach { byId[it.id] = it }
+            require(byId.size <= 500) { "S'ha superat el límit de cursos." }
+            p[Keys.bookmarks] = writeSavedCourses(byId.values.toList())
+        }
+    }
+
     suspend fun restoreBackup(value: SavedSettings) {
         require(value.activeRole in setOf("teacher", "student"))
         require(value.savedCourses.size <= 500)
