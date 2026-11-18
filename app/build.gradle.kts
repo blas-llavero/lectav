@@ -12,8 +12,8 @@ android {
         applicationId = "com.blasllavero.lectav"
         minSdk = 26
         targetSdk = 36
-        versionCode = 29
-        versionName = "0.9.11"
+        versionCode = 30
+        versionName = "0.9.12"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -38,4 +38,10 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     // Apache 2.0. Local text extraction of officially downloaded PDF curricula.
     implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+    // GPL-3.0: in-process Piper/VITS voice engine (no separate Android TTS app).
+    implementation("com.github.techempower-org:VoxSherpa-TTS:v2.11.1")
+    // JNI neural inference runtime required by the open engine.
+    implementation("com.github.k2-fsa:sherpa-onnx:1.13.4")
+    // Apache-2.0: safe streaming extraction of official .tar.bz2 voice packages.
+    implementation("org.apache.commons:commons-compress:1.27.1")
 }
