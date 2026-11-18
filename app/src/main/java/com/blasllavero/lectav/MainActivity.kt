@@ -451,6 +451,7 @@ private fun LectavApp() {
                             library=fileRepository,
                             usageGuard=chatGPTGuard,
                             connected=chatGPTStatus.connected,
+                            accountEmail=chatGPTStatus.email,
                             inferenceAllowed=chatGPTStatus.inferenceAllowed,
                             onConnect={
                                 authReturnScreen="automatic"
@@ -860,6 +861,11 @@ private fun SettingsScreen(
     var models by remember { mutableStateOf(emptyList<ChatGPTModel>()) }
     var modelError by remember { mutableStateOf("") }
     var revision by remember { mutableIntStateOf(0) }
+    var chatGPTApproved by remember(chatGPTStatus.email) {
+        mutableStateOf(AutoGenerationConfig.isChatGPTAuthorized(
+            context,chatGPTStatus.email))
+    }
+    var approvalError by remember { mutableStateOf("") }
     LaunchedEffect(chatGPTStatus.inferenceAllowed) {
         if(chatGPTStatus.inferenceAllowed) {
             runCatching { ChatGPTInference.availableModels() }
@@ -902,6 +908,40 @@ private fun SettingsScreen(
     OutlinedButton(onClick = onChatGPT, modifier = Modifier.fillMaxWidth()) {
         Text("Compte ChatGPT · connexió opcional")
     }
+    HorizontalDivider()
+    Text("Autorització d'ús de ChatGPT",style=MaterialTheme.typography.titleMedium)
+    Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+        Checkbox(
+            checked=chatGPTApproved,
+            enabled=chatGPTStatus.connected && chatGPTStatus.inferenceAllowed,
+            onCheckedChange={ checked ->
+                runCatching {
+                    AutoGenerationConfig.setChatGPTAuthorized(
+                        context,chatGPTStatus.email,checked)
+                }.onSuccess {
+                    chatGPTApproved=checked
+                    approvalError=""
+                }.onFailure {
+                    approvalError=it.localizedMessage ?: "No s'ha pogut desar l'autorització."
+                }
+            }
+        )
+        Text("He revisat la configuració d'ús i crèdits del meu compte " +
+            "i autoritzo la creació de contingut amb ChatGPT",
+            modifier=Modifier.weight(1f))
+    }
+    Text(
+        "Aquesta autorització es desa només en aquest dispositiu, " +
+        "per al compte connectat i per als modes manual i automàtic. " +
+        "Pots desmarcar-la quan vulguis. ChatGPT continua aplicant " +
+        "els límits del teu compte; LECTAV no pot consultar-ne el saldo real.",
+        style=MaterialTheme.typography.bodySmall
+    )
+    if(!chatGPTStatus.connected || !chatGPTStatus.inferenceAllowed) {
+        Text("Connecta i habilita ChatGPT per poder marcar aquesta opció.",
+            color=MaterialTheme.colorScheme.error)
+    }
+    if(approvalError.isNotBlank()) Text(approvalError,color=MaterialTheme.colorScheme.error)
     HorizontalDivider()
     Text("Configuració de generació automàtica",style=MaterialTheme.typography.titleMedium)
     Text("Selecciona el model per defecte de tots els cursos. " +
