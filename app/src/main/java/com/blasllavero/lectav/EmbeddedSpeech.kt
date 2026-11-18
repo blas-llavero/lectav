@@ -28,6 +28,14 @@ internal object EmbeddedSpeech {
     )
     private fun voiceDir(ctx:Context,id:String)=File(ctx.filesDir,"embedded-tts/voice-"+id)
     private fun espeak(ctx:Context)=File(ctx.filesDir,"espeak-ng-data")
+    fun preferredVoiceId(ctx:Context):String =
+        ctx.getSharedPreferences("lectav_generator",Context.MODE_PRIVATE)
+            .getString("preferredSpeechVoice","ca-ona") ?: "ca-ona"
+    fun setPreferredVoiceId(ctx:Context,id:String) {
+        require(catalog.any{it.id==id})
+        check(ctx.getSharedPreferences("lectav_generator",Context.MODE_PRIVATE)
+            .edit().putString("preferredSpeechVoice",id).commit())
+    }
     private fun model(dir:File):Pair<File,File>? {
         if(!dir.isDirectory)return null
         val fs=dir.walkTopDown().maxDepth(5).filter{it.isFile}.toList()
