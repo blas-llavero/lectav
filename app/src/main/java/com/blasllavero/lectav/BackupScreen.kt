@@ -89,10 +89,9 @@ internal fun BackupScreen(
                     )
                 }
                 result.onSuccess {
-                    message = "Export verified: " + it.courses + " courses and " +
-                        it.files + " actual material files (" + it.bytes +
-                        " bytes). Save the password. " +
-                        "Before uninstalling, restore this archive on a test device."
+                    message = context.getString(
+                        R.string.backup_audit_export_verified,
+                        it.courses,it.files,it.bytes)
                 }.onFailure {
                     error = it.localizedMessage ?: "No s'ha pogut crear la còpia."
                     // A failed archive may leave an incomplete destination file.
@@ -234,19 +233,15 @@ internal fun BackupScreen(
             }
         }
     }
-    Text("Selected for export: ${effectiveCourses.size} subjects and " +
-        "${candidateFiles.size} material files.",
+    Text(stringResource(R.string.backup_audit_selected_count,
+        effectiveCourses.size,candidateFiles.size),
         style=MaterialTheme.typography.bodyMedium)
     if(materials.isEmpty()) {
-        Text("WARNING: This installation has no indexed PDFs, audio, " +
-            "podcasts or videos. A backup created here will contain " +
-            "settings but no documents. Check the course library " +
-            "before exporting or reinstalling.",
+        Text(stringResource(R.string.backup_audit_no_indexed),
             color=MaterialTheme.colorScheme.error)
     }
     if(materials.isNotEmpty() && candidateFiles.isEmpty()) {
-        Text("WARNING: Your current selection contains zero files. " +
-            "Choose Select all or include the specific courses and file types.",
+        Text(stringResource(R.string.backup_audit_empty_selection),
             color=MaterialTheme.colorScheme.error)
     }
 
@@ -332,21 +327,19 @@ internal fun BackupScreen(
                                     inspection=it
                                 }.onFailure {
                                     inspectionError=it.localizedMessage
-                                        ?: "Unable to inspect the backup."
+                                        ?: context.getString(R.string.backup_audit_inspect_failed)
                                 }
                                 inspecting=false
                             }
                         }
-                    ) { Text("Inspect archived documents") }
+                    ) { Text(stringResource(R.string.backup_audit_inspect_button)) }
                     if(inspecting) LinearProgressIndicator(
                         modifier=Modifier.fillMaxWidth())
                     inspection?.let { result ->
-                        Text("Archive verified: " + result.courses +
-                            " courses, " + result.files + " material files, " +
-                            result.bytes + " bytes.")
+                        Text(stringResource(R.string.backup_audit_inspect_verified,
+                            result.courses,result.files,result.bytes))
                         if(result.files==0) Text(
-                            "WARNING: This archive contains no PDF, WAV, " +
-                                "MP3 or MP4 files. It can only restore settings.",
+                            stringResource(R.string.backup_audit_inspect_empty),
                             color=MaterialTheme.colorScheme.error)
                     }
                     if(inspectionError.isNotBlank()) Text(inspectionError,
@@ -386,10 +379,8 @@ internal fun BackupScreen(
                                 "Importació completada: ${it.courses} cursos i ${it.files} materials.",
                                 Toast.LENGTH_LONG
                             ).show()
-                            message = "Restore verified: " + it.courses +
-                                " courses and " + it.files +
-                                " readable material files. Open your course " +
-                                "library to inspect the restored PDFs and audio. " + (if (it.accountHint.isNotBlank())
+                            message = context.getString(R.string.backup_audit_restore_verified,
+                                it.courses,it.files) + " " + (if (it.accountHint.isNotBlank())
                                     "Compte anterior: " + it.accountHint + ". "
                                 else "") + "Connecta ChatGPT de nou."
                             if(it.languageTag.isNotBlank()) {
