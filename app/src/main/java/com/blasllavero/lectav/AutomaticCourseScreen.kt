@@ -203,33 +203,15 @@ internal fun AutomaticCourseScreen(
         model.isBlank() || models.none { it.slug==model }
         }
     }
-    if(invalid) Text("Cal seleccionar models disponibles per a tots els tipus " +
-        "de contingut abans d'iniciar la cua.",color=MaterialTheme.colorScheme.error)
-    if(progress.isNotBlank()) Text("Estat: "+progress)
-    if(active) {
-        LinearProgressIndicator(
-            progress={if(batchSize==0) 0f else completed.toFloat()/batchSize},
-            modifier=Modifier.fillMaxWidth())
-        Text("Completats en aquesta execució: "+completed+" / "+batchSize)
-        Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick={
-                paused=!paused
-                progress=if(paused) "Pausing after the current operation..."
-                    else "Resuming automatic generation."
-            }) { Text(if(paused) "Resume" else "Pause") }
-            OutlinedButton(onClick={runningJob?.cancel()}) {
-                Text("Cancel generation")
-            }
-        }
-        if(paused) Text("Paused at the next safe checkpoint. " +
-            "Saved materials remain available.")
-    } else {
-        Button(modifier=Modifier.fillMaxWidth(),
-            enabled=selectedFolder!=null && authorized &&
-                (queued.isNotEmpty() || files.any { !AutomaticExportFolder.wasExported(context,it) }) &&
-                !invalid && !loading && connected && inferenceAllowed &&
-                models.isNotEmpty(),
-            onClick={
+    val canGenerate=selectedFolder!=null && authorized &&
+        (queued.isNotEmpty() || files.any {
+            it.origin=="generated" && !AutomaticExportFolder.wasExported(context,it)
+        }) && !invalid && !loading && connected && inferenceAllowed &&
+        models.isNotEmpty()
+    var autoStarted by remember { mutableStateOf(false) }
+    val startQueue: () -> Unit = {
+        if(!active && canGenerate) {
+            autoStarted=true
                 AutoGenerationConfig.requireChatGPTAuthorized(context,accountEmail)
                 AutoGenerationConfig.setMaxRequests(context,cap)
                 active=true
@@ -398,7 +380,38 @@ internal fun AutomaticCourseScreen(
                         runningJob=null
                     }
                 }
-            }) { Text("Inicia / continua la generació") }
+
+        }
+    }
+    // Automatic mode needs no second Start prompt once settings and consent
+    // have been configured. Pause and cancel never implicitly restart.
+    LaunchedEffect(canGenerate,models,selectedFolder) {
+        if(canGenerate && !active && !autoStarted) startQueue()
+    }
+    if(invalid) Text("Cal seleccionar models disponibles per a tots els tipus " +
+        "de contingut abans d'iniciar la cua.",color=MaterialTheme.colorScheme.error)
+    if(progress.isNotBlank()) Text("Estat: "+progress)
+    if(active) {
+        LinearProgressIndicator(
+            progress={if(batchSize==0) 0f else completed.toFloat()/batchSize},
+            modifier=Modifier.fillMaxWidth())
+        Text("Completats en aquesta execució: "+completed+" / "+batchSize)
+        Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick={
+                paused=!paused
+                progress=if(paused) "Pausing after the current operation..."
+                    else "Resuming automatic generation."
+            }) { Text(if(paused) "Resume" else "Pause") }
+            OutlinedButton(onClick={runningJob?.cancel()}) {
+                Text("Cancel generation")
+            }
+        }
+        if(paused) Text("Paused at the next safe checkpoint. " +
+            "Saved materials remain available.")
+    } else {
+        Button(modifier=Modifier.fillMaxWidth(),
+            enabled=canGenerate,
+            onClick=startQueue) { Text("Inicia / continua la generació") }
     }
     Text("La cua s'executa mentre aquesta pantalla roman oberta. " +
         "Si tanques l'app o Android la suspèn, reprèn manualment la cua; " +
