@@ -12,6 +12,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.activity.compose.setContent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
@@ -875,6 +877,18 @@ private fun SettingsScreen(
             context,chatGPTStatus.email))
     }
     var approvalError by remember { mutableStateOf("") }
+    var exportFolderRevision by remember { mutableIntStateOf(0) }
+    var exportFolderError by remember { mutableStateOf("") }
+    val autoFolderPicker=rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if(uri!=null)runCatching {
+            AutomaticExportFolder.saveTree(context,uri)
+        }.onSuccess {
+            exportFolderRevision++
+            exportFolderError=""
+        }.onFailure { exportFolderError=it.localizedMessage ?: "Invalid folder." }
+    }
     LaunchedEffect(chatGPTStatus.inferenceAllowed) {
         if(chatGPTStatus.inferenceAllowed) {
             runCatching { ChatGPTInference.availableModels() }
@@ -953,6 +967,23 @@ private fun SettingsScreen(
     if(approvalError.isNotBlank()) Text(approvalError,color=MaterialTheme.colorScheme.error)
     HorizontalDivider()
     Text("Configuració de generació automàtica",style=MaterialTheme.typography.titleMedium)
+    Text("Automatic material export destination",style=MaterialTheme.typography.titleSmall)
+    Text("Documents will be organized by education pathway, course, " +
+        "subject, trimester, unit and session. PDF and audio are " +
+        "kept in their original file formats.",
+        style=MaterialTheme.typography.bodySmall)
+    val configuredFolder=remember(exportFolderRevision) {
+        AutomaticExportFolder.selectedTree(context)
+    }
+    Text(configuredFolder?.toString() ?: "No folder selected",
+        style=MaterialTheme.typography.bodySmall)
+    OutlinedButton(onClick={autoFolderPicker.launch(null)},
+        modifier=Modifier.fillMaxWidth()) {
+        Text("Choose automatic export folder")
+    }
+    if(exportFolderError.isNotBlank())Text(exportFolderError,
+        color=MaterialTheme.colorScheme.error)
+
     Text("Selecciona el model per defecte de tots els cursos. " +
         "Els models per tipus o sessió tenen prioritat. " +
         "Totes aquestes preferències s'exporten dins la còpia xifrada.")

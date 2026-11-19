@@ -66,7 +66,7 @@ internal object LocalPdfSource {
     /** Associate an approved transcript to an older/generated/imported PDF. */
     suspend fun saveForMaterial(context: Context, material: LocalMaterial, text: String) =
         withContext(Dispatchers.IO) {
-            require(material.type == "lesson" || material.type == "transcript")
+            require(material.type in setOf("lesson","exercise","solutions","transcript"))
             atomicWrite(forMaterialId(context, material.id), text)
         }
 
@@ -77,7 +77,7 @@ internal object LocalPdfSource {
 
     suspend fun readForMaterial(context: Context, material: LocalMaterial): String? =
         withContext(Dispatchers.IO) {
-            if(material.type != "lesson" && material.type != "transcript")
+            if(material.type !in setOf("lesson","exercise","solutions","transcript"))
                 return@withContext null
             val file = runCatching { forMaterialId(context,material.id) }.getOrNull()
             if(file != null && file.isFile && file.length() in 1..(MAX_CHARS * 4L)) {

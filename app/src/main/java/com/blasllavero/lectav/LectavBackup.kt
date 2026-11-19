@@ -314,7 +314,7 @@ internal object LectavBackup {
         }
         // Generated source text is included in the encrypted backup.
         val sources = documents.map { file ->
-            if(file.type=="lesson" || file.type=="transcript")
+            if(file.type in setOf("lesson","exercise","solutions","transcript"))
                 LocalPdfSource.readForMaterial(context,file)
             else null
         }
