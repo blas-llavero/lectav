@@ -107,4 +107,13 @@
     <string name="material_page_count">Página %1$d de %2$d</string>
     <string name="material_prev">Anterior</string>
     <string name="material_next">Siguiente</string>
+    <string name="backup_audit_selected_count">Selección: %1$d asignaturas y %2$d archivos de material.</string>
+    <string name="backup_audit_no_indexed">Aviso: esta instalación no tiene PDF, audios ni vídeos indexados. La copia solo incluirá la configuración. Comprueba la biblioteca antes de desinstalar.</string>
+    <string name="backup_audit_empty_selection">Aviso: la selección no contiene ningún archivo. Selecciona todo o elige los cursos y tipos de material necesarios.</string>
+    <string name="backup_audit_export_verified">Exportación verificada: %1$d cursos, %2$d archivos de material (%3$d bytes). Conserva la contraseña y prueba la restauración antes de desinstalar.</string>
+    <string name="backup_audit_restore_verified">Restauración verificada: %1$d cursos y %2$d archivos legibles. Abre la biblioteca para comprobar los PDF y audios.</string>
+    <string name="backup_audit_inspect_button">Inspeccionar documentos de la copia</string>
+    <string name="backup_audit_inspect_verified">Copia verificada: %1$d cursos, %2$d archivos de material, %3$d bytes.</string>
+    <string name="backup_audit_inspect_empty">Aviso: esta copia no contiene PDF, audios ni vídeos. Solo puede restaurar la configuración.</string>
+    <string name="backup_audit_inspect_failed">No se puede inspeccionar la copia.</string>
 </resources>
