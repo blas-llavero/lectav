@@ -12,8 +12,8 @@ android {
         applicationId = "com.blasllavero.lectav"
         minSdk = 26
         targetSdk = 36
-        versionCode = 33
-        versionName = "0.9.15"
+        versionCode = 34
+        versionName = "0.9.16"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -32,6 +32,7 @@ dependencies {
     implementation(platform("androidx.compose:compose-bom:2025.09.00"))
     implementation("androidx.activity:activity-compose:1.11.0")
     implementation("androidx.appcompat:appcompat:1.7.1")
+    implementation("androidx.documentfile:documentfile:1.1.0")
     implementation("androidx.datastore:datastore-preferences:1.1.7")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.foundation:foundation")
