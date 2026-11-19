@@ -1,3 +1,21 @@
+## Encrypted backups with material verification (v0.9.15)
+
+LECTAV complete backups are password-protected **`.lectavbak` files**, not ordinary unencrypted ZIP files. They contain the saved app settings and every **indexed and accessible** theory, exercise, solution, transcript, audio, podcast and video file. The app reports the exact number of material files selected. **A backup that contains zero indexed files does not contain the PDFs or audio you may expect.**
+
+Version 0.9.15 adds:
+- A read-only **Inspect archived documents** control before restoration. It verifies the original encrypted archive and shows its course and file count without modifying local data.
+- An independent full verification of the output file immediately after exporting, including actual file bytes and per-file SHA-256 checksums.
+- Checks of restored file readability, course ownership and material index persistence; old encrypted backups without checksum entries remain supported.
+- Protection against replacing a populated material library with an empty full archive.
+
+**To move all your files:** inspect the number of indexed materials on the original installation, select **Export everything**, save a password-protected backup, use the **Inspect archived documents** action on the destination, then restore with ChatGPT disconnected. Verify real PDFs and audio inside the destination course library **before uninstalling the source app**. Files missing from an older archive cannot be reconstructed by a newer version.
+
+Full procedures: [Backup integrity and migration guide](docs/BACKUP_INTEGRITY_V0_9_15.md).
+
+## Repository language
+
+All technical documentation and engineering guidance are in **English**. User interface translations remain available in Catalan, Spanish and the other supported languages. Existing hardcoded localized UI strings in Kotlin are being progressively migrated to Android string resources; they are not the language of the source documentation. See [Development language policy](docs/DEVELOPMENT_LANGUAGE_POLICY.md).
+
 ## Selective export and restore of courses, subjects and learning materials
 
 From **Backup / Còpia de seguretat**, LECTAV now displays course/subject checkboxes, material-type checkboxes and individual file checkboxes within expandable courses. Choose **Selecciona-ho tot** or select individual courses and subjects, then optionally export only **Teoria**, **Exercicis**, **Solucions**, **Avatar/vídeo**, **Àudio**, **Podcast** and **Transcripció**. Each material can also be included or excluded individually. Choose **Exporta només la selecció…** for a portable, encrypted `.lectavbak`, or **Exporta-ho tot…** for the pre-existing complete backup. Both formats retain the existing password-protected AES-256-GCM envelope and require a password of at least 10 characters; neither exports ChatGPT account secrets.

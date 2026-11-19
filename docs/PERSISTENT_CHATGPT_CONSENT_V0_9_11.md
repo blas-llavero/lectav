@@ -1,48 +1,23 @@
-# LECTAV 0.9.11 — Autorització única de creació amb ChatGPT
+# LECTAV 0.9.11 — Persistent ChatGPT content-generation authorization
 
-## Objectiu
-La confirmació repetida d'ús de ChatGPT abans de cada generació
-desapareix del mode manual, la programació trimestral i la cua automàtica.
+## Goal
 
-A **Configuració → Autorització d'ús de ChatGPT**, el docent pot marcar:
+The user should not have to reconfirm ChatGPT usage and credits before each manual document, trimester plan or automatic queue action. A single account-scoped, revocable setting is provided at **Settings → ChatGPT usage authorization**.
 
-> He revisat la configuració d'ús i crèdits del meu compte i autoritzo la
-> creació de contingut amb ChatGPT
+The agreement states that the user has reviewed the usage and credit settings of their account and authorizes LECTAV to generate content through ChatGPT. Once enabled, the same authorization applies across manual content generation, trimester planning and sequential automatic generation.
 
-Una vegada marcada, LECTAV permet generar materials des del compte
-connectat sense tornar a preguntar a cada petició. També permet
-desmarcar-la per aturar l'autorització de futures peticions.
+## Security properties
 
-## Proteccions conservades
-- El compte ha d'estar connectat i habilitat per a la generació.
-- La preferència es vincula al compte verificat mitjançant una empremta
-  SHA-256 del correu retornat per l'autenticació.
-- Quan s'utilitza un compte diferent, cal aprovar el seu ús a Configuració.
-- La preferència es desa **localment**. Per seguretat no s'exporta dins
-  `.lectavbak` ni s'accepta des d'una còpia importada. La resta de
-  configuracions i els materials continuen exportant-se.
-- La cua automàtica comprova que l'autorització continuï activa
-  abans de cada document; si es revoca, s'atura amb un error comprensible.
-- Es conserva el límit numèric de peticions per bloc configurat a
-  LECTAV, que no és el saldo real del compte.
-- Els errors del servidor, la quota i els límits reals de ChatGPT
-  continuen aplicant-se. LECTAV no consulta el saldo real.
-- La generació manual amb Ollama o mode de demostració no exigeix
-  l'autorització de ChatGPT.
+- The account must be authenticated and enabled for inference.
+- The local consent grant is bound to a fingerprint derived from the signed-in account identity, preventing silent reuse for a different account.
+- The checkbox can be disabled at any time; subsequent requests must recheck it.
+- The authorization is intentionally not transferred by the `.lectavbak` file. Each new device or account requires its own authorization.
+- Login tokens and other account secrets are never stored in portable backups.
+- Genuine account quota, rate limits and paid-credit restrictions remain in effect. LECTAV cannot read the actual credit balance.
+- The configurable automatic-queue request cap is a local protection rather than a prediction of account usage.
 
-## Proves
-1. Instal·la la 0.9.11 després de fer una còpia de seguretat.
-2. Connecta ChatGPT i obre Configuració.
-3. Marca el consentiment una sola vegada.
-4. Genera dos PDFs manuals: no ha d'aparèixer cap diàleg de consentiment.
-5. Genera una programació trimestral: tampoc no s'ha de repetir.
-6. Executa una cua automàtica amb el límit de peticions configurat;
-   no ha d'aparèixer cap checkbox addicional.
-7. Desmarca l'opció, torna al generador i comprova que no permet
-   començar una nova petició.
-8. Desconnecta/reconnecta amb un compte diferent i comprova que la
-   preferència no s'aplica automàticament a aquest compte.
-9. Exporta i restaura una còpia de seguretat: els models i documents
-   es mantenen, però cal autoritzar ChatGPT en la instal·lació restaurada.
+The legacy OpenAI usage-confirmation dialog is no longer necessary for each request. Purely local demo/Ollama generation does not require ChatGPT consent.
 
-La compilació automàtica no substitueix les proves funcionals a la tauleta.
+## Validation
+
+Enable consent and create two documents; verify no new consent prompt appears. Create a trimester plan, test an automatic queue and disable consent; subsequent requests must be refused. Test switching to a different account and restoring a backup on another device. Confirm that all non-secret model preferences are preserved while the consent grant is not.

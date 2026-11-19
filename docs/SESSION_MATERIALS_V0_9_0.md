@@ -1,121 +1,27 @@
-# LECTAV 0.9.0 — programació primer, materials per sessió després
+# LECTAV 0.9.0 — Plan first, then generate materials per session
 
-## Ordre de treball
+## Teacher workflow
 
-1. Escollir **ensenyament, curs i assignatura**.
-2. Amb el compte ChatGPT autoritzat, **proposar i revisar la programació
-   trimestral**: trimestres, unitats i cadascuna de les sessions amb un
-   nom concret, no un títol genèric.
-3. Entrar a **Els meus cursos → Programació i sessions**, desplegar
-   la unitat i veure l'inventari de materials de cada sessió.
-4. Generar **Temari**, **Exercicis** o **Solucions** en PDF
-   des dels botons específics de la sessió. L'aplicació obre
-   el generador amb el tipus i el tema preseleccionats.
-5. Revisar el text generat i confirmar el desament del PDF.
-   El fitxer queda registrat a **Materials** i a la sessió exacta.
-6. Opcionalment, associar un MP4 preparat prèviament mitjançant
-   «Importa un vídeo de l'avatar (MP4)». La generació automàtica
-   del vídeo encara **no existeix** en aquesta versió.
-7. L'alumne consulta els recursos vinculats a cada sessió
-   i registra el progrés local.
+The recommended sequence is **Choose pathway and course → Select subject → Review trimester plan → Select unit and session → Generate and review materials**.
 
-## Exemple de noms
+A saved course contains independently editable unit/session metadata. The selected session's actual title is passed into each generation request. The teacher can create theory, exercises and worked solutions, then open the saved PDFs directly from the same session.
 
-Sessió del primer trimestre:
-**Sessió 1 - Fraccions i decimals: diagnosi inicial**
+The system must not populate the library with fabricated documents or present AI-generated material as an official government-prescribed curriculum without verified citations.
 
-En generar el PDF, el nom predeterminat és
-`Temari - Sessió 1 - Fraccions i decimals_ diagnosi inicial.pdf`.
-En generar els exercicis:
-`Exercicis - Sessió 1 - Fraccions i decimals_ diagnosi inicial.pdf`.
-Les solucions:
-`Solucions - Sessió 1 - Fraccions i decimals_ diagnosi inicial.pdf`.
-Per a un vídeo MP4 importat:
-`Avatar - Sessió 1 - Fraccions i decimals_ diagnosi inicial.mp4`.
-El sistema d'Android pot sanejar els caràcters que no admet
-en noms de fitxers, com ara els dos punts.
+## File associations
 
-## Identificador estable de sessió
+Each material keeps an internal course key, material ID, type and stable session key. The session key is derived from the trimester, unit ID and lesson number. These identifiers survive renaming the visible title and are included in encrypted backups.
 
-Cada fitxer `LocalMaterial` desa un camp opcional
-`sessionKey = "trimestre|idUnitat|numSessioLocal"`.
+Imported PDF or MP4 files may be manually assigned to a session after reviewing their content. Automatically guessing the session from the filename can attach unrelated material and is not supported.
 
-L'associació no depèn del nom del tema: si es canvia el títol
-des de la programació, els documents continuen a la mateixa sessió
-i els noms antics dels fitxers NO es canvien automàticament.
-Els materials generats en versions anteriors apareixen a la biblioteca
-general perquè no tenen aquest identificador de sessió.
+## Media availability
 
-Si el professor **regenera un trimestre**, les unitats noves reben
-identificadors diferents: els fitxers antics no s'assignen a temes
-que podrien ser diferents. Continuen disponibles a la biblioteca
-general «Materials» i no s'esborren automàticament.
+A video import is not equivalent to native avatar video generation. Until a real renderer is available, the app must clearly state that avatar output is pending. Later releases can add audio and transcript types, but the index must represent only real files.
 
-La clau també forma part de la còpia xifrada `.lectavbak`,
-de manera que les relacions entre sessions i recursos persisteixen
-en exportar i restaurar els cursos. Els arxius antics (sense aquesta
-clau) es poden continuar llegint.
+## Batch generation outlook
 
-## Prova orientada a la tauleta
+A sequential automatic worker can process sessions with explicit consent and a request cap, save every completed item before continuing, skip existing materials and stop on service errors. Automatic generation must never be treated as unlimited ChatGPT access. Local FOSS video/voice rendering is a distinct subsystem.
 
-- Desar un backup amb la versió que hi hagi instal·lada,
-  comprovar que es pot obrir el fitxer i recordar la contrasenya.
-- Instal·lar LECTAV 0.9.0, fent restauració només si la instal·lació
-  anterior s'ha hagut de desinstal·lar.
-- Tria 3r d'ESO Matemàtiques i crea un trimestre de prova
-  (o recupera la programació desada).
-- Desplega Unitat 1 / Sessió 1.
-- Prem **Teoria** i comprova que s'omple el títol exacte
-  i està seleccionat **Teoria**; genera i desa un PDF curt.
-- Torna a la programació i comprova «Teoria 1».
-  Prem «Obre…» i visualitza el PDF.
-- Prem **Exercicis**; comprova que apareix el mateix
-  nom de sessió amb prefix Exercicis i no es reescriu el temari.
-- Prem **Solucions** i desa una mostra curta.
-- Importa un MP4 de prova i comprova que el recurs apareix
-  com a Avatar 1, amb el nom «Avatar - Sessió N ...».
-- Desa un backup `.lectavbak`, restaura'l només després
-  de verificar el contingut i comprova les associacions.
-- Comprova que una altra sessió no veu els PDF de la primera.
+## Acceptance tests
 
-## Fase posterior: generar un curs complet sense desenes de clics
-
-Aquesta versió **NO implementa** la creació automàtica de tots els
-materials i vídeos d'un curs. Abans cal incorporar un sistema local
-de **cua persistent** amb tasques independents per trimestre →
-unitat → sessió → tipus de recurs, amb estats
-`pendent/en_curs/revisio/completat/error`, cancel·lació i represa.
-
-Proposta de política de costos:
-- Permetre escollir l'abast: només programació, només teoria,
-  exercicis, solucions, avatar o tot el curs.
-- Fer una previsió de tasques i estimació aproximada de peticions,
-  **sense afirmar que es coneixen els crèdits reals de ChatGPT**.
-- Obrir una confirmació de quota i crèdits abans de qualsevol
-  bloc nou. **Aturar immediatament la cua** quan s'assoleixi
-  el límit local o un error de quota del servei.
-- Evitar duplicitats: no tornar a generar fitxers ja existents,
-  llevat que el professor ho confirmi.
-- Desar resultats progressivament, amb còpies a SD escollides
-  explícitament, i poder reprendre sense recomençar.
-- Dividir les generacions en blocs petits per fiabilitat,
-  **sense promeses de gratuïtat o de quota il·limitada**:
-  els lots també poden consumir tokens, intents o crèdits.
-- Els vídeos requereixen un motor específic d'avatar/TTS/render
-  (FOSS local o autoallotjat, subjecte a capacitat del dispositiu);
-  la generació de text amb ChatGPT no produeix automàticament
-  un MP4 amb avatar.
-- No enviar dades identificatives d'alumnes a serveis externs.
-- Mantenir la revisió pedagògica i validació de fonts oficials
-  abans de publicar materials compartits.
-
-## Limitacions actuals
-
-Els documents desats només a la memòria privada de LECTAV es poden
-perdre en desinstal·lar; exportar còpia a Documents/SD i conservar
-una còpia xifrada `.lectavbak`.
-
-Aquest prototip només registra progrés local; no ofereix comptes
-d'alumnes separats ni gestió d'autoritzacions d'un centre.
-La compilació CI comprova Kotlin/Gradle, no el comportament
-de les tauletes ni la correcció pedagògica.
+Create two courses with similarly named sessions and verify material links remain independent. Edit a session title, import an older PDF, mark progress, export/restore a backup, and check that all links and files remain accessible without duplicates.

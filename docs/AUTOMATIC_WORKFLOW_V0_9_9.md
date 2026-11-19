@@ -1,69 +1,30 @@
-# LECTAV 0.9.9 — mode automàtic i manual, models per material, exportació
+# LECTAV 0.9.9 — Manual and automatic course generation
 
-## Navegació
-La pantalla inicial conté «Mode manual» i «Mode automàtic».
-El mode manual conserva tots els botons de generació existents.
-El mode automàtic processa els cursos docents amb programacions desades
-ordenadament per unitat, sessió i tipus de material.
+## Modes
 
-## Implementació funcional d'aquesta versió
-- Per sessió: **Teoria PDF → Exercicis PDF → Solucions PDF → Guió/Transcripció PDF**.
-- Els exercicis utilitzen el text conservat de la teoria, les solucions el text
-  dels exercicis i el guió el text de la teoria, evitant perdre el context.
-- Cada generació es desa a l'emmagatzematge privat i a l'índex de la sessió
-  **abans** de passar al següent material; cap document existent és substituït.
-- En una següent execució s'ometen els materials que ja estan indexats, de
-  manera que es pot reprendre una cua interrompuda.
-- La cua es deté davant d'errors de quota, credencials, model o document i
-  conserva el treball desat. No fa reintents automàtics ni bucles de despesa.
-- El compte ChatGPT ha d'estar connectat i autoritzat. Un consentiment inicial
-  cobreix **només el bloc actual** de fins a N peticions (per defecte 20,
-  configurable fins a 500); no hi ha preguntes entre passos.
-- No s'assegura execució en segon pla: el motor s'executa mentre la pantalla
-  està oberta; Android pot suspendre l'app. En reobrir-la es pot reprendre.
-- No s'utilitza cap model arbitrari inventat: només els models realment
-  disponibles segons el compte connectat. En perdre la connexió o la quota,
-  la cua s'atura.
+The home screen offers **Manual mode**, retaining individual generation actions, and **Automatic mode**, which processes already saved teacher courses in unit/session order.
 
-## Configuració de models
-- Model global per a tots els cursos a Configuració.
-- Model per tipus de contingut (Teoria, Exercicis, Solucions, Avatar, Àudio,
-  Podcast, Transcripció), amb herència del model global.
-- Menú «IA» al costat de cada material de cada sessió que permet escollir un
-  model explícit de la llista del compte, o heretar-ne un de global/per tipus.
-- Prioritat: model explícit de la sessió > tipus de material > global.
-- Tots els identificadors de model i preferències són exportables dins
-  `.lectavbak`. Els tokens OAuth o l'autorització massiva **no** es copien.
+For each session, the initial queue creates **Theory PDF → Exercises PDF → Worked solutions PDF → Narration/transcript PDF**. Subsequent versions can create a local WAV after the transcript when an approved voice is installed. The next task starts only when the previous file has been written and indexed.
 
-## Exportació i importació
-La còpia xifrada conté país, regió, itinerari, curs, matèria, llista de
-cursos, programacions, preferències de generació i models, PDFs, MP3, WAV,
-MP4 indexats i els textos originals si estan disponibles. La mida màxima
-de materials augmenta a **1 GiB**. Si es supera aquest límit, manca espai
-al dispositiu o algun URI ja no és accessible, la còpia produeix error:
-no es presenta una exportació parcial com a completa. El fitxer de destinació
-pot quedar incomplet i s'ha d'eliminar.
+The exercise prompt uses the preserved lesson text; worked solutions use the exercise text, and narration uses the lesson content. Imported or legacy PDFs without recoverable source text require a reviewed transcript. The queue skips materials already associated with the same session and stops if the source, authentication, model, credits or connection is unavailable. Previously completed files are not overwritten.
 
-## No disponible en aquesta primera fase
-LECTAV no disposa encara de generador **automàtic** d'avatar MP4, ni
-d'un motor TTS integrat de podcast/àudio sense instal·lar una app.
-Les seves preferències de model es poden preparar, però la cua no crea
-fitxers multimèdia ficticis ni presenta els passos com completats.
-La generació assistida/manual amb Piper continua sent una opció mentre
-es desenvolupa el motor FOSS incorporat.
+The worker is foreground-based. Android may stop it when LECTAV is closed or suspended; reopening allows a new run from the missing documents. Background completion is not guaranteed.
 
-## Proves de la versió
-1. Exporta una còpia de seguretat de LECTAV 0.9.8 abans d'actualitzar.
-2. Configura un model de ChatGPT autoritzat i un màxim de 4 peticions.
-3. Utilitza una programació amb una sessió de prova i inicia mode automàtic.
-4. Comprova els 4 PDFs i la coherència de teoria, exercicis i solucions.
-5. Atura una cua i reprèn-la: no ha de duplicar els documents ja guardats.
-6. Comprova un model incorrecte, límit esgotat, sense xarxa, sense guió font.
-7. Selecciona un model per material de sessió i torna'l a deixar heretat.
-8. Exporta i restaura `.lectavbak` en un entorn de prova; verifica cursos,
-   programacions, configuració, models i tots els materials.
-9. Comprova que una fallada d'exportació no es comuniqui com a èxit.
-10. Verifica que el mode manual continua funcionant a la Doogee.
+## AI model configuration
 
-Compilar Android a GitHub Actions no garanteix les proves funcionals ni
-de compatibilitat amb el compte o el dispositiu.
+- A default ChatGPT model can be chosen for all courses in Settings.
+- Each material type can inherit that model or override it.
+- Each course/session/material has an additional model selector.
+- Resolution priority: **session override > material type > global default**.
+- Only models actually offered to the connected account can be used; LECTAV does not invent model identifiers.
+- Model preferences are included in encrypted backups, but authentication tokens and account authorizations are not.
+
+The application implements a user-configurable maximum number of ChatGPT requests per batch, distinct from the account's real credits or quota. The persistent account-specific consent in Settings is checked before generation, and can be revoked.
+
+## Export and supported media
+
+LECTAV archives index-linked, accessible PDFs, WAV/MP3 and MP4 materials plus app configuration and lesson sources, within the configured limits. The automatic queue must never claim that podcast or avatar MP4 files exist if the relevant local generation engine is not implemented.
+
+## Suggested acceptance tests
+
+Generate a single four-document test session. Verify that each generated file opens, has the correct session association, and appears in the history. Interrupt and resume; ensure that completed materials are not duplicated. Test wrong model, disconnected account, missing original PDF text, quota error, and a backup/restore round-trip. Review mathematical exercise and solution content before use in class.

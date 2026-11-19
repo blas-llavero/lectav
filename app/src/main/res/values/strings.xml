@@ -107,4 +107,13 @@
     <string name="material_page_count">Page %1$d of %2$d</string>
     <string name="material_prev">Previous</string>
     <string name="material_next">Next</string>
+    <string name="backup_audit_selected_count">Selected: %1$d subjects and %2$d material files.</string>
+    <string name="backup_audit_no_indexed">Warning: No PDFs, audio files or videos are indexed in this installation. A backup will only contain settings. Check your library before exporting or uninstalling.</string>
+    <string name="backup_audit_empty_selection">Warning: The selection includes zero files. Select all or choose the required courses and material types.</string>
+    <string name="backup_audit_export_verified">Export verified: %1$d courses, %2$d material files (%3$d bytes). Save the password and test restoration before uninstalling.</string>
+    <string name="backup_audit_restore_verified">Restore verified: %1$d courses and %2$d readable files. Open the course library to verify PDFs and recordings.</string>
+    <string name="backup_audit_inspect_button">Inspect archived documents</string>
+    <string name="backup_audit_inspect_verified">Archive verified: %1$d courses, %2$d material files, %3$d bytes.</string>
+    <string name="backup_audit_inspect_empty">Warning: This archive contains no PDFs, audio files or videos. It can only restore settings.</string>
+    <string name="backup_audit_inspect_failed">Unable to inspect the backup.</string>
 </resources>

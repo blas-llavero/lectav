@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -40,6 +41,9 @@ internal fun BackupScreen(
     var error by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
     var selectedBackup by remember { mutableStateOf<Uri?>(null) }
+    var inspection by remember { mutableStateOf<BackupResult?>(null) }
+    var inspectionError by remember { mutableStateOf("") }
+    var inspecting by remember { mutableStateOf(false) }
     var pendingPassword by remember { mutableStateOf("") }
     var pendingLanguage by remember { mutableStateOf("") }
     var pendingSelection by remember { mutableStateOf<BackupSelection?>(null) }
@@ -86,8 +90,9 @@ internal fun BackupScreen(
                     )
                 }
                 result.onSuccess {
-                    message = "Còpia desada: " + it.courses + " cursos i " +
-                        it.files + " materials. Conserva la contrasenya."
+                    message = context.getString(
+                        R.string.backup_audit_export_verified,
+                        it.courses,it.files,it.bytes)
                 }.onFailure {
                     error = it.localizedMessage ?: "No s'ha pogut crear la còpia."
                     // A failed archive may leave an incomplete destination file.
@@ -103,6 +108,8 @@ internal fun BackupScreen(
     ) { uri ->
         if (uri != null) {
             selectedBackup = uri
+            inspection = null
+            inspectionError = ""
             restorePassword = password
             error = ""
             message = ""
@@ -227,9 +234,17 @@ internal fun BackupScreen(
             }
         }
     }
-    Text("Selecció: ${effectiveCourses.size} assignatures i " +
-        "${candidateFiles.size} materials.",
+    Text(stringResource(R.string.backup_audit_selected_count,
+        effectiveCourses.size,candidateFiles.size),
         style=MaterialTheme.typography.bodyMedium)
+    if(materials.isEmpty()) {
+        Text(stringResource(R.string.backup_audit_no_indexed),
+            color=MaterialTheme.colorScheme.error)
+    }
+    if(materials.isNotEmpty() && candidateFiles.isEmpty()) {
+        Text(stringResource(R.string.backup_audit_empty_selection),
+            color=MaterialTheme.colorScheme.error)
+    }
 
     Button(
         modifier = Modifier.fillMaxWidth(),
@@ -297,6 +312,39 @@ internal fun BackupScreen(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
+                    OutlinedButton(
+                        enabled=!busy && !inspecting && restorePassword.length>=10,
+                        modifier=Modifier.fillMaxWidth(),
+                        onClick={
+                            val selected=selectedBackup ?: return@OutlinedButton
+                            val secret=restorePassword
+                            inspecting=true
+                            inspection=null
+                            inspectionError=""
+                            scope.launch {
+                                runCatching {
+                                    LectavBackup.inspect(context,selected,secret)
+                                }.onSuccess {
+                                    inspection=it
+                                }.onFailure {
+                                    inspectionError=it.localizedMessage
+                                        ?: context.getString(R.string.backup_audit_inspect_failed)
+                                }
+                                inspecting=false
+                            }
+                        }
+                    ) { Text(stringResource(R.string.backup_audit_inspect_button)) }
+                    if(inspecting) LinearProgressIndicator(
+                        modifier=Modifier.fillMaxWidth())
+                    inspection?.let { result ->
+                        Text(stringResource(R.string.backup_audit_inspect_verified,
+                            result.courses,result.files,result.bytes))
+                        if(result.files==0) Text(
+                            stringResource(R.string.backup_audit_inspect_empty),
+                            color=MaterialTheme.colorScheme.error)
+                    }
+                    if(inspectionError.isNotBlank()) Text(inspectionError,
+                        color=MaterialTheme.colorScheme.error)
                     if (chatGPTStatus.connected) {
                         Text(
                             "Abans de restaurar, desconnecta el compte ChatGPT " +
@@ -332,9 +380,8 @@ internal fun BackupScreen(
                                 "Importació completada: ${it.courses} cursos i ${it.files} materials.",
                                 Toast.LENGTH_LONG
                             ).show()
-                            message = "Restauració completada: " + it.courses +
-                                " cursos i " + it.files +
-                                " materials. " + (if (it.accountHint.isNotBlank())
+                            message = context.getString(R.string.backup_audit_restore_verified,
+                                it.courses,it.files) + " " + (if (it.accountHint.isNotBlank())
                                     "Compte anterior: " + it.accountHint + ". "
                                 else "") + "Connecta ChatGPT de nou."
                             if(it.languageTag.isNotBlank()) {
