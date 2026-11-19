@@ -102,6 +102,23 @@ internal object AutomaticExportFolder {
             length to digest.digest()
         }
 
+    suspend fun exportIndexed(ctx:Context,library:MaterialLibrary,item:LocalMaterial,
+        courses:List<SavedCourse>,plans:List<CoursePlan>):Uri {
+        val course=courses.firstOrNull { courseKey(it)==item.courseKey }
+            ?:error("The material's saved course could not be found.")
+        val plan=plans.firstOrNull { it.courseKey==item.courseKey }
+            ?:error("The material does not have a saved course plan.")
+        val fields=item.sessionKey.split('|')
+        require(fields.size==3) { "The material is not linked to a session." }
+        val term=fields[0].toIntOrNull()
+        val n=fields[2].toIntOrNull()
+        val index=plan.topics.indexOfFirst {
+            it.id==fields[1] && it.trimester==term
+        }
+        require(index>=0 && n!=null) { "Saved session not found for this material." }
+        return export(ctx,library,item,course,plan.topics[index],index,n)
+    }
+
     /**
      * Validates destination bytes; never overwrites an earlier different
      * document and never deletes a source. Retries reuse identical files.
