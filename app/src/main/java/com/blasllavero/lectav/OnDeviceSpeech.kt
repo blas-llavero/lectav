@@ -79,13 +79,8 @@ internal object OnDeviceSpeech {
 
     private fun turns(script: String, podcast: Boolean): List<Pair<Boolean, String>> {
         if (!podcast) return chunks(script).map { false to it }
-        val lines = script.lines().filter { it.isNotBlank() }
-        require(lines.isNotEmpty() && lines.all { Regex("""^[AB]:\s*\S.*""").matches(it.trim()) }) {
-            "Cada intervenció del podcast ha de començar amb A: o B:."
-        }
-        return lines.flatMap { line ->
-            val trimmed = line.trim()
-            chunks(trimmed.substring(2)).map { (trimmed.startsWith("B:")) to it }
+        return PodcastDialogue.parse(script).flatMap { turn ->
+            chunks(turn.text).map { (turn.speaker == 'B') to it }
         }
     }
 
