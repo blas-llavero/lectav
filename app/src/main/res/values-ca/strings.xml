@@ -107,4 +107,13 @@
     <string name="material_page_count">Pàgina %1$d de %2$d</string>
     <string name="material_prev">Anterior</string>
     <string name="material_next">Següent</string>
+    <string name="backup_audit_selected_count">Selecció: %1$d assignatures i %2$d fitxers de material.</string>
+    <string name="backup_audit_no_indexed">Avís: aquesta instal·lació no té PDF, àudios ni vídeos indexats. La còpia només contindrà la configuració. Revisa la biblioteca abans de desinstal·lar.</string>
+    <string name="backup_audit_empty_selection">Avís: la selecció no inclou cap fitxer. Selecciona-ho tot o escull els cursos i tipus de material necessaris.</string>
+    <string name="backup_audit_export_verified">Exportació verificada: %1$d cursos, %2$d fitxers de material (%3$d bytes). Conserva la contrasenya i comprova la restauració abans de desinstal·lar.</string>
+    <string name="backup_audit_restore_verified">Restauració verificada: %1$d cursos i %2$d fitxers llegibles. Obre la biblioteca per comprovar els PDF i els àudios.</string>
+    <string name="backup_audit_inspect_button">Comprova els documents de la còpia</string>
+    <string name="backup_audit_inspect_verified">Còpia verificada: %1$d cursos, %2$d fitxers de material, %3$d bytes.</string>
+    <string name="backup_audit_inspect_empty">Avís: aquesta còpia no conté PDF, àudios ni vídeos. Només pot restaurar la configuració.</string>
+    <string name="backup_audit_inspect_failed">No es pot inspeccionar la còpia.</string>
 </resources>
