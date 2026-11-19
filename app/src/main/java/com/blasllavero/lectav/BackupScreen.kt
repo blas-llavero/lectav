@@ -40,6 +40,9 @@ internal fun BackupScreen(
     var error by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
     var selectedBackup by remember { mutableStateOf<Uri?>(null) }
+    var inspection by remember { mutableStateOf<BackupResult?>(null) }
+    var inspectionError by remember { mutableStateOf("") }
+    var inspecting by remember { mutableStateOf(false) }
     var pendingPassword by remember { mutableStateOf("") }
     var pendingLanguage by remember { mutableStateOf("") }
     var pendingSelection by remember { mutableStateOf<BackupSelection?>(null) }
@@ -105,6 +108,8 @@ internal fun BackupScreen(
     ) { uri ->
         if (uri != null) {
             selectedBackup = uri
+            inspection = null
+            inspectionError = ""
             restorePassword = password
             error = ""
             message = ""
@@ -311,6 +316,41 @@ internal fun BackupScreen(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
+                    OutlinedButton(
+                        enabled=!busy && !inspecting && restorePassword.length>=10,
+                        modifier=Modifier.fillMaxWidth(),
+                        onClick={
+                            val selected=selectedBackup ?: return@OutlinedButton
+                            val secret=restorePassword
+                            inspecting=true
+                            inspection=null
+                            inspectionError=""
+                            scope.launch {
+                                runCatching {
+                                    LectavBackup.inspect(context,selected,secret)
+                                }.onSuccess {
+                                    inspection=it
+                                }.onFailure {
+                                    inspectionError=it.localizedMessage
+                                        ?: "Unable to inspect the backup."
+                                }
+                                inspecting=false
+                            }
+                        }
+                    ) { Text("Inspect archived documents") }
+                    if(inspecting) LinearProgressIndicator(
+                        modifier=Modifier.fillMaxWidth())
+                    inspection?.let { result ->
+                        Text("Archive verified: " + result.courses +
+                            " courses, " + result.files + " material files, " +
+                            result.bytes + " bytes.")
+                        if(result.files==0) Text(
+                            "WARNING: This archive contains no PDF, WAV, " +
+                                "MP3 or MP4 files. It can only restore settings.",
+                            color=MaterialTheme.colorScheme.error)
+                    }
+                    if(inspectionError.isNotBlank()) Text(inspectionError,
+                        color=MaterialTheme.colorScheme.error)
                     if (chatGPTStatus.connected) {
                         Text(
                             "Abans de restaurar, desconnecta el compte ChatGPT " +
