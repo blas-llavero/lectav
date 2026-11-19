@@ -1,3 +1,13 @@
+## Automatic lessons and organized export (v0.9.16)
+
+With a ChatGPT model and consent configured, selecting **Automatic mode** starts the pending course/session queue without extra prompts. LECTAV creates theory, exercises, worked solutions, a narration/transcript PDF and local WAV audio if a voice model is installed, then moves through each saved teacher course, unit and session.
+
+The screen shows real **Generated** and **Exported** checkmarks as files are indexed and verified. **Pause** stops at the next safe checkpoint, **Resume** continues, and **Cancel** keeps successfully saved documents. The app is foreground-only, and the configured maximum number of ChatGPT requests per run remains a safeguard.
+
+Choose the **Automatic export folder** once in Settings (internal storage or SD). LECTAV creates `Pathway/Course/Subject/Trimester/Unit/Session` directories and saves each PDF or WAV in its original format, verifying the destination before marking it exported. Existing different files are never overwritten. A new device must choose its own directory, because Android folder grants are not portable.
+
+**Current limitation:** genuine animated avatar MP4 and multi-speaker podcast generation are not yet implemented; their checkmarks deliberately remain pending. Learn more in [Continuous generation and storage guide](docs/CONTINUOUS_AUTO_EXPORT_V0_9_16.md).
+
 ## Encrypted backups with material verification (v0.9.15)
 
 LECTAV complete backups are password-protected **`.lectavbak` files**, not ordinary unencrypted ZIP files. They contain the saved app settings and every **indexed and accessible** theory, exercise, solution, transcript, audio, podcast and video file. The app reports the exact number of material files selected. **A backup that contains zero indexed files does not contain the PDFs or audio you may expect.**
