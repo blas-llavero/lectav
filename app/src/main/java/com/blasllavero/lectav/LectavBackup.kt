@@ -160,6 +160,140 @@ internal object LectavBackup {
         check(edit.commit()) { "No s'han restaurat les preferències del generador." }
     }
 
+    /**
+     * Read-only archive inspection. Decrypts the complete file to ensure
+     * authenticated AES-GCM completion, then checks that every indexed
+     * PDF/audio/video archive member is present and non-empty. It never
+     * writes course preferences or changes the existing material library.
+     *
+     * Users can inspect historical backups before performing a replacement.
+     */
+    suspend fun inspect(context: Context, source: Uri, password: String): BackupResult =
+        withContext(Dispatchers.IO) {
+            val staging=File.createTempFile("lectav_audit_",".zip",context.cacheDir)
+            try {
+                context.contentResolver.openInputStream(source).use { input ->
+                    require(input!=null) { "The backup file cannot be opened for inspection." }
+                    val header=DataInputStream(input)
+                    val found=ByteArray(8).also(header::readFully)
+                    require(found.contentEquals(magic)) {
+                        "This is not a LECTAV encrypted backup (.lectavbak)."
+                    }
+                    val salt=ByteArray(16).also(header::readFully)
+                    val iv=ByteArray(12).also(header::readFully)
+                    val cipher=Cipher.getInstance("AES/GCM/NoPadding").apply {
+                        init(Cipher.DECRYPT_MODE,key(password,salt),GCMParameterSpec(128,iv))
+                    }
+                    CipherInputStream(header,cipher).use { plain ->
+                        staging.outputStream().buffered().use { target ->
+                            val bytes=ByteArray(65536)
+                            var count=0L
+                            while(true) {
+                                val read=plain.read(bytes)
+                                if(read==-1)break
+                                count+=read
+                                require(count<=MAX_SIZE+12L*1024*1024) {
+                                    "The encrypted backup exceeds the supported size."
+                                }
+                                target.write(bytes,0,read)
+                            }
+                        }
+                    }
+                }
+                ZipFile(staging).use { zip ->
+                    val meta=zip.getEntry("manifest.json")
+                        ?: error("The backup is missing manifest.json.")
+                    require(meta.size in 1..MAX_MANIFEST.toLong())
+                    val manifest=JSONObject(zip.getInputStream(meta).use { stream ->
+                        stream.readBytes().also { require(it.size<=MAX_MANIFEST) }
+                    }.toString(Charsets.UTF_8))
+                    require(manifest.getInt("version")==1) {
+                        "This LECTAV backup version is not supported."
+                    }
+                    val courseRecords=manifest.getJSONObject("settings")
+                        .getJSONArray("courses")
+                    require(courseRecords.length()<=MAX_ITEMS)
+                    val materials=manifest.getJSONArray("materials")
+                    require(materials.length()<=MAX_ITEMS)
+                    val expectedKeys=settingsFromJson(manifest.getJSONObject("settings"))
+                        .savedCourses.map(::courseKey).toSet()
+                    val filenames=HashSet<String>()
+                    var sourceCount=0
+                    var checksumCount=0
+                    var bytesTotal=0L
+                    for(i in 0 until materials.length()) {
+                        val item=materials.getJSONObject(i)
+                        val type=item.getString("type")
+                        require(type in setOf("lesson","exercise","solutions",
+                            "video","audio","podcast","transcript"))
+                        require(item.getString("courseKey") in expectedKeys) {
+                            "A material is not attached to a course in this backup."
+                        }
+                        val file=item.getString("entry")
+                        require(file.matches(Regex("""files/\d{4}\.(pdf|mp3|wav|mp4)""")) &&
+                            filenames.add(file))
+                        val entry=zip.getEntry(file) ?: error("Missing archived material: $file")
+                        require(!entry.isDirectory && entry.size in 1..MAX_SIZE)
+                        val checkName="checksums/" +
+                            i.toString().padStart(4,'0')+".json"
+                        val check=zip.getEntry(checkName)?.let {
+                            checksumCount++
+                            JSONObject(zip.getInputStream(it).use { stream ->
+                                stream.readBytes().also { require(it.size<=1000) }
+                            }.toString(Charsets.UTF_8))
+                        }
+                        val hash=sha256()
+                        var copied=0L
+                        val firstBytes=ByteArray(4)
+                        zip.getInputStream(entry).buffered().use { sourceBytes ->
+                            val buffer=ByteArray(65536)
+                            while(true) {
+                                val n=sourceBytes.read(buffer)
+                                if(n==-1)break
+                                if(copied<4) {
+                                    val take=minOf(n,(4-copied).toInt())
+                                    buffer.copyInto(firstBytes,copied.toInt(),0,take)
+                                }
+                                hash.update(buffer,0,n)
+                                copied+=n
+                                bytesTotal+=n
+                                require(bytesTotal<=MAX_SIZE)
+                            }
+                        }
+                        require(copied>0)
+                        if(file.endsWith(".pdf")) require(
+                            copied>=4 &&
+                                firstBytes.toString(Charsets.US_ASCII)=="%PDF"
+                        ) { "The backup contains an invalid PDF: $file" }
+                        if(check!=null) require(
+                            check.getString("entry")==file &&
+                                check.getLong("bytes")==copied &&
+                                check.getString("sha256")==hex(hash.digest())
+                        ) { "Checksum mismatch: $file" }
+                        if(item.has("sourceEntry")) {
+                            val sourceName=item.getString("sourceEntry")
+                            require(sourceName=="sources/" +
+                                i.toString().padStart(4,'0')+".txt")
+                            val companion=zip.getEntry(sourceName)
+                                ?: error("Missing narration source: $sourceName")
+                            require(companion.size in 1..200_000)
+                            sourceCount++
+                        }
+                    }
+                    require(checksumCount==0 || checksumCount==materials.length()) {
+                        "The backup contains incomplete integrity records."
+                    }
+                    require(zip.size()==1+materials.length()+sourceCount+
+                        checksumCount) {
+                        "The backup contains unexpected or missing ZIP members."
+                    }
+                    BackupResult(materials.length(),courseRecords.length(),bytesTotal)
+                }
+            } finally {
+                staging.delete()
+            }
+        }
+
     suspend fun export(
         context: Context, destination: Uri, password: String,
         settingsRepo: SettingsRepository, plansRepo: CoursePlanningRepository,
@@ -285,7 +419,15 @@ internal object LectavBackup {
                 }
             }
         }
-        BackupResult(documents.size,settings.savedCourses.size,total)
+        // Verify the actual destination archive, not merely the list of
+        // intended source files. Do not tell the user export succeeded if
+        // Android's document provider did not persist the material bytes.
+        val verified=inspect(context,destination,password)
+        check(verified.files==documents.size &&
+            verified.courses==settings.savedCourses.size) {
+            "The exported backup does not contain the expected materials."
+        }
+        verified
     }
 
     suspend fun restore(
