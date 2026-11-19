@@ -17,6 +17,7 @@ import java.io.DataInputStream
 import java.io.File
 import java.io.IOException
 import java.security.SecureRandom
+import java.security.MessageDigest
 import java.util.UUID
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
@@ -48,6 +49,8 @@ internal object LectavBackup {
     private const val MAX_SIZE = 1024L * 1024 * 1024
     private const val MAX_ITEMS = 500
     private const val MAX_MANIFEST = 1_200_000
+    private fun sha256() = MessageDigest.getInstance("SHA-256")
+    private fun hex(bytes: ByteArray): String = bytes.joinToString("") { "%02x".format(it.toInt() and 0xff) }
 
     private fun key(password: String, salt: ByteArray): SecretKeySpec {
         require(password.length in 10..200) {
@@ -246,6 +249,7 @@ internal object LectavBackup {
                     context.contentResolver.openInputStream(Uri.parse(file.uri)).use { input ->
                         require(input != null) { "No es pot llegir: " + file.name }
                         zip.putNextEntry(ZipEntry(entry))
+                        val hash=sha256()
                         val buf=ByteArray(64*1024)
                         var size=0L
                         while(true) {
@@ -253,13 +257,20 @@ internal object LectavBackup {
                             if(n==-1) break
                             size += n
                             total += n
+                            hash.update(buf,0,n)
                             require(total <= MAX_SIZE) {
                                 "Còpia massa gran (màxim 1 GB). " +
                                 "Exporta els vídeos grans a la SD per separat."
                             }
                             zip.write(buf,0,n)
                         }
-                        require(size > 0) { "Document buit: " + file.name }
+                        require(size > 0) { "Empty document: " + file.name }
+                        zip.closeEntry()
+                        val check=JSONObject().put("entry",entry)
+                            .put("bytes",size).put("sha256",hex(hash.digest()))
+                        zip.putNextEntry(ZipEntry("checksums/" +
+                            index.toString().padStart(4,'0') + ".json"))
+                        zip.write(check.toString().toByteArray(Charsets.UTF_8))
                         zip.closeEntry()
                     }
                     sources[index]?.let { sourceText ->
@@ -339,9 +350,16 @@ internal object LectavBackup {
                 val sourceEntries=(0 until items.length()).count {
                     items.getJSONObject(it).has("sourceEntry")
                 }
-                require(items.length() <= MAX_ITEMS &&
-                    zip.size()==items.length()+sourceEntries+1) {
-                    "La còpia conté fitxers inesperats."
+                require(items.length() <= MAX_ITEMS)
+                val checksumCount=(0 until items.length()).count { index ->
+                    zip.getEntry("checksums/" +
+                        index.toString().padStart(4,'0') + ".json")!=null
+                }
+                require(checksumCount==0 || checksumCount==items.length) {
+                    "Incomplete backup integrity records."
+                }
+                require(zip.size()==1+items.length()+sourceEntries+checksumCount) {
+                    "Backup ZIP has unexpected or missing files."
                 }
                 val usedNames=HashSet<String>()
                 val restored=ArrayList<LocalMaterial>()
