@@ -86,8 +86,10 @@ internal fun BackupScreen(
                     )
                 }
                 result.onSuccess {
-                    message = "Còpia desada: " + it.courses + " cursos i " +
-                        it.files + " materials. Conserva la contrasenya."
+                    message = "Export verified: " + it.courses + " courses and " +
+                        it.files + " actual material files (" + it.bytes +
+                        " bytes). Save the password. " +
+                        "Before uninstalling, restore this archive on a test device."
                 }.onFailure {
                     error = it.localizedMessage ?: "No s'ha pogut crear la còpia."
                     // A failed archive may leave an incomplete destination file.
@@ -227,9 +229,21 @@ internal fun BackupScreen(
             }
         }
     }
-    Text("Selecció: ${effectiveCourses.size} assignatures i " +
-        "${candidateFiles.size} materials.",
+    Text("Selected for export: ${effectiveCourses.size} subjects and " +
+        "${candidateFiles.size} material files.",
         style=MaterialTheme.typography.bodyMedium)
+    if(materials.isEmpty()) {
+        Text("WARNING: This installation has no indexed PDFs, audio, " +
+            "podcasts or videos. A backup created here will contain " +
+            "settings but no documents. Check the course library " +
+            "before exporting or reinstalling.",
+            color=MaterialTheme.colorScheme.error)
+    }
+    if(materials.isNotEmpty() && candidateFiles.isEmpty()) {
+        Text("WARNING: Your current selection contains zero files. " +
+            "Choose Select all or include the specific courses and file types.",
+            color=MaterialTheme.colorScheme.error)
+    }
 
     Button(
         modifier = Modifier.fillMaxWidth(),
@@ -332,9 +346,10 @@ internal fun BackupScreen(
                                 "Importació completada: ${it.courses} cursos i ${it.files} materials.",
                                 Toast.LENGTH_LONG
                             ).show()
-                            message = "Restauració completada: " + it.courses +
-                                " cursos i " + it.files +
-                                " materials. " + (if (it.accountHint.isNotBlank())
+                            message = "Restore verified: " + it.courses +
+                                " courses and " + it.files +
+                                " readable material files. Open your course " +
+                                "library to inspect the restored PDFs and audio. " + + (if (it.accountHint.isNotBlank())
                                     "Compte anterior: " + it.accountHint + ". "
                                 else "") + "Connecta ChatGPT de nou."
                             if(it.languageTag.isNotBlank()) {
