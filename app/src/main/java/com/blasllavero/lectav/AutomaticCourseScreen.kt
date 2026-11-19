@@ -140,7 +140,7 @@ internal fun AutomaticCourseScreen(
                         val sessionId=unit.trimester.toString()+"|"+unit.id+"|"+n
                         val stem=MaterialFileNames.sessionStem(unitIndex+1,offset+n,topic)
                         val kinds=AutoGenerationConfig.automaticPdfTypes +
-                            (if(voiceAvailable) listOf("audio") else emptyList()) +
+                            (if(voiceAvailable) listOf("audio","video") else emptyList()) +
                             (if(podcastAvailable) listOf("podcast") else emptyList())
                         kinds.forEach { kind ->
                             if(files.none { it.courseKey==courseKey(c) &&
@@ -178,7 +178,8 @@ internal fun AutomaticCourseScreen(
         else "Podcast automàtic opcional: instal·la Piper Android i dues veus " +
             "locals diferents. No es farà servir cap veu de xarxa.",
         style=MaterialTheme.typography.bodySmall)
-    Text("Avatar MP4 animat encara pendent d'implementació.",
+    Text("Avatar MP4: primera versió animada 2D amb subtítols aproximats, " +
+        "limitada a 10 minuts per sessió i subjecta al codificador Android.",
         style=MaterialTheme.typography.bodySmall)
     if(!connected || !inferenceAllowed) {
         Text("Connecta i autoritza ChatGPT.",color=MaterialTheme.colorScheme.error)
@@ -187,7 +188,7 @@ internal fun AutomaticCourseScreen(
     if(loading) LinearProgressIndicator(modifier=Modifier.fillMaxWidth())
     if(error.isNotBlank()) Text(error,color=MaterialTheme.colorScheme.error)
     if(refresh == -1) Text("Model actualitzat")
-    Text("Materials pendents (PDF i WAV): "+tasks.size,style=MaterialTheme.typography.titleMedium)
+    Text("Materials pendents (PDF, WAV i MP4): "+tasks.size,style=MaterialTheme.typography.titleMedium)
     Text("La configuració següent s'aplicarà a tots els cursos i s'inclourà " +
         "a la còpia xifrada .lectavbak.")
     ModelChoice("Model global",models,AutoGenerationConfig.globalModel(context),
@@ -212,13 +213,14 @@ internal fun AutomaticCourseScreen(
     val queued=buildList {
         var chatgptCalls=0
         for(task in tasks) {
-            if(task.kind!="audio" && chatgptCalls>=cap) break
+            val needsChatGPT=task.kind !in setOf("audio","video")
+            if(needsChatGPT && chatgptCalls>=cap) break
             add(task)
-            if(task.kind!="audio") chatgptCalls++
+            if(needsChatGPT) chatgptCalls++
         }
     }
     val invalid=queued.any { task ->
-        if(task.kind=="audio") false else {
+        if(task.kind in setOf("audio","video")) false else {
         val model=AutoGenerationConfig.resolvedModel(context,
             courseKey(task.course),task.sessionId,task.kind)
         model.isBlank() || models.none { it.slug==model }
@@ -285,6 +287,35 @@ internal fun AutomaticCourseScreen(
                                         context,library,existing,courses,plans)
                                     exportRevision++
                                 }
+                                completed++
+                                continue
+                            }
+                            if(task.kind=="video") {
+                                val source=library.files.first().lastOrNull {
+                                    it.courseKey==courseKey(task.course) &&
+                                    it.sessionKey==task.sessionId &&
+                                    it.type=="audio"
+                                } ?: error("Falta l'àudio WAV de "+jobName)
+                                val transcript=library.files.first().lastOrNull {
+                                    it.courseKey==courseKey(task.course) &&
+                                    it.sessionKey==task.sessionId &&
+                                    it.type=="transcript"
+                                } ?: error("Falta el guió de l'avatar de "+jobName)
+                                val script=LocalPdfSource.readForMaterial(context,transcript)
+                                    ?: error("No s'ha recuperat el guió de l'avatar.")
+                                val uri=OfflineAvatarVideo.create(context,source.uri,script)
+                                val filename=MaterialFileNames.forSessionStem(task.stem,"video")
+                                check(library.add(task.course,uri,filename,"video",
+                                    "generated",task.sessionId)) {
+                                    "No s'ha pogut indexar el vídeo de "+jobName
+                                }
+                                val generated=library.files.first().lastOrNull {
+                                    it.courseKey==courseKey(task.course) &&
+                                    it.sessionKey==task.sessionId && it.type=="video"
+                                } ?: error("Avatar MP4 no indexat.")
+                                AutomaticExportFolder.exportIndexed(context,library,generated,
+                                    courses,plans)
+                                exportRevision++
                                 completed++
                                 continue
                             }
@@ -446,7 +477,7 @@ internal fun AutomaticCourseScreen(
                         }
                         progress=if(tasks.size>queued.size)
                             "Bloc completat. Torna a iniciar per continuar amb els pendents."
-                        else "Cua de continguts disponibles completada. Avatar MP4 pendent."
+                        else "Cua de continguts disponibles completada."
                     } catch(e: CancellationException) {
                         progress="Generation cancelled. All completed documents remain saved."
                     } catch(e: Exception) {
@@ -530,11 +561,11 @@ internal fun AutomaticCourseScreen(
                 val exported=saved?.let {
                     AutomaticExportFolder.wasExported(context,it)
                 } ?:false
-                val unsupported=kind=="video"
                 val status=when {
                     generated && exported -> "✓ Generated · ✓ Exported"
                     generated -> "✓ Generated · Pending export"
-                    unsupported -> "Not implemented (no fake completion)"
+                    kind=="video" && !voiceAvailable ->
+                        "Install an integrated offline narration voice first"
                     kind=="podcast" && !podcastAvailable ->
                         "Install two offline Piper voices first"
                     kind=="audio" && !voiceAvailable ->
