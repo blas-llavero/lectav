@@ -383,8 +383,19 @@ internal object LectavBackup {
                     require(!zipEntry.isDirectory && zipEntry.size in 1..MAX_SIZE)
                     val local=File.createTempFile("backup_",suffix,privateDir)
                     newFiles.add(local)
+                    val checkEntry=zip.getEntry("checksums/" +
+                        i.toString().padStart(4,'0') + ".json")
+                    val expected=checkEntry?.let { record ->
+                        JSONObject(zip.getInputStream(record).use { it.readBytes() }
+                            .toString(Charsets.UTF_8)).also { item ->
+                            require(item.getString("entry")==fileName)
+                            require(item.getLong("bytes") in 1..MAX_SIZE)
+                            require(item.getString("sha256").matches(Regex("[a-f0-9]{64}")))
+                        }
+                    }
                     zip.getInputStream(zipEntry).use { input ->
                         local.outputStream().use { output ->
+                            val hash=sha256()
                             val buffer=ByteArray(64*1024)
                             var copied=0L
                             while(true) {
@@ -392,10 +403,15 @@ internal object LectavBackup {
                                 if(n==-1) break
                                 total += n
                                 copied += n
+                                hash.update(buffer,0,n)
                                 require(total <= MAX_SIZE) { "Còpia massa gran." }
                                 output.write(buffer,0,n)
                             }
                             require(copied > 0)
+                            if(expected!=null) require(
+                                expected.getLong("bytes")==copied &&
+                                expected.getString("sha256")==hex(hash.digest())
+                            ) { "Backup integrity check failed: " + fileName }
                         }
                     }
                     if(suffix==".pdf") {
@@ -446,6 +462,26 @@ internal object LectavBackup {
                         sessionKey=obj.optString("sessionKey").take(150),
                         createdAt=obj.optLong("createdAt",0L).coerceAtLeast(0L)
                     ))
+                }
+                // Verify files, index links and course membership before
+                // modifying any existing library or saved course.
+                val exportedKeys=restoredSettings.savedCourses.map(::courseKey).toSet()
+                require(restored.all { it.courseKey in exportedKeys }) {
+                    "Materials reference missing courses in this archive."
+                }
+                restored.forEach { material ->
+                    context.contentResolver.openInputStream(Uri.parse(material.uri)).use {
+                        require(it!=null && it.read()>=0) {
+                            "Restored material is not readable: " + material.name
+                        }
+                    }
+                }
+                if(!manifest.optBoolean("partial",false) && restored.isEmpty()) {
+                    require(library.files.first().isEmpty()) {
+                        "This full backup contains NO materials. Restoring it " +
+                            "would erase local documents. Export a full backup " +
+                            "containing all materials from the original device."
+                    }
                 }
                 // The archive and every file are authenticated/validated now.
                 // If a later preference write fails, keep staged files so
