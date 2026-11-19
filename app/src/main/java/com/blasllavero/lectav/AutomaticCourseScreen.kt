@@ -404,5 +404,59 @@ internal fun AutomaticCourseScreen(
         "Si tanques l'app o Android la suspèn, reprèn manualment la cua; " +
         "no es garanteix l'execució en segon pla.",
         style=MaterialTheme.typography.bodySmall)
+    HorizontalDivider()
+    Text("Automatic generation checklist",style=MaterialTheme.typography.titleMedium)
+    Text("A checkmark appears only when the real file has been saved in " +
+        "the course library. An export checkmark requires a verified " +
+        "copy in the selected Android folder.",
+        style=MaterialTheme.typography.bodySmall)
+    val plannedSessions=buildList {
+        courses.filter { it.role=="teacher" }.forEach { course ->
+            val plan=plans.firstOrNull { it.courseKey==courseKey(course) }
+                ?:return@forEach
+            plan.topics.forEach { unit ->
+                for(n in 1..unit.sessions) {
+                    val sessionKey=unit.trimester.toString()+"|"+unit.id+"|"+n
+                    add(Triple(course,sessionKey,unit.sessionTitle(n)))
+                }
+            }
+        }
+    }
+    Text("Planned sessions: "+plannedSessions.size,
+        style=MaterialTheme.typography.bodySmall)
+    plannedSessions.take(60).forEach { (course,sessionKey,title) ->
+        val sessionFiles=files.filter {
+            it.courseKey==courseKey(course) && it.sessionKey==sessionKey
+        }
+        Column(verticalArrangement=Arrangement.spacedBy(2.dp)) {
+            Text(course.course+" · "+course.subject+" · "+title,
+                style=MaterialTheme.typography.titleSmall)
+            for(kind in listOf("lesson","exercise","solutions","transcript",
+                "audio","video","podcast")) {
+                val saved=sessionFiles.firstOrNull { it.type==kind }
+                val generated=saved!=null
+                val exported=saved?.let {
+                    AutomaticExportFolder.wasExported(context,it)
+                } ?:false
+                val unsupported=kind=="video" || kind=="podcast"
+                val status=when {
+                    generated && exported -> "✓ Generated · ✓ Exported"
+                    generated -> "✓ Generated · Pending export"
+                    unsupported -> "Not implemented (no fake completion)"
+                    kind=="audio" && !voiceAvailable ->
+                        "Install a local voice first"
+                    else -> "Pending"
+                }
+                Text(AutoGenerationConfig.title(kind)+": "+status,
+                    style=MaterialTheme.typography.bodySmall,
+                    color=if(generated && exported) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurface)
+            }
+        }
+        HorizontalDivider()
+    }
+    if(plannedSessions.size>60)Text(
+        "Showing 60 sessions. The queue still includes all saved sessions.",
+        style=MaterialTheme.typography.bodySmall)
     GeneratedFilesHistory(files=files,courses=courses,plans=plans)
 }
