@@ -1,81 +1,29 @@
-# LECTAV 0.9.12 — Narració de teoria amb veus lliures integrades
+# LECTAV 0.9.12 — Embedded free-software audio generation
 
-## Objectiu
-Generar àudio directament a la tauleta amb biblioteques lliures (GPL),
-sense ordinador, sense compte extern de TTS i **sense instal·lar una altra
-aplicació**. La síntesi és local: després de descarregar la veu, la teoria
-no surt del dispositiu.
+## Goal and architecture
 
-## Motor
-LECTAV integra el motor VoxSherpa-TTS (`techempower-org/VoxSherpa-TTS`)
-i sherpa-onnx a través de dependències Android, amb importació inicial
-de models des de les versions oficials de sherpa-onnx.
+Generate classroom narration on an Android tablet without a separate Piper application, PC, cloud speech service or subscription. LECTAV integrates open-source VoxSherpa and sherpa-onnx for on-device VITS/Piper speech synthesis.
 
-La instal·lació d'una veu és **opcional i iniciada per l'usuari** a la
-pantalla «Genera àudio/podcast» de la sessió:
-- Català: Ona o Pau
-- Castellà: Miro o Sharvard
+After user approval, the app downloads a compatible voice model and eSpeak-NG pronunciation data from the public [sherpa-onnx TTS models release](https://github.com/k2-fsa/sherpa-onnx/releases/tag/tts-models). Data is stored in LECTAV's private app directory. Models and voice recordings are not automatically uploaded to GitHub; verify each model's licence independently before redistributing the weights.
 
-Els arxius de veu es descarreguen des de:
-`https://github.com/k2-fsa/sherpa-onnx/releases/tag/tts-models`
+Initially offered voices include Catalan **Ona** and **Pau**, and Spanish **Miro** and **Sharvard**. The user chooses and downloads a voice in the session's audio-generation screen. Once installed, local WAV synthesis works without network access. Voice selection is remembered for subsequent generations.
 
-També es descarreguen les dades obertes d'espeak-ng. Els arxius es
-descomprimeixen a la carpeta privada de LECTAV, amb proteccions de
-ruta, mides i espai. Els models es guarden al dispositiu per no haver-los
-de descarregar a cada generació. L'usuari ha de verificar les condicions
-i llicències de les veus que seleccioni. No s'inclouen ni es pugen pesos
-de veus, enregistraments, imatges o vídeos al repositori de LECTAV.
+## Manual procedure
 
-## Generació manual
-1. Entra en una sessió amb teoria o guió.
-2. Obre «Genera àudio/podcast a la tauleta».
-3. Carrega la teoria o conserva'n un guió manual (fins a 8.000
-   caràcters per generació).
-4. Selecciona una veu integrada i descarrega-la si encara no existeix.
-5. Prem «Genera àudio amb LECTAV».
-6. El motor processa fragments de la sessió sense enviar-ne text a cap
-   servei, desa un WAV PCM de 16 bits i el vincula a la biblioteca.
+1. Open an existing session that has theory or an approved narration script.
+2. Open **Generate audio / podcast**.
+3. Select an embedded voice and download it if not installed.
+4. Review the script and press **Generate audio with LECTAV**.
+5. Open the generated 16-bit PCM WAV in the course material library.
 
-La transcripció PDF de la sessió continua disponible. Els WAV es poden
-exportar amb el nom `Uxx_Syy_Tema_Audio.wav`.
+A mathematical-notation preprocessing step was introduced in 0.9.13; it transforms common LaTeX into words for speech without changing the original PDFs.
 
-## Mode automàtic
-Quan hi ha una veu integrada instal·lada, a la cua de materials apareix
-«Àudio WAV» després de teoria, exercicis, solucions i transcripció.
-Per a cada sessió, la narració utilitza el text original conservat
-amb el guió/transcripció PDF; el model local desat és el mateix
-seleccionat a la pantalla de generació manual.
+## Automatic queue
 
-No consumeix una crida de ChatGPT per sintetitzar l'àudio.
-El límit de peticions configurat s'aplica només als documents
-generats amb ChatGPT. La cua desa cada àudio abans de continuar
-i evita duplicar fitxers ja indexats.
+When a supported voice is installed, automatic generation adds a WAV task after each narration/transcript PDF. Speech synthesis is local and does not consume an additional ChatGPT text request. A generated audio file is indexed against the session, exported with the other available files, and not duplicated when the queue is resumed.
 
-## Limitacions
-- Els podcasts de dues veus, l'avatar MP4 i l'MP3 integrats encara no
-  estan disponibles automàticament. Piper extern es manté com a opció
-  temporal per als podcasts.
-- Els guions de més de 8.000 caràcters s'han de dividir; el sistema
-  mostra un error clar en lloc de produir una narració incompleta.
-- La pronunciació de notació LaTeX, expressions matemàtiques i sigles
-  s'ha de revisar abans de desar l'àudio.
-- No s'ha provat encara el rendiment del model en una Doogee T30 Ultra.
-  Els dispositius amb menys memòria poden trigar més o patir
-  restriccions del sistema durant la síntesi.
-- Les llicències dels models poden diferir de la del motor: cal validar-les
-  individualment abans de redistribuir-ne pesos.
+The automatic synthesis engine accepts chunked scripts within its defined limits; a manual editor can have a lower text limit. Large WAVs consume significant storage and may be slower on tablets with limited memory. The program must surface engine failures rather than claiming success.
 
-## Validació
-- Fer una còpia de seguretat de la instal·lació anterior.
-- Descarregar la veu catalana Ona des de LECTAV.
-- Generar WAV d'un guió curt (100–300 caràcters).
-- Comprovar reproducció, nom, data, matèria, tema i exportació.
-- Repetir la prova sense Wi-Fi una vegada descarregada la veu.
-- Seleccionar mode automàtic amb una sessió i comprovar que el WAV
-  es desa després del guió i s'omet si ja existeix.
-- Verificar que els documents antics i les còpies .lectavbak continuen
-  funcionant.
-- Confirmar les llicències de cada model abans de considerar
-  redistribució de fitxers de veu.
+## Current limitations
 
-Una compilació correcta a GitHub Actions no equival a proves a Android.
+A complete two-speaker podcast producer, the animated avatar MP4 renderer, and embedded MP3 encoding are separate development tasks. The older external Piper workflow may remain available as a fallback. Validate voice licensing, playback, offline synthesis, naming, backup and device performance before distributing material.
