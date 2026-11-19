@@ -1,35 +1,44 @@
-# Offline animated avatar — implementation plan and testable timeline
+# Offline avatar MP4 — experimental implementation
 
-This initial step adds **pure-Kotlin, tested timing primitives** for an offline
-avatar renderer. It is deliberately **not** a playable MP4 encoder yet:
-the existing automatic-screen avatar status must remain *Not implemented*.
+## Current functionality (draft branch)
+The automatic generation queue now optionally adds **Avatar MP4** after a locally
+generated narration WAV is available. The first edition is a basic, original
+2D animated presenter. It is **not** 3D, motion capture, photo-realistic video,
+speech-recognition alignment, or phoneme-accurate lip sync.
 
-## Audio-driven animation contract
-- Consume an already indexed, locally generated narration WAV for the session.
-- Validate PCM mono 16-bit WAV and read duration from the audio data chunk.
-- Derive approximate start/end times for short on-screen subtitle phrases.
-- Determine a simple open/closed mouth state from the audio PCM amplitude.
-- Render a stylized original teacher figure; never impersonate a real person.
-- Encode H.264 video and AAC audio locally using Android MediaCodec, mux
-  both tracks into a real .mp4 using MediaMuxer, and verify both tracks by
-  reading them back with MediaExtractor before indexing or exporting.
-- Keep temporary files private, enforce an upper duration/size limit, clean
-  up after failure/cancellation, and preserve already completed materials.
-- Mark **Generated** only after the MP4 exists, has video+audio streams, and
-  is indexed; **Exported** only after existing SHA-256 checked SAF export.
+The Android-only pipeline:
+1. Read the existing session's indexed narration WAV and transcript PDF source.
+2. Check the WAV is bounded PCM mono 16-bit with a supported sample rate, and
+   reject clips over **10 minutes** for this experimental encoder.
+3. Draw a 320 × 240 stylized teacher with five frames per second. Derive
+   mouth-open state from audio amplitude and approximate caption timings from
+   the source text. This is *not* a word-aligned transcript.
+4. Encode H.264 AVC and AAC locally with Android MediaCodec.
+5. Combine both tracks into an MP4 with MediaMuxer. Reopen using MediaExtractor
+   and verify that there are genuine audio and video tracks.
+6. Index only the validated MP4 and export it using the existing streaming,
+   SHA-256-verified Android Storage Access Framework folder exporter.
 
-## Known accuracy limit
-The new `AvatarCaptions` timing uses the supplied narration text and
-proportional phrase lengths. It is **not real speech recognition, forced
-alignment, or phoneme-accurate lip sync**. Later implement genuine local
-alignment if compatible FOSS tooling and a robust model are available.
+All temporary media files are private and discarded on completion or failure.
+A failure must not create a checkmark for an invalid or missing MP4. Completed
+earlier session files remain indexed; cancellation is checked during encoding.
 
-## Tests
-`AvatarCaptionsTest` exercises continuous timing, deterministic output,
-empty input, audio-amplitude mouth state and invalid limits. Run the
-repository's existing Gradle unit tests and GitHub Actions before any merge.
+## Required validation before merging
+- GitHub Actions must compile Android Kotlin and execute the existing JVM tests.
+- Confirm the device has compatible H.264/AAC encoders; different devices may
+  support different color formats and PCM audio rates.
+- Verify MP4 playback, video and sound on both Doogee T30 Ultra and T40 Pro,
+  including a 30-second sample, longer samples, silent portions and cancellation.
+- Verify the subtitles are approximate (do not claim precise synchronization).
+- Verify stopping or killing the app does not corrupt previously generated files.
+- Verify hashes, folder organization and export to internal storage and SD.
+- Check edge cases: missing transcript, missing WAV, unsupported formats, storage
+  exhaustion, revoked document-tree permission, and duplicate regeneration.
+- Performance: measure device temperature, memory and battery while encoding.
 
-## Future integration
-Add a renderer, then append the avatar task after narration to the automatic
-queue. It must retain the current request cap, pause/cancel checkpoints and
-never claim that a placeholder or missing MP4 was generated.
+## Limitations
+This is a preliminary proof of implementation. Visual design is intentionally
+simple. Video frame rate and resolution are conservative to support modest
+Android tablets. No paid rendering service or network voice conversion is
+involved. Actual compatibility must be confirmed on hardware, not inferred
+from CI success alone.
