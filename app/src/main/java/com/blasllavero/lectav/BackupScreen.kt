@@ -349,7 +349,7 @@ internal fun BackupScreen(
                             message = "Restore verified: " + it.courses +
                                 " courses and " + it.files +
                                 " readable material files. Open your course " +
-                                "library to inspect the restored PDFs and audio. " + + (if (it.accountHint.isNotBlank())
+                                "library to inspect the restored PDFs and audio. " + (if (it.accountHint.isNotBlank())
                                     "Compte anterior: " + it.accountHint + ". "
                                 else "") + "Connecta ChatGPT de nou."
                             if(it.languageTag.isNotBlank()) {
