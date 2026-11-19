@@ -6,6 +6,12 @@
 package com.blasllavero.lectav
 
 import android.content.Context
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.res.stringResource
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -71,6 +77,10 @@ internal fun AutomaticCourseScreen(
     var error by remember { mutableStateOf("") }
     var refresh by remember { mutableIntStateOf(0) }
     var active by remember { mutableStateOf(false) }
+    var paused by remember { mutableStateOf(false) }
+    var exporting by remember { mutableStateOf(false) }
+    var exportError by remember { mutableStateOf("") }
+    var exportRevision by remember { mutableIntStateOf(0) }
     var runningJob by remember { mutableStateOf<Job?>(null) }
     var progress by remember { mutableStateOf(AutoGenerationConfig.lastProgress(context)) }
     var completed by remember { mutableIntStateOf(0) }
@@ -88,6 +98,18 @@ internal fun AutomaticCourseScreen(
         }
     }
     DisposableEffect(Unit) { onDispose { runningJob?.cancel() } }
+    val selectedFolder=remember(exportRevision) {
+        AutomaticExportFolder.selectedTree(context)
+    }
+    val treePicker=rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if(uri!=null) {
+            runCatching { AutomaticExportFolder.saveTree(context,uri) }
+                .onSuccess { exportError="";exportRevision++ }
+                .onFailure { exportError=it.localizedMessage ?: "Cannot save folder." }
+        }
+    }
 
     val voiceAvailable=EmbeddedSpeech.installed(context).isNotEmpty()
     val tasks=remember(courses,plans,files,voiceAvailable) {
@@ -117,6 +139,18 @@ internal fun AutomaticCourseScreen(
     }
 
     Text("Mode automàtic",style=MaterialTheme.typography.titleLarge)
+    Text("Destination: "+(selectedFolder?.toString() ?:
+        "No export folder selected"),style=MaterialTheme.typography.bodySmall)
+    OutlinedButton(enabled=!active,onClick={treePicker.launch(null)},
+        modifier=Modifier.fillMaxWidth()) {
+        Text("Select folder for automatic exports (internal storage or SD)")
+    }
+    if(exportError.isNotBlank())Text(exportError,
+        color=MaterialTheme.colorScheme.error)
+    if(selectedFolder==null) Text("Choose a folder before automatic generation. " +
+        "LECTAV will create pathway/course/subject/trimester/unit/session " +
+        "subfolders and verify each exported document.",
+        color=MaterialTheme.colorScheme.error)
     Text("Cua de cursos i sessions desats: Teoria → Exercicis → Solucions → " +
         "Transcripció → Àudio WAV (si has descarregat una veu local). " +
         "Els fitxers s'associen a la sessió sense passos intermedis.")
@@ -177,29 +211,77 @@ internal fun AutomaticCourseScreen(
             progress={if(batchSize==0) 0f else completed.toFloat()/batchSize},
             modifier=Modifier.fillMaxWidth())
         Text("Completats en aquesta execució: "+completed+" / "+batchSize)
-        OutlinedButton(onClick={runningJob?.cancel()}) {
-            Text("Atura (conserva els PDFs desats)")
+        Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick={
+                paused=!paused
+                progress=if(paused) "Pausing after the current operation..."
+                    else "Resuming automatic generation."
+            }) { Text(if(paused) "Resume" else "Pause") }
+            OutlinedButton(onClick={runningJob?.cancel()}) {
+                Text("Cancel generation")
+            }
         }
+        if(paused) Text("Paused at the next safe checkpoint. " +
+            "Saved materials remain available.")
     } else {
         Button(modifier=Modifier.fillMaxWidth(),
-            enabled=authorized && queued.isNotEmpty() && !invalid && !loading &&
-                connected && inferenceAllowed && models.isNotEmpty(),
+            enabled=selectedFolder!=null && authorized &&
+                (queued.isNotEmpty() || files.any { !AutomaticExportFolder.wasExported(context,it) }) &&
+                !invalid && !loading && connected && inferenceAllowed &&
+                models.isNotEmpty(),
             onClick={
                 AutoGenerationConfig.requireChatGPTAuthorized(context,accountEmail)
                 AutoGenerationConfig.setMaxRequests(context,cap)
                 active=true
+                paused=false
                 completed=0
-                batchSize=queued.size
+                batchSize=queued.size + files.count {
+                    it.origin=="generated" && it.sessionKey.isNotBlank() &&
+                        !AutomaticExportFolder.wasExported(context,it)
+                }
                 runningJob=scope.launch {
                     try {
+                        require(AutomaticExportFolder.selectedTree(context)!=null) {
+                            "Select an Android export folder."
+                        }
+                        // Export already indexed materials on a resumed run.
+                        val stored=library.files.first().filter {
+                            it.origin=="generated" && it.sessionKey.isNotBlank() &&
+                                !AutomaticExportFolder.wasExported(context,it)
+                        }
+                        for(item in stored) {
+                            currentCoroutineContext().ensureActive()
+                            while(paused) {
+                                delay(180)
+                                currentCoroutineContext().ensureActive()
+                            }
+                            progress="Exporting existing material: "+item.name
+                            AutoGenerationConfig.recordProgress(context,progress)
+                            AutomaticExportFolder.exportIndexed(context,library,item,courses,plans)
+                            completed++
+                            exportRevision++
+                        }
                         for(task in queued) {
+                            currentCoroutineContext().ensureActive()
+                            while(paused) {
+                                delay(180)
+                                currentCoroutineContext().ensureActive()
+                            }
                             AutoGenerationConfig.requireChatGPTAuthorized(context,accountEmail)
                             val jobName=task.course.course+" · "+task.topic+" · "+
                                 AutoGenerationConfig.title(task.kind)
                             progress="Generant "+jobName
                             AutoGenerationConfig.recordProgress(context,progress)
-                            if(library.files.first().any { it.courseKey==courseKey(task.course) &&
-                                it.sessionKey==task.sessionId && it.type==task.kind }) {
+                            val existing=library.files.first().firstOrNull {
+                                it.courseKey==courseKey(task.course) &&
+                                it.sessionKey==task.sessionId && it.type==task.kind
+                            }
+                            if(existing!=null) {
+                                if(!AutomaticExportFolder.wasExported(context,existing)) {
+                                    AutomaticExportFolder.exportIndexed(
+                                        context,library,existing,courses,plans)
+                                    exportRevision++
+                                }
                                 completed++
                                 continue
                             }
@@ -226,6 +308,13 @@ internal fun AutomaticCourseScreen(
                                     "generated",task.sessionId)) {
                                     "No s'ha pogut indexar l'àudio de "+jobName
                                 }
+                                val generated=library.files.first().lastOrNull {
+                                    it.courseKey==courseKey(task.course) &&
+                                    it.sessionKey==task.sessionId && it.type=="audio"
+                                } ?: error("Audio was not indexed for export.")
+                                AutomaticExportFolder.exportIndexed(context,library,generated,
+                                    courses,plans)
+                                exportRevision++
                                 completed++
                                 continue
                             }
@@ -285,19 +374,27 @@ internal fun AutomaticCourseScreen(
                                 task.kind,"generated",task.sessionId)) {
                                 "No s'ha pogut indexar "+jobName
                             }
+                            val generated=library.files.first().lastOrNull {
+                                it.courseKey==courseKey(task.course) &&
+                                it.sessionKey==task.sessionId && it.type==task.kind
+                            } ?: error("PDF was not indexed for export.")
+                            AutomaticExportFolder.exportIndexed(context,library,generated,
+                                courses,plans)
+                            exportRevision++
                             completed++
                         }
                         progress=if(tasks.size>queued.size)
                             "Bloc completat. Torna a iniciar per continuar amb els pendents."
                         else "Cua PDF completada. Multimèdia pendent."
                     } catch(e: CancellationException) {
-                        progress="Aturat. Es conservaran els documents desats."
+                        progress="Generation cancelled. All completed documents remain saved."
                     } catch(e: Exception) {
                         progress="Aturat: "+(e.localizedMessage ?: "Error desconegut")+
                             ". Revisa el model, la quota i la connexió."
                     } finally {
                         AutoGenerationConfig.recordProgress(context,progress)
                         active=false
+                        paused=false
                         runningJob=null
                     }
                 }
