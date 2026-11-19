@@ -322,7 +322,12 @@ internal fun AutomaticCourseScreen(
                                         task.topic,AutoGenerationConfig.generationLanguage(context),
                                         "Guió de podcast educatiu amb dues veus"),
                                     usageGuard,customPrompt=prompt).trim()
-                                PodcastDialogue.parse(script)
+                                val dialogue=PodcastDialogue.parse(script)
+                                require(dialogue.size>=2 &&
+                                    dialogue.any { it.speaker=='A' } &&
+                                    dialogue.any { it.speaker=='B' }) {
+                                    "El guió del podcast necessita intervencions d'A i B."
+                                }
                                 val uri=OnDeviceSpeech.synthesize(context,script,"podcast",
                                     podcastVoices[0].name,podcastVoices[1].name)
                                 val filename=MaterialFileNames.forSessionStem(
