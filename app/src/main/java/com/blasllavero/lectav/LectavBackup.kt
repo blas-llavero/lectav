@@ -641,6 +641,15 @@ internal object LectavBackup {
                     restoreSources(context,curriculum)
                     restoreGeneratorPrefs(context,manifest.optJSONObject("generator") ?: JSONObject())
                 }
+                // The persistence layer must contain every restored
+                // material before reporting a successful import.
+                val indexed=library.files.first()
+                val expectedIds=restored.map { it.id }.toSet()
+                require(expectedIds.size==restored.size &&
+                    indexed.count { it.id in expectedIds }==restored.size) {
+                    "Restoration did not persist all materials. " +
+                        "Keep the backup and retry; do not uninstall the app."
+                }
                 // Backups from <= 0.9.0 may contain the deprecated local
                 // usage counter. Ignore it; never restore a local block.
                 // Actual account quotas are controlled exclusively by OpenAI.
