@@ -1,42 +1,21 @@
-# LECTAV 0.8.1 — control de peticions de ChatGPT
+# LECTAV 0.8.1 — ChatGPT requests and real account limits
 
-## Regla principal
+## Core rule
 
-LECTAV no pot llegir el saldo real d'ús, els crèdits, els diners, ni els límits del compte ChatGPT. No els inventa. L'usuari ha de consultar **ChatGPT → Configuració → Ús → Límits de les aplicacions → LECTAV → Gestiona els límits**.
+LECTAV cannot read the actual remaining ChatGPT plan credits or usage balance. Neither a client-side counter nor a generated estimate should be presented as an authoritative balance. OpenAI's real account restrictions, quota and applicable billing conditions remain independent.
 
-Segons l'ajuda oficial d'OpenAI, un límit d'aplicació inferior al 100% impedeix que aquella aplicació faci servir crèdits de ChatGPT. L'usuari també ha de revisar l'autorització d'ús de crèdits i les compres automàtiques del compte. LECTAV no pot modificar aquests ajustos.
+The original implementation included per-request usage confirmation and local protective counters. Later LECTAV releases changed this model: local artificial weekly attempt limits were removed and account-specific consent can be configured persistently in Settings. Historical behavior in this document should not be mistaken for the current app's controls.
 
-Documentació oficial:
-https://help.openai.com/es-es/articles/20001542-using-your-chatgpt-plan-in-other-apps-and-sites
-https://developers.openai.com/siwc/token-sharing-open-source/errors-and-recovery
+## Responsible generation
 
-## Proteccions implementades
+- Require an authenticated account and supported model before sending a request.
+- Do not invent available model identifiers or promise unlimited requests.
+- Stop clearly on quota, authentication, network and server errors.
+- Separate local FOSS/offline models from requests that reach a third-party service.
+- Never transmit pupil personal data unless explicitly permitted under applicable safeguards.
+- Do not use silent retries to defeat an account's limits.
+- Preserve generated files already saved when a later request fails.
 
-- **Límit local per defecte: 3 intents setmanals**, configurable de 0 a 30 a la pantalla «Compte ChatGPT». Valor 0 bloqueja totes les noves peticions de generació de ChatGPT des d'aquesta instal·lació.
-- Es compten **intents**, no tokens, euros ni quota del pla. Els intents fallits i les peticions interrompudes també compten, de manera conservadora.
-- Els recomptes persisteixen entre reinicis de LECTAV. Es reinicien els dilluns segons la data local del dispositiu. No pretenen reproduir el període real de quota del compte.
-- **Confirmació obligatòria per cada nova generació**: l'usuari ha de declarar que ha revisat els límits a ChatGPT i que no vol utilitzar crèdits. Si no marca la casella, no s'envia la petició.
-- Les peticions arriben al motor d'inferència només després de reservar un intent al comptador local. El límit es comprova una segona vegada al límit de xarxa.
-- Quan ChatGPT retorna `subscription_sharing_usage_limit_exceeded` o `subscription_sharing_usage_unavailable`, LECTAV atura la petició i mostra una indicació per consultar «Ús».
-- El motor de ChatGPT no inclou cap clau API ordinària, cap canvi automàtic a una API facturada per separat i cap opció de compra.
-- La prova de PDF local i el motor Ollama autoallotjat continuen sent independents del límit de ChatGPT.
+## Testing
 
-## Límits de seguretat
-
-LECTAV **no pot garantir per si sol cost zero** si l'usuari ha autoritzat l'ús de crèdits al seu compte. Les configuracions econòmiques reals es gestionen des de ChatGPT. El límit local és una protecció addicional, no un substitut del límit oficial. No s'ofereixen previsions falses de diners, tokens restants ni dates de reinici del pla.
-
-Aquesta versió no factura cap pagament per si mateixa, no sol·licita dades de targetes i no permet un pas automàtic a un proveïdor de pagament.
-
-## Proves proposades
-
-1. Instal·lar 0.8.1 sense desinstal·lar 0.8.0.
-2. Configuració → Compte ChatGPT: confirmar límit inicial de 3 i ajustar-lo a 1.
-3. Generació → ChatGPT: verificar que hi ha advertiment i que cal confirmar abans de cada petició.
-4. Generar un esborrany de prova i comprovar el comptador local.
-5. Verificar que es bloqueja la segona petició de ChatGPT quan el límit local és 1.
-6. Tornar a Configuració i posar el límit a 0: totes les peticions noves de ChatGPT han de quedar desactivades.
-7. Reobrir l'aplicació: comprovar persistència del comptador.
-8. PDF locals i Ollama continuen funcionant, independentment dels intents ChatGPT.
-9. No cal compartir captures amb dades del compte ni tokens d'autenticació.
-
-**Nota:** les proves de compilació no acrediten el comportament del compte d'OpenAI ni el saldo; cal verificar-lo al dispositiu i al web de ChatGPT.
+Verify authentication expiry, missing models, server errors, user cancellation and disconnected network. Confirm that the UI does not claim to know the real account balance. Check the current persistent consent preference separately from deprecated per-request confirmation behavior.
