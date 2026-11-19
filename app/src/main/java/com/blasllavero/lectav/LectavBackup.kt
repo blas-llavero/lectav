@@ -355,7 +355,7 @@ internal object LectavBackup {
                     zip.getEntry("checksums/" +
                         index.toString().padStart(4,'0') + ".json")!=null
                 }
-                require(checksumCount==0 || checksumCount==items.length) {
+                require(checksumCount==0 || checksumCount==items.length()) {
                     "Incomplete backup integrity records."
                 }
                 require(zip.size()==1+items.length()+sourceEntries+checksumCount) {
