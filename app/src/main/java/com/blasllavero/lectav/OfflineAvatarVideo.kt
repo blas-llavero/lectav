@@ -399,6 +399,17 @@ internal object OfflineAvatarVideo {
                 require(count>=2 && first>=0 && last>=first) {
                     "Pista MP4 buida o massa curta: "+prefix
                 }
+                // The first 64 samples alone would accept a truncated track
+                // advertising a misleading one-hour duration. Probe near EOF.
+                val nearEnd=(expectedDurationUs*9L)/10L
+                reader.seekTo(nearEnd,MediaExtractor.SEEK_TO_PREVIOUS_SYNC)
+                probe.clear()
+                val lastSize=reader.readSampleData(probe,0)
+                require(lastSize in 1..probe.capacity() &&
+                    reader.sampleTime>=expectedDurationUs*3L/4L &&
+                    reader.sampleTime<=expectedDurationUs+3_000_000L) {
+                    "La pista MP4 no arriba al final de l'àudio: "+prefix
+                }
                 val duration=if(format.containsKey(MediaFormat.KEY_DURATION))
                     format.getLong(MediaFormat.KEY_DURATION) else expectedDurationUs
                 require(duration>0 && duration<=expectedDurationUs+3_000_000L) {
@@ -481,6 +492,27 @@ internal object OfflineAvatarVideo {
                     require(format.getString(MediaFormat.KEY_MIME)==
                         base.getString(MediaFormat.KEY_MIME)) {
                         "Audio/video codecs differ between chunks."
+                    }
+                    // Independently encoded segments must agree on the codec
+                    // configuration, not only mime/resolution, before remuxing.
+                    for(key in listOf("csd-0","csd-1","csd-2")) {
+                        val have=format.containsKey(key)
+                        val original=base.containsKey(key)
+                        require(have==original) {
+                            "Codec configuration mismatch between avatar chunks."
+                        }
+                        if(have) {
+                            fun bytes(data:java.nio.ByteBuffer):ByteArray {
+                                val copy=data.duplicate()
+                                val result=ByteArray(copy.remaining())
+                                copy.get(result)
+                                return result
+                            }
+                            require(bytes(format.getByteBuffer(key)!!).contentEquals(
+                                bytes(base.getByteBuffer(key)!!))) {
+                                "Incompatible codec setup between MP4 chunks."
+                            }
+                        }
                     }
                     if(prefix=="video/") {
                         require(format.getInteger(MediaFormat.KEY_WIDTH)==
