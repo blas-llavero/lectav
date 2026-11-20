@@ -34,7 +34,7 @@ internal object OfflineAvatarVideo {
     private const val WIDTH=320
     private const val HEIGHT=240
     private const val FPS=5
-    private const val MAX_SECONDS=600
+    private const val MAX_SECONDS=AvatarSegments.MAX_LESSON_SECONDS
 
     private data class Pcm(val rate:Int,val offset:Long,val length:Long) {
         val durationUs get()=length*1_000_000L/(rate*2L)
@@ -73,7 +73,7 @@ internal object OfflineAvatarVideo {
         require(valid && rate in setOf(8000,11025,12000,16000,22050,24000,32000,44100,48000))
         require(offset>=0 && len>=rate && len%2==0L)
         val pcm=Pcm(rate,offset,len)
-        require(pcm.durationUs<=MAX_SECONDS*1_000_000L) { "Límit inicial: 10 minuts d'avatar." }
+        require(pcm.durationUs<=MAX_SECONDS*1_000_000L) { "Límit de durada de l'avatar: 60 minuts." }
         pcm
     }
 
@@ -409,19 +409,154 @@ internal object OfflineAvatarVideo {
         } finally {reader.release()}
     }
 
+    /**
+     * Extract just one PCM window. Its duration is defined by *sample*
+     * boundaries to prevent duplicate or missing samples at segment seams.
+     */
+    private suspend fun sliceWave(
+        source:File, pcm:Pcm, part:AvatarSegments.Part, destination:File
+    ) {
+        val first=AvatarSegments.sampleIndex(part.startUs,pcm.rate)
+        val last=AvatarSegments.sampleIndex(part.endUs,pcm.rate)
+        val length=(last-first)*2L
+        require(length in 2..(60L*1024*1024))
+        RandomAccessFile(source,"r").use { input ->
+            RandomAccessFile(destination,"rw").use { output ->
+                output.setLength(0)
+                fun tag(value:String) { output.write(value.toByteArray(Charsets.US_ASCII)) }
+                fun word(value:Int) { output.writeInt(Integer.reverseBytes(value)) }
+                fun half(value:Int) {
+                    output.writeShort(java.lang.Short.reverseBytes(value.toShort()).toInt())
+                }
+                tag("RIFF");word((36L+length).toInt());tag("WAVE")
+                tag("fmt ");word(16);half(1);half(1)
+                word(pcm.rate);word(pcm.rate*2);half(2);half(16)
+                tag("data");word(length.toInt())
+                input.seek(pcm.offset+first*2L)
+                val buffer=ByteArray(65536)
+                var left=length
+                while(left>0L) {
+                    currentCoroutineContext().ensureActive()
+                    val n=min(left,buffer.size.toLong()).toInt()
+                    input.readFully(buffer,0,n)
+                    output.write(buffer,0,n)
+                    left-=n
+                }
+            }
+        }
+    }
+
+    /**
+     * Concatenate compatible, independently verified segments in playback order.
+     * Per-track timestamps are moved by the exact PCM sample boundary, and an
+     * extractor must observe both video and audio in every cached segment.
+     */
+    private suspend fun joinSegments(
+        segments:List<File>, parts:List<AvatarSegments.Part>,
+        sampleRate:Int, destination:File
+    ) {
+        require(segments.isNotEmpty() && segments.size==parts.size)
+        val mux=MediaMuxer(destination.absolutePath,
+            MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+        val readers=segments.map { FileName ->
+            MediaExtractor().apply { setDataSource(FileName.absolutePath) }
+        }
+        var started=false
+        try {
+            fun findTrack(reader:MediaExtractor,prefix:String):Int =
+                (0 until reader.trackCount).firstOrNull {
+                    reader.getTrackFormat(it).getString(MediaFormat.KEY_MIME)
+                        ?.startsWith(prefix)==true
+                } ?: error("Segment missing "+prefix)
+            val types=listOf("video/","audio/")
+            val reference=types.map { prefix ->
+                val i=findTrack(readers.first(),prefix)
+                readers.first().getTrackFormat(i)
+            }
+            val targets=reference.map { mux.addTrack(it) }
+            readers.forEach { reader ->
+                types.forEachIndexed { k,prefix ->
+                    val format=reader.getTrackFormat(findTrack(reader,prefix))
+                    val base=reference[k]
+                    require(format.getString(MediaFormat.KEY_MIME)==
+                        base.getString(MediaFormat.KEY_MIME)) {
+                        "Audio/video codecs differ between chunks."
+                    }
+                    if(prefix=="video/") {
+                        require(format.getInteger(MediaFormat.KEY_WIDTH)==
+                            base.getInteger(MediaFormat.KEY_WIDTH) &&
+                            format.getInteger(MediaFormat.KEY_HEIGHT)==
+                            base.getInteger(MediaFormat.KEY_HEIGHT))
+                    } else {
+                        require(format.getInteger(MediaFormat.KEY_SAMPLE_RATE)==
+                            base.getInteger(MediaFormat.KEY_SAMPLE_RATE) &&
+                            format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)==
+                            base.getInteger(MediaFormat.KEY_CHANNEL_COUNT))
+                    }
+                }
+            }
+            mux.start();started=true
+            val buffer=ByteBuffer.allocateDirect(2*1024*1024)
+            types.forEachIndexed { kind,prefix ->
+                var prior=-1L
+                readers.forEachIndexed { i,reader ->
+                    currentCoroutineContext().ensureActive()
+                    val track=findTrack(reader,prefix)
+                    reader.selectTrack(track)
+                    reader.seekTo(0,MediaExtractor.SEEK_TO_CLOSEST_SYNC)
+                    val timeline=AvatarSegments.sampleIndex(parts[i].startUs,sampleRate)*
+                        1_000_000L/sampleRate
+                    var samples=0
+                    while(true) {
+                        currentCoroutineContext().ensureActive()
+                        buffer.clear()
+                        val bytes=reader.readSampleData(buffer,0)
+                        if(bytes<0)break
+                        require(bytes in 1..buffer.capacity())
+                        val timestamp=timeline+reader.sampleTime
+                        require(timestamp>=prior) {
+                            "Chunk timestamps are not monotonically increasing."
+                        }
+                        prior=timestamp
+                        val info=MediaCodec.BufferInfo()
+                        info.set(0,bytes,timestamp,reader.sampleFlags)
+                        mux.writeSampleData(targets[kind],buffer,info)
+                        samples++
+                        if(!reader.advance())break
+                    }
+                    require(samples>=2) { "Empty segment "+parts[i].number }
+                    reader.unselectTrack(track)
+                }
+            }
+        } finally {
+            readers.forEach { runCatching { it.release() } }
+            if(started)runCatching { mux.stop() }
+            mux.release()
+        }
+    }
+
+    /**
+     * Retry-safe cache is keyed by the complete WAV bytes and narration text.
+     * Only validated chunks are reused. A cancelled encode leaves completed
+     * chunks intact, but never publishes a partial final MP4.
+     */
     suspend fun create(context:Context,audioUri:String,script:String):String =
         withContext(Dispatchers.IO) {
             require(script.length in 10..50_000)
             val temporary=File(context.cacheDir,"avatar_"+UUID.randomUUID())
             check(temporary.mkdirs())
-            val folder=File(context.filesDir,"generated").apply {
+            val generated=File(context.filesDir,"generated").apply {
                 check(isDirectory || mkdirs())
             }
-            val output=File(folder,"avatar_"+UUID.randomUUID()+".mp4")
+            var output:File?=null
+            var complete=false
             try {
+                val digest=java.security.MessageDigest.getInstance("SHA-256")
+                digest.update(script.toByteArray(Charsets.UTF_8))
+                digest.update("LECTAV-avatar-v1".toByteArray(Charsets.UTF_8))
                 val source=File(temporary,"source.wav")
                 context.contentResolver.openInputStream(Uri.parse(audioUri)).use { input ->
-                    require(input!=null)
+                    require(input!=null) { "No es pot obrir la narració WAV." }
                     source.outputStream().use { target ->
                         val buffer=ByteArray(65536)
                         var copied=0L
@@ -430,22 +565,82 @@ internal object OfflineAvatarVideo {
                             val n=input.read(buffer)
                             if(n<0)break
                             copied+=n
-                            require(copied<=100L*1024*1024) { "WAV massa gran." }
+                            require(copied<=400L*1024*1024) {
+                                "La narració WAV supera el límit de 400 MB."
+                            }
+                            digest.update(buffer,0,n)
                             target.write(buffer,0,n)
                         }
                     }
                 }
+                val key=digest.digest().joinToString("") {
+                    "%02x".format(it.toInt() and 0xff)
+                }
                 val pcm=wav(source)
-                val picture=File(temporary,"video.mp4")
-                val sound=File(temporary,"audio.mp4")
-                encodeVideo(picture,source,pcm,script)
-                encodeAudio(sound,source,pcm)
-                muxTracks(picture,sound,output)
+                val parts=AvatarSegments.plan(pcm.durationUs)
+                val cache=File(context.filesDir,"avatar_parts/$key")
+                check(cache.isDirectory || cache.mkdirs())
+                output=File(generated,"avatar_"+key.take(32)+".mp4")
+                // A previous completed MP4 can be reused after cancellation
+                // between output verification and material-library indexing.
+                if(output.isFile) {
+                    val valid=runCatching { verify(output,pcm.durationUs) }.isSuccess
+                    if(valid) {
+                        complete=true
+                        return@withContext FileProvider.getUriForFile(context,
+                            context.packageName+".files",output).toString()
+                    }
+                    output.delete()
+                }
+                val clips=mutableListOf<File>()
+                val fullCues=AvatarCaptions.fromText(script,pcm.durationUs)
+                for(part in parts) {
+                    currentCoroutineContext().ensureActive()
+                    val target=File(cache,"part_"+part.number.toString().padStart(3,'0')+".mp4")
+                    val clipDuration=part.durationUs
+                    if(target.isFile && runCatching {
+                        verify(target,clipDuration)
+                    }.isSuccess) {
+                        clips.add(target)
+                        continue
+                    }
+                    target.delete()
+                    val clipWave=File(temporary,"current.wav")
+                    val picture=File(temporary,"video.mp4")
+                    val sound=File(temporary,"audio.mp4")
+                    try {
+                        sliceWave(source,pcm,part,clipWave)
+                        val clip=wav(clipWave)
+                        // These cues approximate time, not recognized speech.
+                        val cueText=fullCues.filter {
+                            it.endUs>part.startUs && it.startUs<part.endUs
+                        }.joinToString(" ") { it.text }.ifBlank {
+                            script.take(70)
+                        }
+                        encodeVideo(picture,clipWave,clip,cueText)
+                        encodeAudio(sound,clipWave,clip)
+                        muxTracks(picture,sound,target)
+                        verify(target,clip.durationUs)
+                        clips.add(target)
+                    } catch(error:Exception) {
+                        target.delete()
+                        throw error
+                    } finally {
+                        clipWave.delete();picture.delete();sound.delete()
+                    }
+                }
+                if(clips.size==1) {
+                    check(clips.first().copyTo(output,overwrite=true).length()>1024)
+                } else {
+                    joinSegments(clips,parts,pcm.rate,output)
+                }
                 verify(output,pcm.durationUs)
-                FileProvider.getUriForFile(context,context.packageName+".files",output).toString()
-            } catch(e:Exception) {
-                output.delete()
-                throw e
+                complete=true
+                FileProvider.getUriForFile(context,
+                    context.packageName+".files",output).toString()
+            } catch(error:Exception) {
+                if(!complete)output?.delete()
+                throw error
             } finally {
                 temporary.deleteRecursively()
             }
