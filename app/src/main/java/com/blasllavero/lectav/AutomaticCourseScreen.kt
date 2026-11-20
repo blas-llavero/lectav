@@ -139,8 +139,17 @@ internal fun AutomaticCourseScreen(
                         if(topic.length<3 || "Contingut pendent de concretar" in topic) continue
                         val sessionId=unit.trimester.toString()+"|"+unit.id+"|"+n
                         val stem=MaterialFileNames.sessionStem(unitIndex+1,offset+n,topic)
+                        // A previously indexed narration WAV is enough to
+                        // render video; the speech model need not remain
+                        // installed once narration has already been generated.
+                        val savedNarration=files.any {
+                            it.courseKey==courseKey(c) &&
+                            it.sessionKey==sessionId && it.type=="audio" &&
+                            it.name.endsWith(".wav",ignoreCase=true)
+                        }
                         val kinds=AutoGenerationConfig.automaticPdfTypes +
-                            (if(voiceAvailable) listOf("audio","video") else emptyList()) +
+                            (if(voiceAvailable) listOf("audio") else emptyList()) +
+                            (if(voiceAvailable || savedNarration) listOf("video") else emptyList()) +
                             (if(podcastAvailable) listOf("podcast") else emptyList())
                         kinds.forEach { kind ->
                             if(files.none { it.courseKey==courseKey(c) &&
@@ -178,8 +187,9 @@ internal fun AutomaticCourseScreen(
         else "Podcast automàtic opcional: instal·la Piper Android i dues veus " +
             "locals diferents. No es farà servir cap veu de xarxa.",
         style=MaterialTheme.typography.bodySmall)
-    Text("Avatar MP4: primera versió animada 2D amb subtítols aproximats, " +
-        "limitada a 10 minuts per sessió i subjecta al codificador Android.",
+    Text("Avatar MP4 experimental: vídeo 2D amb subtítols aproximats. " +
+        "Prova de sessions de fins a 60 minuts en fragments de 5 minuts. " +
+        "La reproducció i les unions encara s'han de validar a la tauleta.",
         style=MaterialTheme.typography.bodySmall)
     if(!connected || !inferenceAllowed) {
         Text("Connecta i autoritza ChatGPT.",color=MaterialTheme.colorScheme.error)
@@ -564,8 +574,10 @@ internal fun AutomaticCourseScreen(
                 val status=when {
                     generated && exported -> "✓ Generated · ✓ Exported"
                     generated -> "✓ Generated · Pending export"
-                    kind=="video" && !voiceAvailable ->
-                        "Install an integrated offline narration voice first"
+                    kind=="video" && !voiceAvailable &&
+                        sessionFiles.none { it.type=="audio" &&
+                            it.name.endsWith(".wav",ignoreCase=true) } ->
+                        "Generate or import a local WAV narration first"
                     kind=="podcast" && !podcastAvailable ->
                         "Install two offline Piper voices first"
                     kind=="audio" && !voiceAvailable ->
