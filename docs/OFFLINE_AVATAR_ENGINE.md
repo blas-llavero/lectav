@@ -42,3 +42,11 @@ simple. Video frame rate and resolution are conservative to support modest
 Android tablets. No paid rendering service or network voice conversion is
 involved. Actual compatibility must be confirmed on hardware, not inferred
 from CI success alone.
+
+## Stronger media verification
+The MP4 encoder now reopens the final output and decodes **real sample payloads**
+through `MediaExtractor` for both the audio and video tracks. Validation
+checks non-empty samples, nondecreasing timestamps, plausible track duration,
+and positive video dimensions; merely advertising AAC/H.264 tracks is not
+accepted as successful generation. This is a structural inspection, **not** a
+full playback/decoder test and does not replace testing on physical tablets.
