@@ -35,9 +35,9 @@ internal object AutoGenerationConfig {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
     fun homeMode(context: Context): String =
-        prefs(context).getString("homeMode", "manual")?.takeIf {
+        prefs(context).getString("homeMode", "automatic")?.takeIf {
             it in setOf("manual","automatic")
-        } ?: "manual"
+        } ?: "automatic"
 
     fun saveHomeMode(context: Context, value: String) {
         require(value in setOf("manual","automatic"))
