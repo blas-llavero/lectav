@@ -96,7 +96,6 @@ internal fun AutomaticCourseScreen(
         }
     }
     DisposableEffect(Unit) { onDispose { runningJob?.cancel() } }
-    val selectedFolder=AutomaticExportFolder.selectedTree(context)
 
     val voiceAvailable=EmbeddedSpeech.installed(context).isNotEmpty()
     val tasks=remember(courses,plans,files,voiceAvailable) {
@@ -143,22 +142,7 @@ internal fun AutomaticCourseScreen(
     if(error.isNotBlank()) Text(error,color=MaterialTheme.colorScheme.error)
     if(refresh == -1) Text("Model actualitzat")
     Text("Materials pendents (PDF i WAV): "+tasks.size,style=MaterialTheme.typography.titleMedium)
-    Text("La configuració següent s'aplicarà a tots els cursos i s'inclourà " +
-        "a la còpia xifrada .lectavbak.")
-    ModelChoice("Model global",models,AutoGenerationConfig.globalModel(context),
-        onSelect={ AutoGenerationConfig.setGlobalModel(context,it);refresh++ },
-        enabled=!active && models.isNotEmpty())
-    AutoGenerationConfig.materialTypes.forEach { kind ->
-        ModelChoice(AutoGenerationConfig.title(kind),models,
-            AutoGenerationConfig.kindModel(context,kind),
-            onSelect={AutoGenerationConfig.setKindModel(context,kind,it);refresh++},
-            enabled=!active && models.isNotEmpty(),allowInherit=true)
-    }
-    Text("Màxim de peticions d'aquesta execució: "+cap)
-    Slider(value=cap.toFloat(),onValueChange={cap=it.toInt().coerceIn(1,500)},
-        valueRange=1f..500f,enabled=!active)
-    Text("És un límit local per execució, no el saldo real del compte ChatGPT. " +
-        "L'autorització general es gestiona a Configuració i es pot revocar.")
+    Text("LECTAV selecciona el model disponible per defecte, sense configuració addicional.")
     val authorized=AutoGenerationConfig.isChatGPTAuthorized(context,accountEmail)
     if(!authorized) Text(
         "Abans d'iniciar una cua, autoritza la creació de contingut amb " +
@@ -176,7 +160,7 @@ internal fun AutomaticCourseScreen(
         if(task.kind=="audio") false else {
         val model=AutoGenerationConfig.resolvedModel(context,
             courseKey(task.course),task.sessionId,task.kind)
-        model.isBlank() || models.none { it.slug==model }
+        model.isNotBlank() && models.none { it.slug==model }
         }
     }
     val canGenerate=authorized &&
