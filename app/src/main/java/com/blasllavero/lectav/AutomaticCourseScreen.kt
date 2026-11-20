@@ -260,6 +260,7 @@ internal fun AutomaticCourseScreen(
                             val slug=AutoGenerationConfig.resolvedModel(context,
                                 courseKey(task.course),task.sessionId,task.kind)
                             val selected=models.firstOrNull { it.slug==slug }
+                                ?: models.firstOrNull()
                                 ?: error("Model no disponible per a "+jobName)
                             val subject=catalogueSubjectsFor(task.course.course)
                                 .firstOrNull { it.id==task.course.subject }
