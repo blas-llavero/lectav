@@ -72,3 +72,28 @@ Rendering a one-hour lesson requires further work:
 
 `AvatarSegmentsTest` checks exact one-hour coverage, fractional final
 segments, boundary continuity, sample alignment, and invalid inputs.
+
+## Experimental segment rendering and resumption
+
+The segment planner is now connected to the media renderer. For up to 60
+minutes of existing narration PCM, LECTAV attempts to render independent
+five-minute MP4s. Each chunk is inspected for real audio/video samples before
+being kept in a private content-addressed cache. The cache key incorporates
+the narration text and all WAV bytes. Previously verified segments can be
+reused after a cancelled or interrupted attempt on the same device.
+
+After all segments have been validated, LECTAV attempts an MP4 remux with
+monotonic presentation timestamps and re-inspects the result before linking
+it to the session library and exporting via the SAF folder. An incomplete
+final MP4 is not indexed. Cached segment files are internal working data, not
+user-facing exports and not independently included in encrypted backups.
+
+**Experimental caveat:** independently encoded AVC/AAC streams may have
+codec-configuration, AAC priming, or keyframe continuity differences at
+segment joins. Passing MediaExtractor metadata/sample checks is not proof of
+gapless audiovisual playback. This implementation is a provisional engineering
+step, not an assurance of a one-hour playable MP4. Do not merge or present
+this as stable until actual long-form playback, seeking, audio continuity,
+caption timing, performance and cancellation have been verified on both
+target Android tablets. The current 2D character remains basic, 320x240 at
+5 fps, with approximate rather than true aligned subtitles.
