@@ -98,6 +98,14 @@ private fun LectavApp() {
     LaunchedEffect(saved?.subtitleHeight) {
         saved?.let { subtitleHeight = it.subtitleHeight }
     }
+    LaunchedEffect(saved,chatGPTStatus.connected,chatGPTStatus.inferenceAllowed) {
+        if(screen=="home" && saved!=null &&
+            AutoGenerationConfig.homeMode(context)=="automatic" &&
+            chatGPTStatus.connected && chatGPTStatus.inferenceAllowed &&
+            AutoGenerationConfig.isChatGPTAuthorized(context,chatGPTStatus.email)) {
+            screen="automatic"
+        }
+    }
     val pathway = saved?.pathway ?: ""
     val course = saved?.course ?: ""
     val subject = saved?.subject ?: ""
@@ -967,22 +975,7 @@ private fun SettingsScreen(
     if(approvalError.isNotBlank()) Text(approvalError,color=MaterialTheme.colorScheme.error)
     HorizontalDivider()
     Text("Configuració de generació automàtica",style=MaterialTheme.typography.titleMedium)
-    Text("Automatic material export destination",style=MaterialTheme.typography.titleSmall)
-    Text("Documents will be organized by education pathway, course, " +
-        "subject, trimester, unit and session. PDF and audio are " +
-        "kept in their original file formats.",
-        style=MaterialTheme.typography.bodySmall)
-    val configuredFolder=remember(exportFolderRevision) {
-        AutomaticExportFolder.selectedTree(context)
-    }
-    Text(configuredFolder?.toString() ?: "No folder selected",
-        style=MaterialTheme.typography.bodySmall)
-    OutlinedButton(onClick={autoFolderPicker.launch(null)},
-        modifier=Modifier.fillMaxWidth()) {
-        Text("Choose automatic export folder")
-    }
-    if(exportFolderError.isNotBlank())Text(exportFolderError,
-        color=MaterialTheme.colorScheme.error)
+    Text("Els materials es desen automàticament dins LECTAV, ordenats per itinerari, curs, matèria, trimestre, unitat i sessió. No cal seleccionar cap carpeta.")
 
     Text("Selecciona el model per defecte de tots els cursos. " +
         "Els models per tipus o sessió tenen prioritat. " +
