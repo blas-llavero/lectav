@@ -513,10 +513,11 @@ internal object OfflineAvatarVideo {
                         val bytes=reader.readSampleData(buffer,0)
                         if(bytes<0)break
                         require(bytes in 1..buffer.capacity())
-                        val timestamp=timeline+reader.sampleTime
-                        require(timestamp>=prior) {
-                            "Chunk timestamps are not monotonically increasing."
-                        }
+                        // AAC encoder delay and frame rounding can overlap a
+                        // nominal segment boundary by a small fraction.
+                        // Enforce strictly increasing presentation times.
+                        val nominal=timeline+reader.sampleTime
+                        val timestamp=maxOf(nominal,prior+1L)
                         prior=timestamp
                         val info=MediaCodec.BufferInfo()
                         info.set(0,bytes,timestamp,reader.sampleFlags)
