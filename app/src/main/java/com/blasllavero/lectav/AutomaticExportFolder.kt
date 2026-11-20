@@ -137,7 +137,6 @@ internal object AutomaticExportFolder {
             file.inputStream().buffered().use { input ->
                 val buffer=ByteArray(65536)
                 while(true) {
-                    coroutineContext.ensureActive()
                     val n=input.read(buffer)
                     if(n<0)break
                     digest.update(buffer,0,n)
