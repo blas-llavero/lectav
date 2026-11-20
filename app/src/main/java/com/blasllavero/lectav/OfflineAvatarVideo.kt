@@ -356,18 +356,55 @@ internal object OfflineAvatarVideo {
         }
     }
 
-    private fun verify(file:File) {
-        require(file.length() > 1024) { "Vídeo MP4 buit." }
+    /** Verify actual AVC/AAC samples, not just advertised MP4 track metadata. */
+    private fun verify(file:File, expectedDurationUs:Long) {
+        require(file.length()>1024) { "Vídeo MP4 buit." }
         val reader=MediaExtractor()
+        val probe=ByteBuffer.allocateDirect(1024*1024)
         try {
             reader.setDataSource(file.absolutePath)
             require(reader.trackCount>=2) { "MP4 sense dos fluxos." }
-            val mimes=(0 until reader.trackCount).map {
-                reader.getTrackFormat(it).getString(MediaFormat.KEY_MIME).orEmpty()
-            }
-            require(mimes.any { it.startsWith("audio/") } &&
-                mimes.any { it.startsWith("video/") }) {
-                "MP4 sense vídeo i àudio."
+            val formats=(0 until reader.trackCount).map { reader.getTrackFormat(it) }
+            for(prefix in listOf("video/","audio/")) {
+                val index=formats.indexOfFirst {
+                    it.getString(MediaFormat.KEY_MIME)?.startsWith(prefix)==true
+                }
+                require(index>=0) { "MP4 sense flux "+prefix }
+                val format=formats[index]
+                if(prefix=="video/") {
+                    require(format.getInteger(MediaFormat.KEY_WIDTH)>0 &&
+                        format.getInteger(MediaFormat.KEY_HEIGHT)>0) {
+                        "Dimensions de vídeo incorrectes."
+                    }
+                }
+                reader.selectTrack(index)
+                reader.seekTo(0,MediaExtractor.SEEK_TO_CLOSEST_SYNC)
+                var count=0
+                var first=-1L
+                var last=-1L
+                while(count<64) {
+                    probe.clear()
+                    val size=reader.readSampleData(probe,0)
+                    if(size<0)break
+                    require(size in 1..probe.capacity()) { "Mostra MP4 invàlida." }
+                    val timestamp=reader.sampleTime
+                    require(timestamp>=0 && (last<0 || timestamp>=last)) {
+                        "Mostres MP4 fora d'ordre."
+                    }
+                    if(first<0)first=timestamp
+                    last=timestamp
+                    count++
+                    if(!reader.advance())break
+                }
+                require(count>=2 && first>=0 && last>=first) {
+                    "Pista MP4 buida o massa curta: "+prefix
+                }
+                val duration=if(format.containsKey(MediaFormat.KEY_DURATION))
+                    format.getLong(MediaFormat.KEY_DURATION) else expectedDurationUs
+                require(duration>0 && duration<=expectedDurationUs+3_000_000L) {
+                    "La durada de la pista MP4 no correspon a la narració."
+                }
+                reader.unselectTrack(index)
             }
         } finally {reader.release()}
     }
@@ -404,7 +441,7 @@ internal object OfflineAvatarVideo {
                 encodeVideo(picture,source,pcm,script)
                 encodeAudio(sound,source,pcm)
                 muxTracks(picture,sound,output)
-                verify(output)
+                verify(output,pcm.durationUs)
                 FileProvider.getUriForFile(context,context.packageName+".files",output).toString()
             } catch(e:Exception) {
                 output.delete()
