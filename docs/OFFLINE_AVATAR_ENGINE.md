@@ -97,3 +97,17 @@ this as stable until actual long-form playback, seeking, audio continuity,
 caption timing, performance and cancellation have been verified on both
 target Android tablets. The current 2D character remains basic, 320x240 at
 5 fps, with approximate rather than true aligned subtitles.
+
+## Segment compatibility hardening
+The experimental remuxer now also compares the encoded codec-specific data
+(CSD/SPS/PPS and AAC setup) of each track across chunks. It refuses to merge
+chunks with mismatched codec configuration, even when their mime types, video
+dimensions and audio sample rates agree.
+
+The final MP4 verifier checks not only the first samples but also seeks close
+to the expected ending of both audio and video tracks, rejecting truncated
+files whose metadata merely advertises a plausible duration.
+
+These checks intentionally fail closed: they prevent false success statuses,
+but do not solve codec delay, AAC priming, keyframe seam artifacts or device
+specific bugs. End-to-end playback is still mandatory before merging.
