@@ -6,8 +6,6 @@
 package com.blasllavero.lectav
 
 import android.content.Context
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.currentCoroutineContext
@@ -98,18 +96,7 @@ internal fun AutomaticCourseScreen(
         }
     }
     DisposableEffect(Unit) { onDispose { runningJob?.cancel() } }
-    val selectedFolder=remember(exportRevision) {
-        AutomaticExportFolder.selectedTree(context)
-    }
-    val treePicker=rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocumentTree()
-    ) { uri ->
-        if(uri!=null) {
-            runCatching { AutomaticExportFolder.saveTree(context,uri) }
-                .onSuccess { exportError="";exportRevision++ }
-                .onFailure { exportError=it.localizedMessage ?: "Cannot save folder." }
-        }
-    }
+    val selectedFolder=AutomaticExportFolder.selectedTree(context)
 
     val voiceAvailable=EmbeddedSpeech.installed(context).isNotEmpty()
     val tasks=remember(courses,plans,files,voiceAvailable) {
@@ -139,18 +126,7 @@ internal fun AutomaticCourseScreen(
     }
 
     Text("Mode automàtic",style=MaterialTheme.typography.titleLarge)
-    Text("Destination: "+(selectedFolder?.toString() ?:
-        "No export folder selected"),style=MaterialTheme.typography.bodySmall)
-    OutlinedButton(enabled=!active,onClick={treePicker.launch(null)},
-        modifier=Modifier.fillMaxWidth()) {
-        Text("Select folder for automatic exports (internal storage or SD)")
-    }
-    if(exportError.isNotBlank())Text(exportError,
-        color=MaterialTheme.colorScheme.error)
-    if(selectedFolder==null) Text("Choose a folder before automatic generation. " +
-        "LECTAV will create pathway/course/subject/trimester/unit/session " +
-        "subfolders and verify each exported document.",
-        color=MaterialTheme.colorScheme.error)
+    Text("Els materials es desen automàticament a l'emmagatzematge intern de LECTAV, sense seleccionar cap carpeta.",style=MaterialTheme.typography.bodySmall)
     Text("Cua de cursos i sessions desats: Teoria → Exercicis → Solucions → " +
         "Transcripció → Àudio WAV (si has descarregat una veu local). " +
         "Els fitxers s'associen a la sessió sense passos intermedis.")
@@ -203,7 +179,7 @@ internal fun AutomaticCourseScreen(
         model.isBlank() || models.none { it.slug==model }
         }
     }
-    val canGenerate=selectedFolder!=null && authorized &&
+    val canGenerate=authorized &&
         (queued.isNotEmpty() || files.any {
             it.origin=="generated" && !AutomaticExportFolder.wasExported(context,it)
         }) && !invalid && !loading && connected && inferenceAllowed &&
@@ -223,9 +199,6 @@ internal fun AutomaticCourseScreen(
                 }
                 runningJob=scope.launch {
                     try {
-                        require(AutomaticExportFolder.selectedTree(context)!=null) {
-                            "Select an Android export folder."
-                        }
                         // Export already indexed materials on a resumed run.
                         val stored=library.files.first().filter {
                             it.origin=="generated" && it.sessionKey.isNotBlank() &&
@@ -385,7 +358,7 @@ internal fun AutomaticCourseScreen(
     }
     // Automatic mode needs no second Start prompt once settings and consent
     // have been configured. Pause and cancel never implicitly restart.
-    LaunchedEffect(canGenerate,models,selectedFolder) {
+    LaunchedEffect(canGenerate,models) {
         if(canGenerate && !active && !autoStarted) startQueue()
     }
     if(invalid) Text("Cal seleccionar models disponibles per a tots els tipus " +
