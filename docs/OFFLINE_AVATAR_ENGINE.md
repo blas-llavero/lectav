@@ -50,3 +50,25 @@ checks non-empty samples, nondecreasing timestamps, plausible track duration,
 and positive video dimensions; merely advertising AAC/H.264 tracks is not
 accepted as successful generation. This is a structural inspection, **not** a
 full playback/decoder test and does not replace testing on physical tablets.
+
+## One-hour lesson segmentation (planner only)
+`AvatarSegments` now provides a **tested scheduling primitive** for up to
+60 minutes of source audio. A one-hour recording is divided into twelve
+five-minute **half-open** windows by default. The planner also supports
+30–600 second windows and maps boundaries deterministically to PCM samples
+to avoid gaps or duplicated audio.
+
+This change **does not increase the current MP4 renderer's 10-minute limit**.
+Rendering a one-hour lesson requires further work:
+- Extract individual PCM windows without loading the entire WAV in memory.
+- Produce and verify an independent MP4 per segment, checkpointing completed
+  segments so cancellation or Android termination does not require starting
+  from the beginning.
+- Remux compatible segments or publish a sequence of independently playable
+  files; avoid claiming a single merged one-hour MP4 until it is actually made.
+- Preserve subtitle timing relative to each segment and validate audio/video
+  timestamps, storage permissions, and resulting playback on the two tablets.
+- Add throttling and safeguards for thermal limits, memory, and battery.
+
+`AvatarSegmentsTest` checks exact one-hour coverage, fractional final
+segments, boundary continuity, sample alignment, and invalid inputs.
