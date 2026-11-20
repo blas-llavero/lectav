@@ -12,6 +12,7 @@ import androidx.documentfile.provider.DocumentFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.io.IOException
 import java.security.MessageDigest
 import kotlin.coroutines.coroutineContext
@@ -71,8 +72,18 @@ internal object AutomaticExportFolder {
     }
 
     fun wasExported(ctx:Context,item:LocalMaterial):Boolean {
+        val last=item.lastExportUri
+        if(last.startsWith("file://")) {
+            val file=runCatching { File(Uri.parse(last).path ?: "") }.getOrNull() ?:return false
+            val root=File(ctx.filesDir,"automatic_exports").canonicalFile
+            return runCatching {
+                file.canonicalFile.toPath().startsWith(root.toPath()) &&
+                    file.isFile && file.length()>0 &&
+                    prefs(ctx).getString("saved_"+item.id,"")==last
+            }.getOrDefault(false)
+        }
         val tree=selectedTree(ctx)?:return false
-        val last=item.lastExportUri.takeIf{it.startsWith("content://")}?:return false
+        if(!last.startsWith("content://"))return false
         if(prefs(ctx).getString("saved_"+item.id,"")!=tree.toString()+"|"+last)
             return false
         return runCatching {
@@ -102,6 +113,76 @@ internal object AutomaticExportFolder {
             length to digest.digest()
         }
 
+    /** App-owned verified exports; no user-selected directory is required. */
+    private suspend fun exportInternal(ctx:Context,library:MaterialLibrary,
+        material:LocalMaterial,course:SavedCourse,unit:TopicPlan,
+        unitIndex:Int,session:Int):Uri {
+        val root=File(ctx.filesDir,"automatic_exports").canonicalFile
+        var dir=root
+        for(segment in relativePath(course,unit,unitIndex,session)) {
+            coroutineContext.ensureActive()
+            dir=File(dir,segment)
+            require(dir.isDirectory || dir.mkdirs()) { "Cannot create internal export folder." }
+        }
+        val raw=material.name.trim()
+        val ext=raw.substringAfterLast('.', "").lowercase()
+        require(ext in setOf("pdf","wav","mp3","mp4")) { "Unsupported material extension." }
+        val base=safeSegment(raw.substringBeforeLast('.',raw))
+        val source=Uri.parse(material.uri)
+        val sourceHash=hash(ctx,source)
+        var target=File(dir,base+"."+ext)
+        var revision=2
+        fun fileHash(file:File):ByteArray {
+            val digest=MessageDigest.getInstance("SHA-256")
+            file.inputStream().buffered().use { input ->
+                val buffer=ByteArray(65536)
+                while(true) {
+                    coroutineContext.ensureActive()
+                    val n=input.read(buffer)
+                    if(n<0)break
+                    digest.update(buffer,0,n)
+                }
+            }
+            return digest.digest()
+        }
+        while(target.exists()) {
+            coroutineContext.ensureActive()
+            require(target.isFile) { "Export destination is not a file." }
+            if(target.length()==sourceHash.first &&
+                fileHash(target).contentEquals(sourceHash.second))break
+            require(revision<=99) { "Too many export revisions." }
+            target=File(dir,base.take(90)+"_revision_"+revision+"."+ext)
+            revision++
+        }
+        if(!target.exists()) {
+            val temp=File.createTempFile("lectav_",".part",dir)
+            try {
+                val input=ctx.contentResolver.openInputStream(source)
+                    ?:throw IOException("Source material is inaccessible.")
+                input.use { original ->
+                    temp.outputStream().buffered().use { dest ->
+                        val buffer=ByteArray(65536)
+                        while(true) {
+                            coroutineContext.ensureActive()
+                            val n=original.read(buffer)
+                            if(n<0)break
+                            dest.write(buffer,0,n)
+                        }
+                    }
+                }
+                require(temp.length()==sourceHash.first &&
+                    fileHash(temp).contentEquals(sourceHash.second)) {
+                    "Internal export failed SHA-256 verification."
+                }
+                check(temp.renameTo(target)) { "Cannot commit internal export." }
+            } finally { if(temp.exists())temp.delete() }
+        }
+        val uri=Uri.fromFile(target)
+        library.recordExport(material.id,uri.toString())
+        check(prefs(ctx).edit().putString("saved_"+material.id,uri.toString()).commit())
+        return uri
+    }
+
     suspend fun exportIndexed(ctx:Context,library:MaterialLibrary,item:LocalMaterial,
         courses:List<SavedCourse>,plans:List<CoursePlan>):Uri {
         val course=courses.firstOrNull { courseKey(it)==item.courseKey }
@@ -126,8 +207,10 @@ internal object AutomaticExportFolder {
     suspend fun export(ctx:Context,library:MaterialLibrary,material:LocalMaterial,
         course:SavedCourse,unit:TopicPlan,unitIndex:Int,session:Int):Uri =
         withContext(Dispatchers.IO) {
-            val tree=selectedTree(ctx) ?:
-                error("Choose an automatic export folder in Settings first.")
+            val tree=selectedTree(ctx)
+            if(tree==null) {
+                return@withContext exportInternal(ctx,library,material,course,unit,unitIndex,session)
+            }
             var dir=DocumentFile.fromTreeUri(ctx,tree)
                 ?: error("Cannot open the selected export folder.")
             require(dir.isDirectory && dir.canWrite()) {
