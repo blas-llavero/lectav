@@ -1,3 +1,9 @@
+## Zero-configuration automatic mode (development update)
+
+The automatic course screen now starts its pending queue after an authorized ChatGPT connection is present, with no export-folder picker or per-session Start confirmation. When no model has been selected, it uses the first available authorized model. PDF and WAV exports can be copied to LECTAV's private app-owned `files/automatic_exports/` directory, with pathway/course/subject/trimester/unit/session subdirectories and SHA-256 verification. Previously selected Android SAF export folders are still recognized for compatibility.
+
+Automatic mode is the default for new installs; the manual mode remains selectable. Existing installations with a saved manual-mode preference retain that preference. A one-time explicit account authorization is still required; signing in alone does not grant access to a paid API or override service quotas. This queue still runs only while its screen is active and retains its request-per-run guardrail. MP4 avatar and multi-speaker podcast generators are not yet implemented. App-private exports can be lost if the app is uninstalled: use the encrypted backup feature for portable retention. These changes require GitHub Actions compilation and testing on Android devices before they can be considered verified.
+
 ## Automatic lessons and organized export (v0.9.16)
 
 With a ChatGPT model and consent configured, selecting **Automatic mode** starts the pending course/session queue without extra prompts. LECTAV creates theory, exercises, worked solutions, a narration/transcript PDF and local WAV audio if a voice model is installed, then moves through each saved teacher course, unit and session.
