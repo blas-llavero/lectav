@@ -148,4 +148,5 @@
     <string name="auto_stopped">Stopped: %1$s. Check the model, quota and connection.</string>
     <string name="auto_unknown_error">Unknown error</string>
     <string name="auto_orphan_notice">Skipped outdated session link for %1$s; saved file preserved.</string>
+    <string name="chatgpt_persistent_consent_explanation">ChatGPT authorization is available in Settings and can be withdrawn at any time. Review your account usage and available credits in your ChatGPT account; LECTAV cannot read the balance directly. Authorization is not enabled until you approve it.</string>
 </resources>
