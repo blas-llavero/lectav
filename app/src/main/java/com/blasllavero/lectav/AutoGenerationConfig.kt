@@ -185,8 +185,7 @@ internal object AutoGenerationConfig {
     }
 
     fun generationLanguage(context: Context): String =
-        prefs(context).getString("language","Català").orEmpty()
-            .ifBlank { "Català" }
+        AppLanguageSupport.contentLanguage(context)
 
     fun lastProgress(context: Context): String =
         prefs(context).getString("autoLastProgress","").orEmpty()
