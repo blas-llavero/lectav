@@ -116,4 +116,27 @@
     <string name="global_chatgpt_model">نموذج ChatGPT العام</string>
     <string name="generate_trimester_plan">إنشاء خطة الفصل باستخدام ChatGPT</string>
     <string name="syllabus">المنهج</string>
+    <string name="auto_checklist_title">قائمة التحقق من الإنشاء التلقائي</string>
+    <string name="auto_checklist_explanation">تظهر علامة التحقق بعد حفظ الملف في مكتبة الدورة. تتطلب علامة التصدير نسخة تم التحقق منها.</string>
+    <string name="auto_planned_sessions">الجلسات المخططة: %1$d</string>
+    <string name="auto_generated_exported">✓ تم الإنشاء · ✓ تم التصدير</string>
+    <string name="auto_generated_pending_export">✓ تم الإنشاء · التصدير معلق</string>
+    <string name="auto_not_implemented">لم يُنفذ بعد</string>
+    <string name="auto_install_voice">ثبّت صوتًا محليًا أولًا</string>
+    <string name="auto_pending">معلق</string>
+    <string name="auto_showing_limit">تُعرض أول 60 جلسة. تظل جميع الجلسات المحفوظة في قائمة الانتظار.</string>
+    <string name="auto_cancelled">تم إلغاء الإنشاء. تظل المواد المحفوظة متاحة.</string>
+    <string name="auto_pausing">سيُوقف مؤقتًا بعد العملية الحالية…</string>
+    <string name="auto_resuming">استئناف الإنشاء التلقائي.</string>
+    <string name="auto_resume">استئناف</string>
+    <string name="auto_pause">إيقاف مؤقت</string>
+    <string name="auto_cancel">إلغاء الإنشاء</string>
+    <string name="auto_paused_explanation">متوقف مؤقتًا عند النقطة الآمنة التالية. المواد المحفوظة متاحة.</string>
+    <string name="auto_start_continue">بدء / استئناف الإنشاء</string>
+    <string name="auto_status">الحالة: %1$s</string>
+    <string name="auto_completed">المكتمل في هذه العملية: %1$d / %2$d</string>
+    <string name="auto_exporting_existing">تصدير المادة المحفوظة: %1$s</string>
+    <string name="auto_stopped">متوقف: %1$s. تحقق من النموذج والحصة والاتصال.</string>
+    <string name="auto_unknown_error">خطأ غير معروف</string>
+    <string name="auto_orphan_notice">تم تخطي رابط جلسة قديم للملف %1$s؛ وتم الاحتفاظ بالملف.</string>
 </resources>
