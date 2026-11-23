@@ -116,4 +116,27 @@
     <string name="global_chatgpt_model">Modelo global do ChatGPT</string>
     <string name="generate_trimester_plan">Gerar plano trimestral com ChatGPT</string>
     <string name="syllabus">Programa</string>
+    <string name="auto_checklist_title">Lista de verificação da geração automática</string>
+    <string name="auto_checklist_explanation">A marca aparece quando o ficheiro é guardado na biblioteca do curso. A exportação requer uma cópia verificada.</string>
+    <string name="auto_planned_sessions">Sessões planeadas: %1$d</string>
+    <string name="auto_generated_exported">✓ Gerado · ✓ Exportado</string>
+    <string name="auto_generated_pending_export">✓ Gerado · Exportação pendente</string>
+    <string name="auto_not_implemented">Ainda não implementado</string>
+    <string name="auto_install_voice">Instale primeiro uma voz local</string>
+    <string name="auto_pending">Pendente</string>
+    <string name="auto_showing_limit">São mostradas as primeiras 60 sessões. A fila inclui todas as sessões guardadas.</string>
+    <string name="auto_cancelled">Geração cancelada. Os materiais guardados continuam disponíveis.</string>
+    <string name="auto_pausing">Pausa após a operação atual…</string>
+    <string name="auto_resuming">A retomar a geração automática.</string>
+    <string name="auto_resume">Retomar</string>
+    <string name="auto_pause">Pausar</string>
+    <string name="auto_cancel">Cancelar geração</string>
+    <string name="auto_paused_explanation">Em pausa no próximo ponto seguro. Os materiais guardados continuam disponíveis.</string>
+    <string name="auto_start_continue">Iniciar / retomar geração</string>
+    <string name="auto_status">Estado: %1$s</string>
+    <string name="auto_completed">Concluídos nesta execução: %1$d / %2$d</string>
+    <string name="auto_exporting_existing">A exportar material guardado: %1$s</string>
+    <string name="auto_stopped">Parado: %1$s. Verifique o modelo, a quota e a ligação.</string>
+    <string name="auto_unknown_error">Erro desconhecido</string>
+    <string name="auto_orphan_notice">Ligação antiga de sessão ignorada para %1$s; o ficheiro foi preservado.</string>
 </resources>
