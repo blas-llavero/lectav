@@ -116,4 +116,27 @@
     <string name="global_chatgpt_model">Globales ChatGPT-Modell</string>
     <string name="generate_trimester_plan">Trimesterplan mit ChatGPT erstellen</string>
     <string name="syllabus">Lehrplan</string>
+    <string name="auto_checklist_title">Prüfliste für die automatische Erstellung</string>
+    <string name="auto_checklist_explanation">Ein Häkchen erscheint erst nach dem Speichern der Datei in der Kursbibliothek. Der Export erfordert eine überprüfte Kopie.</string>
+    <string name="auto_planned_sessions">Geplante Sitzungen: %1$d</string>
+    <string name="auto_generated_exported">✓ Erstellt · ✓ Exportiert</string>
+    <string name="auto_generated_pending_export">✓ Erstellt · Export ausstehend</string>
+    <string name="auto_not_implemented">Noch nicht implementiert</string>
+    <string name="auto_install_voice">Zuerst eine lokale Stimme installieren</string>
+    <string name="auto_pending">Ausstehend</string>
+    <string name="auto_showing_limit">Die ersten 60 Sitzungen werden angezeigt. Alle gespeicherten Sitzungen bleiben in der Warteschlange.</string>
+    <string name="auto_cancelled">Erstellung abgebrochen. Gespeicherte Materialien bleiben verfügbar.</string>
+    <string name="auto_pausing">Pause nach dem aktuellen Vorgang…</string>
+    <string name="auto_resuming">Automatische Erstellung wird fortgesetzt.</string>
+    <string name="auto_resume">Fortsetzen</string>
+    <string name="auto_pause">Pause</string>
+    <string name="auto_cancel">Erstellung abbrechen</string>
+    <string name="auto_paused_explanation">Am nächsten sicheren Punkt pausiert. Gespeicherte Materialien bleiben verfügbar.</string>
+    <string name="auto_start_continue">Erstellung starten / fortsetzen</string>
+    <string name="auto_status">Status: %1$s</string>
+    <string name="auto_completed">In diesem Durchlauf abgeschlossen: %1$d / %2$d</string>
+    <string name="auto_exporting_existing">Gespeichertes Material wird exportiert: %1$s</string>
+    <string name="auto_stopped">Gestoppt: %1$s. Modell, Kontingent und Verbindung prüfen.</string>
+    <string name="auto_unknown_error">Unbekannter Fehler</string>
+    <string name="auto_orphan_notice">Veraltete Sitzungsverknüpfung für %1$s übersprungen; Datei bleibt erhalten.</string>
 </resources>
