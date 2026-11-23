@@ -125,4 +125,27 @@
     <string name="global_chatgpt_model">Global ChatGPT model</string>
     <string name="generate_trimester_plan">Generate term plan with ChatGPT</string>
     <string name="syllabus">Syllabus</string>
+    <string name="auto_checklist_title">Automatic generation checklist</string>
+    <string name="auto_checklist_explanation">A checkmark appears only when a real file is saved in the course library. An export checkmark requires a verified copy.</string>
+    <string name="auto_planned_sessions">Planned sessions: %1$d</string>
+    <string name="auto_generated_exported">✓ Generated · ✓ Exported</string>
+    <string name="auto_generated_pending_export">✓ Generated · Export pending</string>
+    <string name="auto_not_implemented">Not implemented yet</string>
+    <string name="auto_install_voice">Install a local voice first</string>
+    <string name="auto_pending">Pending</string>
+    <string name="auto_showing_limit">Showing the first 60 sessions. All saved sessions remain in the queue.</string>
+    <string name="auto_cancelled">Generation cancelled. Saved materials remain available.</string>
+    <string name="auto_pausing">Pausing after the current operation…</string>
+    <string name="auto_resuming">Resuming automatic generation.</string>
+    <string name="auto_resume">Resume</string>
+    <string name="auto_pause">Pause</string>
+    <string name="auto_cancel">Cancel generation</string>
+    <string name="auto_paused_explanation">Paused at the next safe checkpoint. Saved materials remain available.</string>
+    <string name="auto_start_continue">Start / resume generation</string>
+    <string name="auto_status">Status: %1$s</string>
+    <string name="auto_completed">Completed in this run: %1$d / %2$d</string>
+    <string name="auto_exporting_existing">Exporting existing material: %1$s</string>
+    <string name="auto_stopped">Stopped: %1$s. Check the model, quota and connection.</string>
+    <string name="auto_unknown_error">Unknown error</string>
+    <string name="auto_orphan_notice">Skipped outdated session link for %1$s; saved file preserved.</string>
 </resources>
