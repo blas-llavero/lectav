@@ -107,4 +107,13 @@
     <string name="material_page_count">صفحة %1$d من %2$d</string>
     <string name="material_prev">السابق</string>
     <string name="material_next">التالي</string>
+    <string name="work_mode">وضع العمل</string>
+    <string name="manual_mode">الوضع اليدوي</string>
+    <string name="automatic_mode">الوضع التلقائي</string>
+    <string name="work_mode_explanation">يدوي: أنشئ المواد وراجعها واحدة تلو الأخرى. تلقائي: تابع الدورات والجلسات المعدّة.</string>
+    <string name="automatic_generation_settings">إعدادات الإنشاء التلقائي</string>
+    <string name="automatic_storage_info">تُحفظ المواد تلقائيًا داخل LECTAV، مرتبة حسب المسار والدورة والمادة والفصل والوحدة والجلسة. لا حاجة لاختيار مجلد.</string>
+    <string name="global_chatgpt_model">نموذج ChatGPT العام</string>
+    <string name="generate_trimester_plan">إنشاء خطة الفصل باستخدام ChatGPT</string>
+    <string name="syllabus">المنهج</string>
 </resources>
