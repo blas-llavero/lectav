@@ -194,8 +194,21 @@ internal fun AutomaticCourseScreen(
                                 delay(180)
                                 currentCoroutineContext().ensureActive()
                             }
-                            progress="Exporting existing material: "+item.name
+                            progress=context.getString(R.string.auto_exporting_existing,item.name)
                             AutoGenerationConfig.recordProgress(context,progress)
+                            val linkedPlan=plans.firstOrNull { it.courseKey==item.courseKey }
+                            val parts=item.sessionKey.split('|')
+                            val linkedSession=parts.size==3 && linkedPlan?.topics?.any {
+                                it.id==parts[1] && it.trimester==parts[0].toIntOrNull() &&
+                                    (parts[2].toIntOrNull() ?: 0) in 1..it.sessions
+                            } == true
+                            if(!linkedSession) {
+                                // An older plan may have been replaced. Keep the file
+                                // intact, but don't let an orphan block all other sessions.
+                                progress=context.getString(R.string.auto_orphan_notice,item.name)
+                                AutoGenerationConfig.recordProgress(context,progress)
+                                continue
+                            }
                             AutomaticExportFolder.exportIndexed(context,library,item,courses,plans)
                             completed++
                             exportRevision++
@@ -327,10 +340,10 @@ internal fun AutomaticCourseScreen(
                             "Bloc completat. Torna a iniciar per continuar amb els pendents."
                         else "Cua PDF completada. Multimèdia pendent."
                     } catch(e: CancellationException) {
-                        progress="Generation cancelled. All completed documents remain saved."
+                        progress=context.getString(R.string.auto_cancelled)
                     } catch(e: Exception) {
-                        progress="Aturat: "+(e.localizedMessage ?: "Error desconegut")+
-                            ". Revisa el model, la quota i la connexió."
+                        progress=context.getString(R.string.auto_stopped,
+                            e.localizedMessage ?: context.getString(R.string.auto_unknown_error))
                     } finally {
                         AutoGenerationConfig.recordProgress(context,progress)
                         active=false
@@ -348,38 +361,35 @@ internal fun AutomaticCourseScreen(
     }
     if(invalid) Text("Cal seleccionar models disponibles per a tots els tipus " +
         "de contingut abans d'iniciar la cua.",color=MaterialTheme.colorScheme.error)
-    if(progress.isNotBlank()) Text("Estat: "+progress)
+    if(progress.isNotBlank()) Text(stringResource(R.string.auto_status,progress))
     if(active) {
         LinearProgressIndicator(
             progress={if(batchSize==0) 0f else completed.toFloat()/batchSize},
             modifier=Modifier.fillMaxWidth())
-        Text("Completats en aquesta execució: "+completed+" / "+batchSize)
+        Text(stringResource(R.string.auto_completed,completed,batchSize))
         Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
             OutlinedButton(onClick={
                 paused=!paused
-                progress=if(paused) "Pausing after the current operation..."
-                    else "Resuming automatic generation."
-            }) { Text(if(paused) "Resume" else "Pause") }
+                progress=if(paused) context.getString(R.string.auto_pausing)
+                    else context.getString(R.string.auto_resuming)
+            }) { Text(stringResource(if(paused) R.string.auto_resume else R.string.auto_pause)) }
             OutlinedButton(onClick={runningJob?.cancel()}) {
-                Text("Cancel generation")
+                Text(stringResource(R.string.auto_cancel))
             }
         }
-        if(paused) Text("Paused at the next safe checkpoint. " +
-            "Saved materials remain available.")
+        if(paused) Text(stringResource(R.string.auto_paused_explanation))
     } else {
         Button(modifier=Modifier.fillMaxWidth(),
             enabled=canGenerate,
-            onClick=startQueue) { Text("Inicia / continua la generació") }
+            onClick=startQueue) { Text(stringResource(R.string.auto_start_continue)) }
     }
     Text("La cua s'executa mentre aquesta pantalla roman oberta. " +
         "Si tanques l'app o Android la suspèn, reprèn manualment la cua; " +
         "no es garanteix l'execució en segon pla.",
         style=MaterialTheme.typography.bodySmall)
     HorizontalDivider()
-    Text("Automatic generation checklist",style=MaterialTheme.typography.titleMedium)
-    Text("A checkmark appears only when the real file has been saved in " +
-        "the course library. An export checkmark requires a verified " +
-        "copy in the selected Android folder.",
+    Text(stringResource(R.string.auto_checklist_title),style=MaterialTheme.typography.titleMedium)
+    Text(stringResource(R.string.auto_checklist_explanation),
         style=MaterialTheme.typography.bodySmall)
     val plannedSessions=buildList {
         courses.filter { it.role=="teacher" }.forEach { course ->
@@ -393,7 +403,7 @@ internal fun AutomaticCourseScreen(
             }
         }
     }
-    Text("Planned sessions: "+plannedSessions.size,
+    Text(stringResource(R.string.auto_planned_sessions,plannedSessions.size),
         style=MaterialTheme.typography.bodySmall)
     plannedSessions.take(60).forEach { (course,sessionKey,title) ->
         val sessionFiles=files.filter {
@@ -411,12 +421,12 @@ internal fun AutomaticCourseScreen(
                 } ?:false
                 val unsupported=kind=="video" || kind=="podcast"
                 val status=when {
-                    generated && exported -> "✓ Generated · ✓ Exported"
-                    generated -> "✓ Generated · Pending export"
-                    unsupported -> "Not implemented (no fake completion)"
+                    generated && exported -> context.getString(R.string.auto_generated_exported)
+                    generated -> context.getString(R.string.auto_generated_pending_export)
+                    unsupported -> context.getString(R.string.auto_not_implemented)
                     kind=="audio" && !voiceAvailable ->
-                        "Install a local voice first"
-                    else -> "Pending"
+                        context.getString(R.string.auto_install_voice)
+                    else -> context.getString(R.string.auto_pending)
                 }
                 Text(AutoGenerationConfig.title(kind)+": "+status,
                     style=MaterialTheme.typography.bodySmall,
@@ -427,7 +437,7 @@ internal fun AutomaticCourseScreen(
         HorizontalDivider()
     }
     if(plannedSessions.size>60)Text(
-        "Showing 60 sessions. The queue still includes all saved sessions.",
+        stringResource(R.string.auto_showing_limit),
         style=MaterialTheme.typography.bodySmall)
     GeneratedFilesHistory(files=files,courses=courses,plans=plans)
 }
