@@ -107,4 +107,13 @@
     <string name="material_page_count">第 %1$d 页，共 %2$d 页</string>
     <string name="material_prev">上一页</string>
     <string name="material_next">下一页</string>
+    <string name="work_mode">工作模式</string>
+    <string name="manual_mode">手动模式</string>
+    <string name="automatic_mode">自动模式</string>
+    <string name="work_mode_explanation">手动：逐一生成并检查材料。自动：按已配置的课程和课时继续生成。</string>
+    <string name="automatic_generation_settings">自动生成设置</string>
+    <string name="automatic_storage_info">材料将自动保存在 LECTAV 中，并按学习路径、课程、科目、学期、单元和课时分类。无需选择文件夹。</string>
+    <string name="global_chatgpt_model">全局 ChatGPT 模型</string>
+    <string name="generate_trimester_plan">使用 ChatGPT 生成学期教学计划</string>
+    <string name="syllabus">教学大纲</string>
 </resources>
