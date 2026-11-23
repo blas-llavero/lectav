@@ -44,6 +44,37 @@ internal object AutoGenerationConfig {
         check(prefs(context).edit().putString("homeMode",value).commit())
     }
 
+    /**
+     * Prefer the strongest general-purpose model among models actually exposed
+     * by the authenticated account. Never invent inaccessible model IDs.
+     * Unknown models rank below known general-purpose ones.
+     */
+    fun strongestAvailableModel(models: List<ChatGPTModel>): ChatGPTModel? {
+        fun score(m: ChatGPTModel): Int {
+            val id = m.slug.lowercase(Locale.ROOT)
+            val name = m.name.lowercase(Locale.ROOT)
+            val label = "$id $name"
+            if (listOf("embedding", "audio", "realtime", "transcribe", "whisper",
+                    "tts", "image", "moderation", "search", "mini", "nano")
+                    .any { it in label }) return -100
+            val match = Regex("""gpt[-_ ]?(\\d+)(?:[.\\-_ ](\\d+))?""")
+                .find(id) ?: Regex("""gpt[-_ ]?(\\d+)(?:[.\\-_ ](\\d+))?""")
+                .find(name)
+            if (match != null) {
+                val major=match.groupValues[1].toIntOrNull() ?: 0
+                val minor=match.groupValues[2].toIntOrNull() ?: 0
+                return major*1000+minor*100 +
+                    (if("pro" in label) 90 else 0) +
+                    (if("thinking" in label || "reasoning" in label) 40 else 0)
+            }
+            return if("pro" in label) 100 else 0
+        }
+        return models.withIndex().maxWithOrNull(
+            compareBy<IndexedValue<ChatGPTModel>> { score(it.value) }
+                .thenBy { -it.index }
+        )?.value
+    }
+
     fun globalModel(context: Context): String =
         prefs(context).getString("autoGlobalModel","").orEmpty()
 
