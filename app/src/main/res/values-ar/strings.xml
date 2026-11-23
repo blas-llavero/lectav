@@ -139,4 +139,5 @@
     <string name="auto_stopped">متوقف: %1$s. تحقق من النموذج والحصة والاتصال.</string>
     <string name="auto_unknown_error">خطأ غير معروف</string>
     <string name="auto_orphan_notice">تم تخطي رابط جلسة قديم للملف %1$s؛ وتم الاحتفاظ بالملف.</string>
+    <string name="chatgpt_persistent_consent_explanation">يمكن تفعيل إذن ChatGPT المستمر من الإعدادات وإيقافه في أي وقت. يمكنك مراجعة الاستخدام والرصيد المتاح في حساب ChatGPT؛ لا يستطيع LECTAV قراءة الرصيد مباشرة. يلزم تأكيدك.</string>
 </resources>
