@@ -116,4 +116,13 @@
     <string name="backup_audit_inspect_verified">Còpia verificada: %1$d cursos, %2$d fitxers de material, %3$d bytes.</string>
     <string name="backup_audit_inspect_empty">Avís: aquesta còpia no conté PDF, àudios ni vídeos. Només pot restaurar la configuració.</string>
     <string name="backup_audit_inspect_failed">No es pot inspeccionar la còpia.</string>
+    <string name="work_mode">Mode de treball</string>
+    <string name="manual_mode">Mode manual</string>
+    <string name="automatic_mode">Mode automàtic</string>
+    <string name="work_mode_explanation">Manual: genera i revisa els materials un per un. Automàtic: continua pels cursos i sessions configurats.</string>
+    <string name="automatic_generation_settings">Configuració de generació automàtica</string>
+    <string name="automatic_storage_info">Els materials es desen automàticament dins LECTAV, ordenats per itinerari, curs, matèria, trimestre, unitat i sessió. No cal seleccionar cap carpeta.</string>
+    <string name="global_chatgpt_model">Model global de ChatGPT</string>
+    <string name="generate_trimester_plan">Genera programació trimestral amb ChatGPT</string>
+    <string name="syllabus">Temari</string>
 </resources>
