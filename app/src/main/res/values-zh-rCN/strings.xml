@@ -116,4 +116,27 @@
     <string name="global_chatgpt_model">全局 ChatGPT 模型</string>
     <string name="generate_trimester_plan">使用 ChatGPT 生成学期教学计划</string>
     <string name="syllabus">教学大纲</string>
+    <string name="auto_checklist_title">自动生成检查清单</string>
+    <string name="auto_checklist_explanation">只有文件保存到课程资料库后才显示勾选。导出状态需要经过验证的副本。</string>
+    <string name="auto_planned_sessions">计划课时：%1$d</string>
+    <string name="auto_generated_exported">✓ 已生成 · ✓ 已导出</string>
+    <string name="auto_generated_pending_export">✓ 已生成 · 待导出</string>
+    <string name="auto_not_implemented">尚未实现</string>
+    <string name="auto_install_voice">请先安装本地语音</string>
+    <string name="auto_pending">待处理</string>
+    <string name="auto_showing_limit">显示前 60 个课时。队列仍包含所有已保存的课时。</string>
+    <string name="auto_cancelled">生成已取消。已保存的资料仍可使用。</string>
+    <string name="auto_pausing">当前操作结束后暂停…</string>
+    <string name="auto_resuming">正在恢复自动生成。</string>
+    <string name="auto_resume">继续</string>
+    <string name="auto_pause">暂停</string>
+    <string name="auto_cancel">取消生成</string>
+    <string name="auto_paused_explanation">已在安全检查点暂停。已保存的资料仍可使用。</string>
+    <string name="auto_start_continue">开始 / 继续生成</string>
+    <string name="auto_status">状态：%1$s</string>
+    <string name="auto_completed">本次已完成：%1$d / %2$d</string>
+    <string name="auto_exporting_existing">正在导出已保存资料：%1$s</string>
+    <string name="auto_stopped">已停止：%1$s。请检查模型、配额和网络连接。</string>
+    <string name="auto_unknown_error">未知错误</string>
+    <string name="auto_orphan_notice">已跳过 %1$s 的旧课时链接；文件已保留。</string>
 </resources>
