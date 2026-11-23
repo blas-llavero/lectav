@@ -515,19 +515,17 @@ private fun LectavApp() {
                             fontWeight = FontWeight.Bold
                         )
                         Text(stringResource(R.string.introduction))
-                        Text("Mode de treball",style=MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.work_mode),style=MaterialTheme.typography.titleMedium)
                         Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
                             Button(onClick={
                                 AutoGenerationConfig.saveHomeMode(context,"manual")
-                            },modifier=Modifier.weight(1f)) { Text("Mode manual") }
+                            },modifier=Modifier.weight(1f)) { Text(stringResource(R.string.manual_mode)) }
                             OutlinedButton(onClick={
                                 AutoGenerationConfig.saveHomeMode(context,"automatic")
                                 screen="automatic"
-                            },modifier=Modifier.weight(1f)) { Text("Mode automàtic") }
+                            },modifier=Modifier.weight(1f)) { Text(stringResource(R.string.automatic_mode)) }
                         }
-                        Text("Manual: genera i revisa els materials un per un. " +
-                            "Automàtic: continua pels PDFs dels cursos i sessions configurats, " +
-                            "amb un únic consentiment per execució.",
+                        Text(stringResource(R.string.work_mode_explanation),
                             style=MaterialTheme.typography.bodySmall)
                         Text(stringResource(R.string.catalogue_region), style = MaterialTheme.typography.labelMedium)
 
@@ -610,7 +608,7 @@ private fun LectavApp() {
                                             }
                                         }
                                     ) {
-                                        Text("Genera programació trimestral amb ChatGPT")
+                                        Text(stringResource(R.string.generate_trimester_plan))
                                     }
                                     Text(
                                         "No es consumirà cap petició de ChatGPT fins que " +
@@ -799,14 +797,14 @@ private fun SavedCoursesScreen(
                         OutlinedButton(
                             onClick = { onAiProgramme(entry.id) },
                             modifier = Modifier.fillMaxWidth()
-                        ) { Text("Genera programació trimestral amb ChatGPT") }
+                        ) { Text(stringResource(R.string.generate_trimester_plan)) }
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Button(onClick = { onMaterials(entry.id) }) {
                             Text(stringResource(R.string.materials_title))
                         }
                         OutlinedButton(onClick = { onPlan(entry.id) }) {
-                            Text("Temari")
+                            Text(stringResource(R.string.syllabus))
                         }
                         OutlinedButton(onClick = { onOpen(entry.id) }) {
                             Text(stringResource(R.string.library_open))
@@ -977,8 +975,8 @@ private fun SettingsScreen(
     }
     if(approvalError.isNotBlank()) Text(approvalError,color=MaterialTheme.colorScheme.error)
     HorizontalDivider()
-    Text("Configuració de generació automàtica",style=MaterialTheme.typography.titleMedium)
-    Text("Els materials es desen automàticament dins LECTAV, ordenats per itinerari, curs, matèria, trimestre, unitat i sessió. No cal seleccionar cap carpeta.")
+    Text(stringResource(R.string.automatic_generation_settings),style=MaterialTheme.typography.titleMedium)
+    Text(stringResource(R.string.automatic_storage_info))
 
     Text("Selecciona el model per defecte de tots els cursos. " +
         "Els models per tipus o sessió tenen prioritat. " +
@@ -986,7 +984,7 @@ private fun SettingsScreen(
     if(modelError.isNotBlank()) Text(modelError,color=MaterialTheme.colorScheme.error)
     Text("Canvis de models desats: "+revision,
         style=MaterialTheme.typography.bodySmall)
-    ModelChoice("Model global de ChatGPT",models,
+    ModelChoice(stringResource(R.string.global_chatgpt_model),models,
         AutoGenerationConfig.globalModel(context).ifBlank {
             AutoGenerationConfig.strongestAvailableModel(models)?.slug.orEmpty()
         },
