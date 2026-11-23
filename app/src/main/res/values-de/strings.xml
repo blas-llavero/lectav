@@ -107,4 +107,13 @@
     <string name="material_page_count">Seite %1$d von %2$d</string>
     <string name="material_prev">Zurück</string>
     <string name="material_next">Weiter</string>
+    <string name="work_mode">Arbeitsmodus</string>
+    <string name="manual_mode">Manueller Modus</string>
+    <string name="automatic_mode">Automatischer Modus</string>
+    <string name="work_mode_explanation">Manuell: Materialien einzeln erstellen und prüfen. Automatisch: konfigurierte Kurse und Sitzungen nacheinander bearbeiten.</string>
+    <string name="automatic_generation_settings">Einstellungen zur automatischen Erstellung</string>
+    <string name="automatic_storage_info">Materialien werden in LECTAV automatisch nach Bildungsweg, Kurs, Fach, Trimester, Einheit und Sitzung gespeichert. Keine Ordnerauswahl erforderlich.</string>
+    <string name="global_chatgpt_model">Globales ChatGPT-Modell</string>
+    <string name="generate_trimester_plan">Trimesterplan mit ChatGPT erstellen</string>
+    <string name="syllabus">Lehrplan</string>
 </resources>
