@@ -139,4 +139,5 @@
     <string name="auto_stopped">Gestoppt: %1$s. Modell, Kontingent und Verbindung prüfen.</string>
     <string name="auto_unknown_error">Unbekannter Fehler</string>
     <string name="auto_orphan_notice">Veraltete Sitzungsverknüpfung für %1$s übersprungen; Datei bleibt erhalten.</string>
+    <string name="chatgpt_persistent_consent_explanation">Die dauerhafte ChatGPT-Berechtigung kann in den Einstellungen aktiviert und jederzeit widerrufen werden. Nutzung und verfügbare Guthaben können Sie in Ihrem ChatGPT-Konto prüfen; LECTAV kann den Kontostand nicht direkt abrufen. Ihre Zustimmung ist erforderlich.</string>
 </resources>
