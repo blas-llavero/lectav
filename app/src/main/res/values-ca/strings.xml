@@ -125,4 +125,27 @@
     <string name="global_chatgpt_model">Model global de ChatGPT</string>
     <string name="generate_trimester_plan">Genera programació trimestral amb ChatGPT</string>
     <string name="syllabus">Temari</string>
+    <string name="auto_checklist_title">Llista de comprovació de la generació automàtica</string>
+    <string name="auto_checklist_explanation">La marca de verificació apareix quan el fitxer s\'ha desat a la biblioteca del curs. L\'exportació necessita una còpia verificada.</string>
+    <string name="auto_planned_sessions">Sessions planificades: %1$d</string>
+    <string name="auto_generated_exported">✓ Generat · ✓ Exportat</string>
+    <string name="auto_generated_pending_export">✓ Generat · Exportació pendent</string>
+    <string name="auto_not_implemented">Encara no implementat</string>
+    <string name="auto_install_voice">Instal·la primer una veu local</string>
+    <string name="auto_pending">Pendent</string>
+    <string name="auto_showing_limit">Es mostren les primeres 60 sessions. La cua inclou totes les sessions desades.</string>
+    <string name="auto_cancelled">Generació cancel·lada. Els materials desats continuen disponibles.</string>
+    <string name="auto_pausing">Es posarà en pausa després de l\'operació actual…</string>
+    <string name="auto_resuming">Es reprèn la generació automàtica.</string>
+    <string name="auto_resume">Reprèn</string>
+    <string name="auto_pause">Pausa</string>
+    <string name="auto_cancel">Cancel·la la generació</string>
+    <string name="auto_paused_explanation">En pausa al següent punt segur. Els materials desats continuen disponibles.</string>
+    <string name="auto_start_continue">Inicia / continua la generació</string>
+    <string name="auto_status">Estat: %1$s</string>
+    <string name="auto_completed">Completats en aquesta execució: %1$d / %2$d</string>
+    <string name="auto_exporting_existing">S\'està exportant el material desat: %1$s</string>
+    <string name="auto_stopped">Aturat: %1$s. Revisa el model, la quota i la connexió.</string>
+    <string name="auto_unknown_error">Error desconegut</string>
+    <string name="auto_orphan_notice">S\'ha omès un enllaç de sessió antic de %1$s; el fitxer es conserva.</string>
 </resources>
