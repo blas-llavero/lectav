@@ -41,7 +41,7 @@ internal fun GenerateScreen(
     val usage by usageGuard.state.collectAsState()
     LaunchedEffect(Unit) { usageGuard.refresh() }
     var topic by rememberSaveable(course.id, suggestedTopic) { mutableStateOf(suggestedTopic) }
-    var language by rememberSaveable { mutableStateOf(generatorPrefs.getString("language","Català") ?: "Català") }
+    var language by rememberSaveable { mutableStateOf(AppLanguageSupport.contentLanguage(context)) }
     var kind by rememberSaveable(course.id, suggestedTopic, preferredKind) {
         mutableStateOf(if (sessionKey.isNotBlank()) preferredKind
             else generatorPrefs.getString("kind","lesson") ?: "lesson")
