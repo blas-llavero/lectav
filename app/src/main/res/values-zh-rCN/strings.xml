@@ -139,4 +139,5 @@
     <string name="auto_stopped">已停止：%1$s。请检查模型、配额和网络连接。</string>
     <string name="auto_unknown_error">未知错误</string>
     <string name="auto_orphan_notice">已跳过 %1$s 的旧课时链接；文件已保留。</string>
+    <string name="chatgpt_persistent_consent_explanation">可在设置中启用 ChatGPT 持续授权，也可随时关闭。你可以在 ChatGPT 账户中查看使用情况和可用额度；LECTAV 无法直接读取余额。启用前需要你的确认。</string>
 </resources>
