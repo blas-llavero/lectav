@@ -139,4 +139,5 @@
     <string name="auto_stopped">Arrêté : %1$s. Vérifiez le modèle, le quota et la connexion.</string>
     <string name="auto_unknown_error">Erreur inconnue</string>
     <string name="auto_orphan_notice">Ancien lien de séance ignoré pour %1$s ; le fichier est conservé.</string>
+    <string name="chatgpt_persistent_consent_explanation">L\'autorisation persistante de ChatGPT peut être activée dans Paramètres et désactivée à tout moment. Consultez l\'utilisation et les crédits disponibles dans votre compte ChatGPT ; LECTAV ne peut pas accéder directement au solde. Votre confirmation est nécessaire.</string>
 </resources>
