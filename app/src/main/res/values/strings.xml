@@ -116,4 +116,13 @@
     <string name="backup_audit_inspect_verified">Archive verified: %1$d courses, %2$d material files, %3$d bytes.</string>
     <string name="backup_audit_inspect_empty">Warning: This archive contains no PDFs, audio files or videos. It can only restore settings.</string>
     <string name="backup_audit_inspect_failed">Unable to inspect the backup.</string>
+    <string name="work_mode">Work mode</string>
+    <string name="manual_mode">Manual mode</string>
+    <string name="automatic_mode">Automatic mode</string>
+    <string name="work_mode_explanation">Manual: generate and review materials one at a time. Automatic: continue through the configured courses and sessions.</string>
+    <string name="automatic_generation_settings">Automatic generation settings</string>
+    <string name="automatic_storage_info">Materials are automatically saved inside LECTAV, organized by pathway, course, subject, term, unit and session. No folder selection is required.</string>
+    <string name="global_chatgpt_model">Global ChatGPT model</string>
+    <string name="generate_trimester_plan">Generate term plan with ChatGPT</string>
+    <string name="syllabus">Syllabus</string>
 </resources>
