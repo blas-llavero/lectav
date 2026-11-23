@@ -139,4 +139,5 @@
     <string name="auto_stopped">रुका: %1$s। मॉडल, कोटा और कनेक्शन जाँचें।</string>
     <string name="auto_unknown_error">अज्ञात त्रुटि</string>
     <string name="auto_orphan_notice">%1$s का पुराना सत्र लिंक छोड़ा गया; फ़ाइल सुरक्षित है।</string>
+    <string name="chatgpt_persistent_consent_explanation">ChatGPT की स्थायी अनुमति सेटिंग्स में चालू की जा सकती है और कभी भी बंद की जा सकती है। उपयोग और उपलब्ध क्रेडिट अपने ChatGPT खाते में देखें; LECTAV सीधे बैलेंस नहीं पढ़ सकता। आपकी पुष्टि आवश्यक है।</string>
 </resources>
