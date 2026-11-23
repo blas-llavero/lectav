@@ -162,7 +162,7 @@ private fun LectavApp() {
             ) {
                 when (screen) {
                     "about" -> AboutScreen()
-                    "help" -> HelpScreen(onCalibration = { screen = "calibration" })
+                    "help" -> HelpScreen()
                     "library" -> saved?.let {
                         SavedCoursesScreen(
                             settings = it,
@@ -500,6 +500,9 @@ private fun LectavApp() {
                         if (saved == null) {
                             CircularProgressIndicator()
                         } else {
+                        TextButton(onClick = { screen = "library" }) {
+                            Text(stringResource(R.string.library_title))
+                        }
                         Image(
                             painter = painterResource(R.drawable.lectav_logo_approved),
                             contentDescription = "LECTAV: avatar docent amb tauleta i recursos educatius",
@@ -527,10 +530,6 @@ private fun LectavApp() {
                             "amb un únic consentiment per execució.",
                             style=MaterialTheme.typography.bodySmall)
                         Text(stringResource(R.string.catalogue_region), style = MaterialTheme.typography.labelMedium)
-                        Button(
-                            onClick = { screen = "library" },
-                            modifier = Modifier.fillMaxWidth()
-                        ) { Text(stringResource(R.string.library_title)) }
 
                         ChoiceDropdown(
                             label = stringResource(R.string.select_pathway),
@@ -634,10 +633,6 @@ private fun LectavApp() {
                             Text(stringResource(R.string.start_avatar))
                         }
                         Text(stringResource(R.string.not_yet_available), style = MaterialTheme.typography.bodySmall)
-                        OutlinedButton(
-                            onClick = { screen = "calibration" },
-                            modifier = Modifier.fillMaxWidth()
-                        ) { Text(stringResource(R.string.calibrate_subtitles)) }
                         Text(stringResource(R.string.saved_selection_message), style = MaterialTheme.typography.bodySmall)
                         }
                     }
@@ -900,7 +895,15 @@ private fun SettingsScreen(
     LaunchedEffect(chatGPTStatus.inferenceAllowed) {
         if(chatGPTStatus.inferenceAllowed) {
             runCatching { ChatGPTInference.availableModels() }
-                .onSuccess { models=it;modelError="" }
+                .onSuccess {
+                    models=it;modelError=""
+                    if(AutoGenerationConfig.globalModel(context).isBlank()) {
+                        AutoGenerationConfig.strongestAvailableModel(it)?.let { best ->
+                            AutoGenerationConfig.setGlobalModel(context,best.slug)
+                            revision++
+                        }
+                    }
+                }
                 .onFailure { modelError=it.localizedMessage ?: "Error consultant els models." }
         }
     }
@@ -984,7 +987,9 @@ private fun SettingsScreen(
     Text("Canvis de models desats: "+revision,
         style=MaterialTheme.typography.bodySmall)
     ModelChoice("Model global de ChatGPT",models,
-        AutoGenerationConfig.globalModel(context),
+        AutoGenerationConfig.globalModel(context).ifBlank {
+            AutoGenerationConfig.strongestAvailableModel(models)?.slug.orEmpty()
+        },
         enabled=models.isNotEmpty(),
         onSelect={ AutoGenerationConfig.setGlobalModel(context,it);revision++ })
     AutoGenerationConfig.materialTypes.forEach { kind ->
@@ -1042,13 +1047,10 @@ private fun AboutScreen() {
 }
 
 @Composable
-private fun HelpScreen(onCalibration: () -> Unit) {
+private fun HelpScreen() {
     Text(stringResource(R.string.help_title), style = MaterialTheme.typography.titleLarge)
     Text(stringResource(R.string.help_body))
     Text(stringResource(R.string.help_demo))
-    OutlinedButton(onClick = onCalibration, modifier = Modifier.fillMaxWidth()) {
-        Text(stringResource(R.string.calibrate_subtitles))
-    }
 }
 
 @Composable
