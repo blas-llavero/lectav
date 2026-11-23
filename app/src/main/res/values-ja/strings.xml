@@ -139,4 +139,5 @@
     <string name="auto_stopped">停止：%1$s。モデル、割り当て、接続を確認してください。</string>
     <string name="auto_unknown_error">不明なエラー</string>
     <string name="auto_orphan_notice">%1$s の古い授業リンクをスキップしました。ファイルは保持されています。</string>
+    <string name="chatgpt_persistent_consent_explanation">ChatGPT の継続的な許可は設定で有効にし、いつでも解除できます。利用状況と利用可能なクレジットは ChatGPT アカウントで確認してください。LECTAV は残高を直接取得できません。承認には確認が必要です。</string>
 </resources>
