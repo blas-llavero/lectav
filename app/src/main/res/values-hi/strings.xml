@@ -116,4 +116,27 @@
     <string name="global_chatgpt_model">वैश्विक ChatGPT मॉडल</string>
     <string name="generate_trimester_plan">ChatGPT से तिमाही योजना बनाएँ</string>
     <string name="syllabus">पाठ्यक्रम</string>
+    <string name="auto_checklist_title">स्वचालित निर्माण जाँच सूची</string>
+    <string name="auto_checklist_explanation">फ़ाइल पाठ्यक्रम लाइब्रेरी में सहेजे जाने पर ही चेक मार्क दिखता है। निर्यात के लिए सत्यापित प्रतिलिपि आवश्यक है।</string>
+    <string name="auto_planned_sessions">नियोजित सत्र: %1$d</string>
+    <string name="auto_generated_exported">✓ बनाया गया · ✓ निर्यात किया गया</string>
+    <string name="auto_generated_pending_export">✓ बनाया गया · निर्यात लंबित</string>
+    <string name="auto_not_implemented">अभी लागू नहीं किया गया</string>
+    <string name="auto_install_voice">पहले स्थानीय आवाज़ इंस्टॉल करें</string>
+    <string name="auto_pending">लंबित</string>
+    <string name="auto_showing_limit">पहले 60 सत्र दिखाए गए हैं। कतार में सभी सहेजे गए सत्र शामिल हैं।</string>
+    <string name="auto_cancelled">निर्माण रद्द किया गया। सहेजी गई सामग्री उपलब्ध है।</string>
+    <string name="auto_pausing">वर्तमान प्रक्रिया के बाद रुकेगा…</string>
+    <string name="auto_resuming">स्वचालित निर्माण फिर शुरू हो रहा है।</string>
+    <string name="auto_resume">फिर शुरू करें</string>
+    <string name="auto_pause">रोकें</string>
+    <string name="auto_cancel">निर्माण रद्द करें</string>
+    <string name="auto_paused_explanation">अगले सुरक्षित चरण पर रुका है। सहेजी गई सामग्री उपलब्ध है।</string>
+    <string name="auto_start_continue">निर्माण शुरू / जारी करें</string>
+    <string name="auto_status">स्थिति: %1$s</string>
+    <string name="auto_completed">इस बार पूरे हुए: %1$d / %2$d</string>
+    <string name="auto_exporting_existing">सहेजी सामग्री निर्यात हो रही है: %1$s</string>
+    <string name="auto_stopped">रुका: %1$s। मॉडल, कोटा और कनेक्शन जाँचें।</string>
+    <string name="auto_unknown_error">अज्ञात त्रुटि</string>
+    <string name="auto_orphan_notice">%1$s का पुराना सत्र लिंक छोड़ा गया; फ़ाइल सुरक्षित है।</string>
 </resources>
