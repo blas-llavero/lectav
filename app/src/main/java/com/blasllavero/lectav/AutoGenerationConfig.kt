@@ -169,8 +169,10 @@ internal object AutoGenerationConfig {
 
     fun requireChatGPTAuthorized(context: Context, email: String) {
         check(isChatGPTAuthorized(context,email)) {
-            "Activa a Configuració «He revisat la configuració d'ús i crèdits " +
-                "del meu compte i autoritzo la creació de contingut amb ChatGPT»."
+            "L'autorització persistent de ChatGPT està pendent. " +
+                "Pots activar-la a Configuració i desactivar-la quan vulguis. " +
+                "Revisa els crèdits disponibles al teu compte de ChatGPT; " +
+                "LECTAV no en pot consultar directament el saldo."
         }
     }
 
