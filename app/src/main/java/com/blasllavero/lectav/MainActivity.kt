@@ -121,6 +121,9 @@ private fun LectavApp() {
                     title = { Text(stringResource(R.string.app_name)) },
                     actions = {
                         if (screen == "home") {
+                            TextButton(onClick = { screen = "library" }) {
+                                Text(stringResource(R.string.library_title))
+                            }
                             TextButton(onClick = { screen = "about" }) {
                                 Text(stringResource(R.string.about))
                             }
@@ -500,9 +503,6 @@ private fun LectavApp() {
                         if (saved == null) {
                             CircularProgressIndicator()
                         } else {
-                        TextButton(onClick = { screen = "library" }) {
-                            Text(stringResource(R.string.library_title))
-                        }
                         Image(
                             painter = painterResource(R.drawable.lectav_logo_approved),
                             contentDescription = "LECTAV: avatar docent amb tauleta i recursos educatius",
