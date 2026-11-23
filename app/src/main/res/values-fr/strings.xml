@@ -107,4 +107,13 @@
     <string name="material_page_count">Page %1$d sur %2$d</string>
     <string name="material_prev">Précédent</string>
     <string name="material_next">Suivant</string>
+    <string name="work_mode">Mode de travail</string>
+    <string name="manual_mode">Mode manuel</string>
+    <string name="automatic_mode">Mode automatique</string>
+    <string name="work_mode_explanation">Manuel : générez et vérifiez les documents un par un. Automatique : continuez avec les cours et séances configurés.</string>
+    <string name="automatic_generation_settings">Paramètres de génération automatique</string>
+    <string name="automatic_storage_info">Les documents sont enregistrés automatiquement dans LECTAV, classés par parcours, cours, matière, trimestre, unité et séance. Aucun dossier à sélectionner.</string>
+    <string name="global_chatgpt_model">Modèle ChatGPT global</string>
+    <string name="generate_trimester_plan">Générer le programme trimestriel avec ChatGPT</string>
+    <string name="syllabus">Programme</string>
 </resources>
