@@ -98,14 +98,9 @@ private fun LectavApp() {
     LaunchedEffect(saved?.subtitleHeight) {
         saved?.let { subtitleHeight = it.subtitleHeight }
     }
-    LaunchedEffect(saved,chatGPTStatus.connected,chatGPTStatus.inferenceAllowed) {
-        if(screen=="home" && saved!=null &&
-            AutoGenerationConfig.homeMode(context)=="automatic" &&
-            chatGPTStatus.connected && chatGPTStatus.inferenceAllowed &&
-            AutoGenerationConfig.isChatGPTAuthorized(context,chatGPTStatus.email)) {
-            screen="automatic"
-        }
-    }
+    // Keep Home visible so users can choose and save a course. Automatic mode
+    // is the default selection but the screen doesn't unexpectedly navigate.
+    var homeMode by remember { mutableStateOf(AutoGenerationConfig.homeMode(context)) }
     val pathway = saved?.pathway ?: ""
     val course = saved?.course ?: ""
     val subject = saved?.subject ?: ""
@@ -517,11 +512,22 @@ private fun LectavApp() {
                         Text(stringResource(R.string.introduction))
                         Text(stringResource(R.string.work_mode),style=MaterialTheme.typography.titleMedium)
                         Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-                            Button(onClick={
+                            if(homeMode=="manual") Button(onClick={
                                 AutoGenerationConfig.saveHomeMode(context,"manual")
+                                homeMode="manual"
                             },modifier=Modifier.weight(1f)) { Text(stringResource(R.string.manual_mode)) }
-                            OutlinedButton(onClick={
+                            else OutlinedButton(onClick={
+                                AutoGenerationConfig.saveHomeMode(context,"manual")
+                                homeMode="manual"
+                            },modifier=Modifier.weight(1f)) { Text(stringResource(R.string.manual_mode)) }
+                            if(homeMode=="automatic") Button(onClick={
                                 AutoGenerationConfig.saveHomeMode(context,"automatic")
+                                homeMode="automatic"
+                                screen="automatic"
+                            },modifier=Modifier.weight(1f)) { Text(stringResource(R.string.automatic_mode)) }
+                            else OutlinedButton(onClick={
+                                AutoGenerationConfig.saveHomeMode(context,"automatic")
+                                homeMode="automatic"
                                 screen="automatic"
                             },modifier=Modifier.weight(1f)) { Text(stringResource(R.string.automatic_mode)) }
                         }
@@ -549,6 +555,27 @@ private fun LectavApp() {
                             enabled = subjects.isNotEmpty(),
                             onChoose = { value -> scope.launch { repository.chooseSubject(value) } }
                         )
+                        if (pathway.isNotBlank() && course.isNotBlank() && subject.isNotBlank()) {
+                            val alreadySaved = saved?.savedCourses?.any { entry ->
+                                entry.role == saved?.activeRole &&
+                                entry.pathway == pathway &&
+                                entry.course == course &&
+                                entry.subject == subject
+                            } == true
+                            OutlinedButton(
+                                enabled = !alreadySaved,
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = { scope.launch { repository.saveCurrentCourse() } }
+                            ) {
+                                Text(
+                                    stringResource(
+                                        if (alreadySaved) R.string.library_saved
+                                        else R.string.library_save
+                                    )
+                                )
+                            }
+
+                        }
                         if (pathway in listOf("cfgm", "cfgs", "cert")) {
                             Text(
                                 stringResource(R.string.catalogue_pending),
@@ -574,24 +601,6 @@ private fun LectavApp() {
                                     }
                                 }) {
                                     Text(stringResource(R.string.catalogue_source_button))
-                                }
-                                val alreadySaved = saved?.savedCourses?.any { entry ->
-                                    entry.role == saved?.activeRole &&
-                                    entry.pathway == pathway &&
-                                    entry.course == course &&
-                                    entry.subject == subject
-                                } == true
-                                OutlinedButton(
-                                    enabled = !alreadySaved,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    onClick = { scope.launch { repository.saveCurrentCourse() } }
-                                ) {
-                                    Text(
-                                        stringResource(
-                                            if (alreadySaved) R.string.library_saved
-                                            else R.string.library_save
-                                        )
-                                    )
                                 }
                                 if (saved?.activeRole == "teacher") {
                                     Button(
@@ -962,6 +971,8 @@ private fun SettingsScreen(
             "i autoritzo la creació de contingut amb ChatGPT",
             modifier=Modifier.weight(1f))
     }
+    Text(stringResource(R.string.chatgpt_persistent_consent_explanation),
+        style=MaterialTheme.typography.bodySmall)
     Text(
         "Aquesta autorització es desa només en aquest dispositiu, " +
         "per al compte connectat i per als modes manual i automàtic. " +
