@@ -107,4 +107,13 @@
     <string name="material_page_count">%2$d ページ中 %1$d ページ</string>
     <string name="material_prev">前へ</string>
     <string name="material_next">次へ</string>
+    <string name="work_mode">作業モード</string>
+    <string name="manual_mode">手動モード</string>
+    <string name="automatic_mode">自動モード</string>
+    <string name="work_mode_explanation">手動：教材を一つずつ生成して確認します。自動：設定済みのコースと授業を順次処理します。</string>
+    <string name="automatic_generation_settings">自動生成の設定</string>
+    <string name="automatic_storage_info">教材は LECTAV 内に学習経路、コース、科目、学期、単元、授業ごとに自動保存されます。フォルダー選択は不要です。</string>
+    <string name="global_chatgpt_model">共通 ChatGPT モデル</string>
+    <string name="generate_trimester_plan">ChatGPT で学期計画を作成</string>
+    <string name="syllabus">シラバス</string>
 </resources>
