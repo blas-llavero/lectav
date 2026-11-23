@@ -148,4 +148,5 @@
     <string name="auto_stopped">Detenido: %1$s. Revisa el modelo, la cuota y la conexión.</string>
     <string name="auto_unknown_error">Error desconocido</string>
     <string name="auto_orphan_notice">Se ha omitido un vínculo de sesión obsoleto de %1$s; el archivo se conserva.</string>
+    <string name="chatgpt_persistent_consent_explanation">La autorización persistente de ChatGPT se puede activar en Configuración y desactivar cuando quieras. Puedes revisar el uso y los créditos disponibles en tu cuenta de ChatGPT; LECTAV no puede consultar directamente ese saldo. La autorización requiere tu confirmación.</string>
 </resources>
