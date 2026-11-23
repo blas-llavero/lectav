@@ -107,4 +107,13 @@
     <string name="material_page_count">पृष्ठ %1$d / %2$d</string>
     <string name="material_prev">पिछला</string>
     <string name="material_next">अगला</string>
+    <string name="work_mode">कार्य मोड</string>
+    <string name="manual_mode">मैनुअल मोड</string>
+    <string name="automatic_mode">स्वचालित मोड</string>
+    <string name="work_mode_explanation">मैनुअल: सामग्री एक-एक करके बनाएँ और जाँचें। स्वचालित: निर्धारित पाठ्यक्रमों और सत्रों पर आगे बढ़ें।</string>
+    <string name="automatic_generation_settings">स्वचालित निर्माण सेटिंग्स</string>
+    <string name="automatic_storage_info">सामग्री LECTAV में मार्ग, पाठ्यक्रम, विषय, तिमाही, इकाई और सत्र के अनुसार अपने आप सहेजी जाती है। फ़ोल्डर चुनने की ज़रूरत नहीं है।</string>
+    <string name="global_chatgpt_model">वैश्विक ChatGPT मॉडल</string>
+    <string name="generate_trimester_plan">ChatGPT से तिमाही योजना बनाएँ</string>
+    <string name="syllabus">पाठ्यक्रम</string>
 </resources>
