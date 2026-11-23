@@ -116,4 +116,27 @@
     <string name="global_chatgpt_model">Modèle ChatGPT global</string>
     <string name="generate_trimester_plan">Générer le programme trimestriel avec ChatGPT</string>
     <string name="syllabus">Programme</string>
+    <string name="auto_checklist_title">Liste de vérification de la génération automatique</string>
+    <string name="auto_checklist_explanation">Une coche apparaît lorsque le fichier est enregistré dans la bibliothèque du cours. L\'exportation nécessite une copie vérifiée.</string>
+    <string name="auto_planned_sessions">Séances prévues : %1$d</string>
+    <string name="auto_generated_exported">✓ Généré · ✓ Exporté</string>
+    <string name="auto_generated_pending_export">✓ Généré · Exportation en attente</string>
+    <string name="auto_not_implemented">Pas encore disponible</string>
+    <string name="auto_install_voice">Installez d\'abord une voix locale</string>
+    <string name="auto_pending">En attente</string>
+    <string name="auto_showing_limit">Les 60 premières séances sont affichées. Toutes restent dans la file.</string>
+    <string name="auto_cancelled">Génération annulée. Les documents enregistrés restent disponibles.</string>
+    <string name="auto_pausing">Pause après l\'opération en cours…</string>
+    <string name="auto_resuming">Reprise de la génération automatique.</string>
+    <string name="auto_resume">Reprendre</string>
+    <string name="auto_pause">Pause</string>
+    <string name="auto_cancel">Annuler la génération</string>
+    <string name="auto_paused_explanation">En pause au prochain point sûr. Les documents enregistrés restent disponibles.</string>
+    <string name="auto_start_continue">Démarrer / reprendre la génération</string>
+    <string name="auto_status">État : %1$s</string>
+    <string name="auto_completed">Terminés pendant cette exécution : %1$d / %2$d</string>
+    <string name="auto_exporting_existing">Exportation du document enregistré : %1$s</string>
+    <string name="auto_stopped">Arrêté : %1$s. Vérifiez le modèle, le quota et la connexion.</string>
+    <string name="auto_unknown_error">Erreur inconnue</string>
+    <string name="auto_orphan_notice">Ancien lien de séance ignoré pour %1$s ; le fichier est conservé.</string>
 </resources>
