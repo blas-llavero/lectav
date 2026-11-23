@@ -125,4 +125,27 @@
     <string name="global_chatgpt_model">Modelo global de ChatGPT</string>
     <string name="generate_trimester_plan">Generar programación trimestral con ChatGPT</string>
     <string name="syllabus">Temario</string>
+    <string name="auto_checklist_title">Lista de comprobación de la generación automática</string>
+    <string name="auto_checklist_explanation">La marca aparece al guardar el archivo real en la biblioteca del curso. La exportación requiere una copia verificada.</string>
+    <string name="auto_planned_sessions">Sesiones planificadas: %1$d</string>
+    <string name="auto_generated_exported">✓ Generado · ✓ Exportado</string>
+    <string name="auto_generated_pending_export">✓ Generado · Exportación pendiente</string>
+    <string name="auto_not_implemented">Todavía no implementado</string>
+    <string name="auto_install_voice">Instala primero una voz local</string>
+    <string name="auto_pending">Pendiente</string>
+    <string name="auto_showing_limit">Se muestran las primeras 60 sesiones. La cola incluye todas las sesiones guardadas.</string>
+    <string name="auto_cancelled">Generación cancelada. Los materiales guardados siguen disponibles.</string>
+    <string name="auto_pausing">Se pausará después de la operación actual…</string>
+    <string name="auto_resuming">Reanudando la generación automática.</string>
+    <string name="auto_resume">Reanudar</string>
+    <string name="auto_pause">Pausar</string>
+    <string name="auto_cancel">Cancelar generación</string>
+    <string name="auto_paused_explanation">Pausado en el siguiente punto seguro. Los materiales guardados siguen disponibles.</string>
+    <string name="auto_start_continue">Iniciar / continuar generación</string>
+    <string name="auto_status">Estado: %1$s</string>
+    <string name="auto_completed">Completados en esta ejecución: %1$d / %2$d</string>
+    <string name="auto_exporting_existing">Exportando material guardado: %1$s</string>
+    <string name="auto_stopped">Detenido: %1$s. Revisa el modelo, la cuota y la conexión.</string>
+    <string name="auto_unknown_error">Error desconocido</string>
+    <string name="auto_orphan_notice">Se ha omitido un vínculo de sesión obsoleto de %1$s; el archivo se conserva.</string>
 </resources>
