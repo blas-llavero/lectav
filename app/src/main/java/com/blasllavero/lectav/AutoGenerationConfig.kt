@@ -57,8 +57,8 @@ internal object AutoGenerationConfig {
             if (listOf("embedding", "audio", "realtime", "transcribe", "whisper",
                     "tts", "image", "moderation", "search", "mini", "nano")
                     .any { it in label }) return -100
-            val match = Regex("""gpt[-_ ]?(\\d+)(?:[.\\-_ ](\\d+))?""")
-                .find(id) ?: Regex("""gpt[-_ ]?(\\d+)(?:[.\\-_ ](\\d+))?""")
+            val match = Regex("""gpt[-_ ]?(\d+)(?:[.\-_ ](\d+))?""")
+                .find(id) ?: Regex("""gpt[-_ ]?(\d+)(?:[.\-_ ](\d+))?""")
                 .find(name)
             if (match != null) {
                 val major=match.groupValues[1].toIntOrNull() ?: 0
