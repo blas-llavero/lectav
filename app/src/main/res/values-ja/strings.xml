@@ -116,4 +116,27 @@
     <string name="global_chatgpt_model">共通 ChatGPT モデル</string>
     <string name="generate_trimester_plan">ChatGPT で学期計画を作成</string>
     <string name="syllabus">シラバス</string>
+    <string name="auto_checklist_title">自動生成チェックリスト</string>
+    <string name="auto_checklist_explanation">ファイルがコースライブラリに保存されるとチェックが表示されます。エクスポートには検証済みのコピーが必要です。</string>
+    <string name="auto_planned_sessions">予定授業数：%1$d</string>
+    <string name="auto_generated_exported">✓ 生成済み · ✓ エクスポート済み</string>
+    <string name="auto_generated_pending_export">✓ 生成済み · エクスポート待ち</string>
+    <string name="auto_not_implemented">未実装</string>
+    <string name="auto_install_voice">先にローカル音声をインストールしてください</string>
+    <string name="auto_pending">保留中</string>
+    <string name="auto_showing_limit">最初の60授業を表示しています。保存済みの授業はすべてキューに含まれます。</string>
+    <string name="auto_cancelled">生成をキャンセルしました。保存済み教材は利用できます。</string>
+    <string name="auto_pausing">現在の処理後に一時停止します…</string>
+    <string name="auto_resuming">自動生成を再開しています。</string>
+    <string name="auto_resume">再開</string>
+    <string name="auto_pause">一時停止</string>
+    <string name="auto_cancel">生成をキャンセル</string>
+    <string name="auto_paused_explanation">安全な区切りで一時停止しました。保存済み教材は利用できます。</string>
+    <string name="auto_start_continue">生成を開始 / 再開</string>
+    <string name="auto_status">状態：%1$s</string>
+    <string name="auto_completed">今回の完了数：%1$d / %2$d</string>
+    <string name="auto_exporting_existing">保存済み教材をエクスポート中：%1$s</string>
+    <string name="auto_stopped">停止：%1$s。モデル、割り当て、接続を確認してください。</string>
+    <string name="auto_unknown_error">不明なエラー</string>
+    <string name="auto_orphan_notice">%1$s の古い授業リンクをスキップしました。ファイルは保持されています。</string>
 </resources>
