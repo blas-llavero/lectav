@@ -46,7 +46,7 @@ internal fun GenerateScreen(
         mutableStateOf(if (sessionKey.isNotBlank()) preferredKind
             else generatorPrefs.getString("kind","lesson") ?: "lesson")
     }
-    var mode by rememberSaveable { mutableStateOf(generatorPrefs.getString("mode","demo") ?: "demo") }
+    var mode by rememberSaveable { mutableStateOf(generatorPrefs.getString("mode","chatgpt") ?: "chatgpt") }
     var endpoint by rememberSaveable { mutableStateOf(generatorPrefs.getString("endpoint","http://192.168.1.10:11434") ?: "http://192.168.1.10:11434") }
     var model by rememberSaveable { mutableStateOf(generatorPrefs.getString("ollamaModel","gemma3:4b") ?: "gemma3:4b") }
     var draft by remember { mutableStateOf("") }
