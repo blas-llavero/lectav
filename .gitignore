@@ -13,3 +13,10 @@ media/
 videos/
 audio/
 images/
+
+# Private signing material and local exports
+*.p12
+*.pfx
+*.jks.b64
+*.p12.b64
+*.keystore.b64

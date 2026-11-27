@@ -1,4 +1,4 @@
-name: Build Android debug APK
+name: Build and sign LECTAV APK
 on:
   workflow_dispatch:
   pull_request:
@@ -42,9 +42,43 @@ jobs:
         run: gradle --no-daemon :app:testDebugUnitTest
       - name: Build debug APK
         run: gradle --no-daemon :app:assembleDebug
-      - name: Upload installable debug APK (not a release)
+      - name: Sign APK with persistent LECTAV key
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          LECTAV_KEYSTORE_B64: ${{ secrets.LECTAV_KEYSTORE_B64 }}
+          LECTAV_KEYSTORE_PASSWORD: ${{ secrets.LECTAV_KEYSTORE_PASSWORD }}
+          LECTAV_CERT_SHA256: ${{ vars.LECTAV_CERT_SHA256 }}
+        run: |
+          set -euo pipefail
+          umask 077
+          if [[ -z "$LECTAV_KEYSTORE_B64" || -z "$LECTAV_KEYSTORE_PASSWORD" || -z "$LECTAV_CERT_SHA256" ]]; then
+            echo '::error::Permanent signing is not configured. No installable APK will be published.'
+            exit 1
+          fi
+          keyfile=$(mktemp "$RUNNER_TEMP/lectav-key.XXXXXX")
+          trap 'rm -f "$keyfile"' EXIT
+          printf '%s' "$LECTAV_KEYSTORE_B64" | base64 --decode > "$keyfile"
+          unset LECTAV_KEYSTORE_B64
+          signer="$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          mkdir -p app/build/outputs/apk/signed
+          output=app/build/outputs/apk/signed/lectav.apk
+          "$signer" sign --ks "$keyfile" --ks-type PKCS12 --ks-key-alias lectav \
+            --ks-pass env:LECTAV_KEYSTORE_PASSWORD --key-pass env:LECTAV_KEYSTORE_PASSWORD \
+            --out "$output" app/build/outputs/apk/debug/app-debug.apk
+          unset LECTAV_KEYSTORE_PASSWORD
+          report=$("$signer" verify --verbose --print-certs "$output")
+          actual=$(printf '%s\n' "$report" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | tr '[:upper:]' '[:lower:]')
+          expected=$(printf '%s' "$LECTAV_CERT_SHA256" | tr -d ':[:space:]' | tr '[:upper:]' '[:lower:]')
+          if [[ ! "$expected" =~ ^[0-9a-f]{64}$ || "$actual" != "$expected" ]]; then
+            echo '::error::APK signing certificate does not match the pinned fingerprint.'
+            exit 1
+          fi
+          printf 'Verified LECTAV certificate SHA-256: %s\n' "$actual"
+      - name: Upload verified installable APK
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
-          name: lectav-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: lectav-signed-apk
+          path: app/build/outputs/apk/signed/lectav.apk
           if-no-files-found: error
