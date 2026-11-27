@@ -88,6 +88,7 @@ private fun LectavApp() {
     var speechSessionKey by rememberSaveable { mutableStateOf("") }
     var speechFileStem by rememberSaveable { mutableStateOf("") }
     var speechSessionTitle by rememberSaveable { mutableStateOf("") }
+    var speechMode by rememberSaveable { mutableStateOf("audio") }
     var suggestedSessionTopic by rememberSaveable { mutableStateOf("") }
     var requestedMaterialKind by rememberSaveable { mutableStateOf("lesson") }
     var requestedSessionKey by rememberSaveable { mutableStateOf("") }
@@ -143,6 +144,7 @@ private fun LectavApp() {
                                     "backup", "calibration" -> "settings"
                                     "settings" -> settingsReturnScreen
                                     "generator" -> generatorBackScreen
+                                    "session-speech" -> "course-plan"
                                     "course-plan" -> "library"
                                     "term-plan" -> "course-plan"
                                     "curriculum" -> "course-plan"
@@ -301,7 +303,8 @@ private fun LectavApp() {
                                     fileRepository.linkExistingToSession(selected,id,sessionId)
                                 }
                             },
-                            onGenerateSpeech={ sessionId, filenameStem, title ->
+                            onGenerateSpeech={ sessionId, filenameStem, title, kind ->
+                                speechMode=kind
                                 speechSessionKey=sessionId
                                 speechFileStem=filenameStem
                                 speechSessionTitle=title
@@ -327,6 +330,7 @@ private fun LectavApp() {
                             sessionTitle=speechSessionTitle,
                             filenameStem=speechFileStem,
                             sessionKey=speechSessionKey,
+                            initialMode=speechMode,
                             materials=files.filter {
                                 it.courseKey==courseKey(selected) && it.sessionKey==speechSessionKey
                             },

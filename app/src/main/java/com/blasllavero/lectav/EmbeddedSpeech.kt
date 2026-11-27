@@ -137,9 +137,9 @@ internal object EmbeddedSpeech {
         }finally{temp.deleteRecursively()}
     }
 
-    private fun chunks(original:String):List<String>{
+    private fun chunks(original:String, minLength:Int=10):List<String>{
         val txt=MathSpeechNormalizer.normalize(original)
-        require(txt.length in 10..50000){"Guió: de 10 a 50.000 caràcters."}
+        require(txt.length in minLength..50000){"Guió: de 10 a 50.000 caràcters."}
         val chunks=mutableListOf<String>()
         var current=""
         for(word in txt.split(" ")){
@@ -193,4 +193,71 @@ internal object EmbeddedSpeech {
             }catch(e:Exception){output.delete();throw e}
             finally{engine.destroy()}
         }
+    /** Two installed local voices. Render turns in sequence, retaining at most one
+     * engine in memory. Refuse incompatible sample rates rather than corrupt WAV. */
+    suspend fun synthesizeDialogue(ctx:Context,script:String,voiceA:String,voiceB:String):String =
+        withContext(Dispatchers.IO) {
+            require(script.length in 10..8000 && voiceA!=voiceB)
+            require(installed(ctx).map { it.id }.containsAll(listOf(voiceA,voiceB))) {
+                "Descarrega dues veus diferents a LECTAV."
+            }
+            val lines=script.lines().map { it.trim() }.filter { it.isNotBlank() }
+            require(lines.size in 2..100 && lines.all { Regex("""^[AB]:\s*\S.*""").matches(it) } &&
+                lines.any { it.startsWith("A:") } && lines.any { it.startsWith("B:") }) {
+                "Cada intervenció ha de començar amb A: o B: i hi ha d'haver dues veus."
+            }
+            val output=File(ctx.filesDir,"generated").apply {
+                check(isDirectory || mkdirs())
+            }.resolve("podcast_"+UUID.randomUUID()+".wav")
+            var engine:VoiceEngine?=null
+            var currentVoice=""
+            var sampleRate=0
+            try {
+                RandomAccessFile(output,"rw").use { wav ->
+                    wav.setLength(0);wav.write(ByteArray(44))
+                    var count=0L
+                    for(line in lines) {
+                        coroutineContext.ensureActive()
+                        val id=if(line.startsWith("A:")) voiceA else voiceB
+                        if(id!=currentVoice) {
+                            val previous=engine
+                            engine=null
+                            previous?.destroy()
+                            val files=model(voiceDir(ctx,id))?:error("Veu no instal·lada.")
+                            val next=VoiceEngine()
+                            engine=next
+                            val status=next.loadModel(ctx,files.first.absolutePath,files.second.absolutePath)
+                            require(status=="Success") { "Error motor de veu: "+status }
+                            val rate=next.sampleRate
+                            require(rate in 8000..48000)
+                            if(sampleRate==0) sampleRate=rate
+                            require(rate==sampleRate) { "Les dues veus han de tenir la mateixa freqüència de mostreig." }
+                            currentVoice=id
+                        }
+                        val current=checkNotNull(engine)
+                        for(part in chunks(line.substring(2).trim(),1)) {
+                            coroutineContext.ensureActive()
+                            val pcm=current.generateAudioPCM(part,1.0f,1.0f)
+                                ?:error("No s'ha generat un fragment de veu.")
+                            require(pcm.isNotEmpty() && pcm.size%2==0)
+                            count+=pcm.size
+                            require(count<=350L*1024*1024)
+                            wav.write(pcm)
+                        }
+                    }
+                    require(count>0 && sampleRate>0)
+                    wav.seek(0)
+                    fun label(v:String){wav.write(v.toByteArray(Charsets.US_ASCII))}
+                    fun n(v:Int){wav.writeInt(Integer.reverseBytes(v))}
+                    fun sh(v:Int){wav.writeShort(java.lang.Short.reverseBytes(v.toShort()).toInt())}
+                    label("RIFF");n((36+count).toInt());label("WAVE")
+                    label("fmt ");n(16);sh(1);sh(1)
+                    n(sampleRate);n(sampleRate*2);sh(2);sh(16)
+                    label("data");n(count.toInt())
+                }
+                FileProvider.getUriForFile(ctx,ctx.packageName+".files",output).toString()
+            } catch(ex:Exception) { output.delete();throw ex }
+            finally { engine?.destroy() }
+        }
+
 }

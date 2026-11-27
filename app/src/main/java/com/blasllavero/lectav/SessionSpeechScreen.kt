@@ -18,13 +18,14 @@ internal fun SessionSpeechScreen(
     sessionTitle: String,
     filenameStem: String,
     sessionKey: String,
+    initialMode: String,
     materials: List<LocalMaterial>,
     onSaved: (String, String, String) -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val theory = materials.lastOrNull { it.type == "lesson" }
-    var mode by remember { mutableStateOf("audio") }
+    var mode by remember(sessionKey,initialMode) { mutableStateOf(initialMode) }
     var script by remember(sessionKey) { mutableStateOf("") }
     var loadedTheory by remember(sessionKey) { mutableStateOf(false) }
     var pageStart by remember(sessionKey) { mutableStateOf("1") }
@@ -40,6 +41,10 @@ internal fun SessionSpeechScreen(
     var downloadedVoices by remember { mutableStateOf(EmbeddedSpeech.installed(context)) }
     var downloadingVoice by remember { mutableStateOf(false) }
     var voicePickerOpen by remember { mutableStateOf(false) }
+    var secondVoice by remember { mutableStateOf(
+        EmbeddedSpeech.catalog.firstOrNull { it.id != offlineVoice && it.id.substringBefore('-') == offlineVoice.substringBefore('-') }?.id.orEmpty()
+    ) }
+    var secondVoicePicker by remember { mutableStateOf(false) }
     var aExpanded by remember { mutableStateOf(false) }
     var bExpanded by remember { mutableStateOf(false) }
 
@@ -93,7 +98,7 @@ internal fun SessionSpeechScreen(
                             Triple(pdf.text,pdf.wasTruncated,false)
                         }
                     }.onSuccess { (result,cut,fromSource) ->
-                        script=result
+                        script=if(mode=="podcast") SessionSpeech.dialogueDraft(result).take(8000) else result
                         loadedTheory=true
                         message=when {
                             cut -> "S'han recuperat 8.000 caràcters, però en queden més. " +
@@ -145,7 +150,7 @@ internal fun SessionSpeechScreen(
         modifier=Modifier.fillMaxWidth())
     Text("${script.length} / 8.000 caràcters",
         style=MaterialTheme.typography.bodySmall)
-    if(theory!=null && script.isNotBlank()) {
+    if(theory!=null && script.isNotBlank() && mode=="audio") {
         OutlinedButton(
             enabled=!busy && !isSavingTheory,
             modifier=Modifier.fillMaxWidth(),
@@ -250,10 +255,54 @@ internal fun SessionSpeechScreen(
                 busy=false
             }
         }) { Text("Genera àudio amb LECTAV") }
-    if(mode=="podcast") Text("El motor de podcasts de dues veus " +
-        "s'afegirà a la generació integrada posteriorment. " +
-        "L'opció Piper externa es manté temporalment com a alternativa.",
-        style=MaterialTheme.typography.bodySmall)
+    if(mode=="podcast") {
+        Text("Segona veu integrada (B)",style=MaterialTheme.typography.titleSmall)
+        Box {
+            OutlinedButton(onClick={secondVoicePicker=true},enabled=!busy && !downloadingVoice,
+                modifier=Modifier.fillMaxWidth()) {
+                Text(EmbeddedSpeech.catalog.firstOrNull { it.id==secondVoice }?.label ?: "Selecciona una segona veu")
+            }
+            DropdownMenu(expanded=secondVoicePicker,onDismissRequest={secondVoicePicker=false}) {
+                EmbeddedSpeech.catalog.filter { it.id!=offlineVoice }.forEach { voice ->
+                    DropdownMenuItem(text={Text(voice.label)},onClick={
+                        secondVoice=voice.id;secondVoicePicker=false
+                    })
+                }
+            }
+        }
+        val secondInstalled=downloadedVoices.any { it.id==secondVoice }
+        if(!secondInstalled && secondVoice.isNotBlank() && secondVoice!=offlineVoice) {
+            OutlinedButton(enabled=!busy && !downloadingVoice,modifier=Modifier.fillMaxWidth(),onClick={
+                downloadingVoice=true
+                val selected=secondVoice
+                scope.launch {
+                    runCatching { EmbeddedSpeech.install(context,selected) }
+                        .onSuccess { downloadedVoices=EmbeddedSpeech.installed(context);message="Segona veu instal·lada." }
+                        .onFailure { message="Error: "+(it.localizedMessage ?: "Descàrrega fallida") }
+                    downloadingVoice=false
+                }
+            }) { Text("Descarrega la segona veu") }
+        }
+        Button(enabled=!busy && !downloadingVoice && isInstalled && secondInstalled &&
+            secondVoice!=offlineVoice && script.trim().length>=10,
+            modifier=Modifier.fillMaxWidth(),onClick={
+                busy=true;message=""
+                val draft=script.trim()
+                val a=offlineVoice
+                val b=secondVoice
+                scope.launch {
+                    runCatching { EmbeddedSpeech.synthesizeDialogue(context,draft,a,b) }
+                        .onSuccess { uri ->
+                            val filename=MaterialFileNames.forSessionStem(filenameStem,"podcast").removeSuffix(".mp3")+".wav"
+                            onSaved(uri,filename,"podcast")
+                            message="Podcast WAV generat i vinculat a la sessió."
+                        }.onFailure { message="Error: "+(it.localizedMessage ?: "No s'ha pogut generar el podcast.") }
+                    busy=false
+                }
+            }) { Text("Genera podcast amb LECTAV") }
+        Text("Tria dues veus compatibles. Revisa les intervencions A: i B: abans de generar.",
+            style=MaterialTheme.typography.bodySmall)
+    }
     HorizontalDivider()
     Text("Motor Piper d'Android (alternativa antiga)",
         style=MaterialTheme.typography.titleMedium)

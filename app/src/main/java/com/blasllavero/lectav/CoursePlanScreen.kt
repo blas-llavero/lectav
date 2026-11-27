@@ -28,7 +28,7 @@ internal fun CoursePlanScreen(
     onLinkMaterial: (String, String) -> Unit,
     onImportVideo: (String, String, String) -> Unit,
     onImportAudio: (String, String, String, String) -> Unit,
-    onGenerateSpeech: (String, String, String) -> Unit,
+    onGenerateSpeech: (String, String, String, String) -> Unit,
     onCurriculum: () -> Unit,
     onAiProgramme: () -> Unit
 ) {
@@ -284,6 +284,12 @@ internal fun CoursePlanScreen(
                                             }) {
                                                 Text(if(latest==null) "Genera" else "Nou")
                                             }
+                                        } else if(type in setOf("audio","podcast") && course.role=="teacher") {
+                                            OutlinedButton(onClick={
+                                                onGenerateSpeech(sessionId,fileStem,sessionTopic,type)
+                                            }) {
+                                                Text(if(latest==null) "Genera" else "Nou")
+                                            }
                                         } else if(latest==null) {
                                             Text("Pendent",style=MaterialTheme.typography.bodySmall)
                                         }
@@ -333,11 +339,6 @@ internal fun CoursePlanScreen(
                                     }
                                 ) { Text("Importa un vídeo de l'avatar (MP4)") }
                                 if(course.role == "teacher") {
-                                    OutlinedButton(
-                                        modifier=Modifier.fillMaxWidth(),
-                                        enabled=attached.any { it.type=="lesson" },
-                                        onClick={onGenerateSpeech(sessionId,fileStem,sessionTopic)}
-                                    ) { Text("Genera àudio/podcast a la tauleta (Piper)") }
                                     listOf("audio" to "àudio", "podcast" to "podcast").forEach { (type, label) ->
                                         OutlinedButton(
                                             modifier=Modifier.fillMaxWidth(),
