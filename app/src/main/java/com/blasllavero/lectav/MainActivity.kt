@@ -23,6 +23,8 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -923,6 +925,10 @@ private fun SettingsScreen(
     var models by remember { mutableStateOf(emptyList<ChatGPTModel>()) }
     var modelError by remember { mutableStateOf("") }
     var revision by remember { mutableIntStateOf(0) }
+    var savedRequestLimit by remember { mutableIntStateOf(AutoGenerationConfig.maxRequests(context)) }
+    var requestLimitInput by rememberSaveable { mutableStateOf(savedRequestLimit.toString()) }
+    val requestedLimit = requestLimitInput.toIntOrNull()
+    val validRequestLimit = requestedLimit != null && requestedLimit in 1..500
     var chatGPTApproved by remember(chatGPTStatus.email) {
         mutableStateOf(AutoGenerationConfig.isChatGPTAuthorized(
             context,chatGPTStatus.email))
@@ -1036,22 +1042,66 @@ private fun SettingsScreen(
     if(modelError.isNotBlank()) Text(modelError,color=MaterialTheme.colorScheme.error)
     Text("Canvis de models desats: "+revision,
         style=MaterialTheme.typography.bodySmall)
-    ModelChoice(stringResource(R.string.global_chatgpt_model),models,
-        AutoGenerationConfig.globalModel(context).ifBlank {
-            AutoGenerationConfig.strongestAvailableModel(models)?.slug.orEmpty()
-        },
-        enabled=models.isNotEmpty(),
-        onSelect={ AutoGenerationConfig.setGlobalModel(context,it);revision++ })
-    AutoGenerationConfig.materialTypes.forEach { kind ->
-        ModelChoice(AutoGenerationConfig.title(kind),models,
-            AutoGenerationConfig.kindModel(context,kind),
-            enabled=models.isNotEmpty(),allowInherit=true,
-            onSelect={
-                AutoGenerationConfig.setKindModel(context,kind,it)
-                revision++
-            })
+    listOf("global" to "video", "lesson" to "audio",
+        "exercise" to "podcast", "solutions" to "transcript").forEach { (left, right) ->
+        Row(modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.Top) {
+            listOf(left, right).forEach { kind ->
+                key(kind) {
+                    Column(modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        if (kind == "global") {
+                            ModelChoice(stringResource(R.string.global_chatgpt_model), models,
+                                AutoGenerationConfig.globalModel(context).ifBlank {
+                                    AutoGenerationConfig.strongestAvailableModel(models)?.slug.orEmpty()
+                                }, enabled = models.isNotEmpty(),
+                                onSelect = { AutoGenerationConfig.setGlobalModel(context, it); revision++ })
+                        } else {
+                            ModelChoice(AutoGenerationConfig.title(kind), models,
+                                AutoGenerationConfig.kindModel(context, kind),
+                                enabled = models.isNotEmpty(), allowInherit = true,
+                                onSelect = { AutoGenerationConfig.setKindModel(context, kind, it); revision++ })
+                        }
+                    }
+                }
+            }
+        }
     }
-    Text("Màxim per bloc automàtic: "+AutoGenerationConfig.maxRequests(context))
+    Text("Màxim per bloc automàtic: "+savedRequestLimit,
+        style = MaterialTheme.typography.titleSmall)
+    OutlinedTextField(
+        value = requestLimitInput,
+        onValueChange = { input ->
+            if (input.length <= 3 && input.all { it in '0'..'9' }) requestLimitInput = input
+        },
+        label = { Text("Màxim de peticions a ChatGPT") },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        singleLine = true,
+        isError = !validRequestLimit,
+        supportingText = { Text("Introdueix un nombre de l’1 al 500.") },
+        modifier = Modifier.fillMaxWidth()
+    )
+    listOf(listOf(20, 40, 50, 100), listOf(150, 200, 300, 500)).forEach { limits ->
+        Row(modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            limits.forEach { limit ->
+                OutlinedButton(onClick = { requestLimitInput = limit.toString() },
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp)) {
+                    Text(limit.toString())
+                }
+            }
+        }
+    }
+    Button(onClick = {
+        requestedLimit?.takeIf { it in 1..500 }?.let { limit ->
+            AutoGenerationConfig.setMaxRequests(context, limit)
+            savedRequestLimit = limit
+            requestLimitInput = limit.toString()
+        }
+    }, enabled = validRequestLimit && requestedLimit != savedRequestLimit,
+        modifier = Modifier.fillMaxWidth()) { Text("Desa el límit") }
     Text("És un límit de protecció de LECTAV, no un saldo real de ChatGPT.",
         style=MaterialTheme.typography.bodySmall)
     HorizontalDivider()
