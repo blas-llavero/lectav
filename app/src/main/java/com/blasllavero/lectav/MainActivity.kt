@@ -19,6 +19,7 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -94,6 +95,22 @@ private fun LectavApp() {
     var selectedFileId by rememberSaveable { mutableStateOf("") }
     var screen by rememberSaveable { mutableStateOf("home") }
     var authReturnScreen by rememberSaveable { mutableStateOf("settings") }
+    var settingsReturnScreen by rememberSaveable { mutableStateOf("home") }
+    // Refresh the global default once per app launch or authenticated account.
+    // Explicit per-material and per-session preferences remain intact.
+    var startupModelReady by remember(chatGPTStatus.email, chatGPTStatus.inferenceAllowed) {
+        mutableStateOf(!chatGPTStatus.inferenceAllowed)
+    }
+    LaunchedEffect(chatGPTStatus.email, chatGPTStatus.inferenceAllowed) {
+        if (chatGPTStatus.inferenceAllowed) {
+            runCatching { ChatGPTInference.availableModels() }.onSuccess { models ->
+                AutoGenerationConfig.strongestAvailableModel(models)?.let { best ->
+                    AutoGenerationConfig.setGlobalModel(context, best.slug)
+                }
+            }
+            startupModelReady = true
+        }
+    }
     var subtitleHeight by remember { mutableFloatStateOf(0.25f) }
     LaunchedEffect(saved?.subtitleHeight) {
         saved?.let { subtitleHeight = it.subtitleHeight }
@@ -112,28 +129,17 @@ private fun LectavApp() {
             modifier = Modifier.fillMaxSize(),
             contentWindowInsets = WindowInsets.safeDrawing,
             topBar = {
+                Column {
                 TopAppBar(
                     title = { Text(stringResource(R.string.app_name)) },
                     actions = {
-                        if (screen == "home") {
-                            TextButton(onClick = { screen = "library" }) {
-                                Text(stringResource(R.string.library_title))
-                            }
-                            TextButton(onClick = { screen = "about" }) {
-                                Text(stringResource(R.string.about))
-                            }
-                            TextButton(onClick = { screen = "help" }) {
-                                Text(stringResource(R.string.help))
-                            }
-                            TextButton(onClick = { screen = "settings" }) {
-                                Text(stringResource(R.string.settings))
-                            }
-                        } else {
+                        if (screen != "home") {
                             TextButton(onClick = {
                                 screen = when(screen) {
                                     "viewer" -> viewerBackScreen
                                     "chatgpt" -> authReturnScreen
-                                    "backup" -> "settings"
+                                    "backup", "calibration" -> "settings"
+                                    "settings" -> settingsReturnScreen
                                     "generator" -> generatorBackScreen
                                     "course-plan" -> "library"
                                     "term-plan" -> "course-plan"
@@ -147,6 +153,34 @@ private fun LectavApp() {
                         }
                     }
                 )
+                if (screen == "home") {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(onClick = { screen = "library" }) {
+                            Text(stringResource(R.string.library_title))
+                        }
+                        Row(
+                            modifier = Modifier.weight(1f, fill = false)
+                                .horizontalScroll(rememberScrollState()),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            TextButton(onClick = { screen = "about" }) {
+                                Text(stringResource(R.string.about))
+                            }
+                            TextButton(onClick = { screen = "help" }) {
+                                Text(stringResource(R.string.help))
+                            }
+                            TextButton(onClick = {
+                                settingsReturnScreen = "home"
+                                screen = "settings"
+                            }) { Text(stringResource(R.string.settings)) }
+                        }
+                    }
+                }
+                }
             }
         ) { innerPadding ->
             Column(
@@ -464,6 +498,11 @@ private fun LectavApp() {
                             connected=chatGPTStatus.connected,
                             accountEmail=chatGPTStatus.email,
                             inferenceAllowed=chatGPTStatus.inferenceAllowed,
+                            startupModelReady=startupModelReady,
+                            onSettings={
+                                settingsReturnScreen="automatic"
+                                screen="settings"
+                            },
                             onConnect={
                                 authReturnScreen="automatic"
                                 screen="chatgpt"
@@ -480,6 +519,7 @@ private fun LectavApp() {
                         SettingsScreen(
                             settings = it,
                             chatGPTStatus=chatGPTStatus,
+                            startupModelReady=startupModelReady,
                             onClear = { scope.launch { repository.clearSelection() } },
                             onCalibration = { screen = "calibration" },
                             onChatGPT = {
@@ -865,6 +905,7 @@ private val appLanguages = listOf(
 private fun SettingsScreen(
     settings: SavedSettings,
     chatGPTStatus: ChatGPTAuthState,
+    startupModelReady: Boolean,
     onClear: () -> Unit,
     onCalibration: () -> Unit,
     onChatGPT: () -> Unit,
@@ -899,12 +940,12 @@ private fun SettingsScreen(
             exportFolderError=""
         }.onFailure { exportFolderError=it.localizedMessage ?: "Invalid folder." }
     }
-    LaunchedEffect(chatGPTStatus.inferenceAllowed) {
-        if(chatGPTStatus.inferenceAllowed) {
+    LaunchedEffect(chatGPTStatus.inferenceAllowed, startupModelReady) {
+        if(chatGPTStatus.inferenceAllowed && startupModelReady) {
             runCatching { ChatGPTInference.availableModels() }
                 .onSuccess {
                     models=it;modelError=""
-                    if(AutoGenerationConfig.globalModel(context).isBlank()) {
+                    if(it.none { model -> model.slug == AutoGenerationConfig.globalModel(context) }) {
                         AutoGenerationConfig.strongestAvailableModel(it)?.let { best ->
                             AutoGenerationConfig.setGlobalModel(context,best.slug)
                             revision++

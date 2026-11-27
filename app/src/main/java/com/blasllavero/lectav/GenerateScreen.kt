@@ -81,10 +81,7 @@ internal fun GenerateScreen(
             val preferred=AutoGenerationConfig.resolvedModel(
                 context,courseKey(course),sessionKey,kind)
             selectedModel = availableModels.firstOrNull { it.slug==preferred }?.slug
-                ?: selectedModel.takeIf { existing ->
-                    availableModels.any { it.slug==existing }
-                }
-                ?: availableModels.firstOrNull()?.slug.orEmpty()
+                ?: AutoGenerationConfig.strongestAvailableModel(availableModels)?.slug.orEmpty()
             modelError = result.exceptionOrNull()?.localizedMessage ?: ""
             modelBusy = false
         }

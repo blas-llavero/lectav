@@ -66,6 +66,8 @@ internal fun AutomaticCourseScreen(
     connected: Boolean,
     accountEmail: String,
     inferenceAllowed: Boolean,
+    startupModelReady: Boolean,
+    onSettings: () -> Unit,
     onConnect: () -> Unit
 ) {
     val context=LocalContext.current
@@ -85,12 +87,19 @@ internal fun AutomaticCourseScreen(
     var batchSize by remember { mutableIntStateOf(0) }
     var cap by remember { mutableIntStateOf(AutoGenerationConfig.maxRequests(context)) }
 
-    LaunchedEffect(connected,inferenceAllowed) {
+    LaunchedEffect(connected,inferenceAllowed,startupModelReady) {
         models=emptyList()
-        if(connected && inferenceAllowed) {
+        if(connected && inferenceAllowed && startupModelReady) {
             loading=true
             runCatching { ChatGPTInference.availableModels() }
-                .onSuccess { models=it;error="" }
+                .onSuccess {
+                    if (it.none { model -> model.slug == AutoGenerationConfig.globalModel(context) }) {
+                        AutoGenerationConfig.strongestAvailableModel(it)?.let { best ->
+                            AutoGenerationConfig.setGlobalModel(context,best.slug)
+                        }
+                    }
+                    models=it;error=""
+                }
                 .onFailure { error=it.localizedMessage ?: "No s'han pogut carregar els models." }
             loading=false
         }
@@ -125,6 +134,11 @@ internal fun AutomaticCourseScreen(
     }
 
     Text("Mode automàtic",style=MaterialTheme.typography.titleLarge)
+    OutlinedButton(
+        onClick=onSettings,
+        enabled=!active && !exporting,
+        modifier=Modifier.fillMaxWidth()
+    ) { Text(stringResource(R.string.settings)) }
     Text("Els materials es desen automàticament a l'emmagatzematge intern de LECTAV, sense seleccionar cap carpeta.",style=MaterialTheme.typography.bodySmall)
     Text("Cua de cursos i sessions desats: Teoria → Exercicis → Solucions → " +
         "Transcripció → Àudio WAV (si has descarregat una veu local). " +
@@ -138,7 +152,7 @@ internal fun AutomaticCourseScreen(
         Text("Connecta i autoritza ChatGPT.",color=MaterialTheme.colorScheme.error)
         OutlinedButton(onClick=onConnect) { Text("Configura ChatGPT") }
     }
-    if(loading) LinearProgressIndicator(modifier=Modifier.fillMaxWidth())
+    if(loading || !startupModelReady) LinearProgressIndicator(modifier=Modifier.fillMaxWidth())
     if(error.isNotBlank()) Text(error,color=MaterialTheme.colorScheme.error)
     if(refresh == -1) Text("Model actualitzat")
     Text("Materials pendents (PDF i WAV): "+tasks.size,style=MaterialTheme.typography.titleMedium)
@@ -166,7 +180,7 @@ internal fun AutomaticCourseScreen(
     val canGenerate=authorized &&
         (queued.isNotEmpty() || files.any {
             it.origin=="generated" && !AutomaticExportFolder.wasExported(context,it)
-        }) && !invalid && !loading && connected && inferenceAllowed &&
+        }) && !invalid && !loading && startupModelReady && connected && inferenceAllowed &&
         models.isNotEmpty()
     var autoStarted by remember { mutableStateOf(false) }
     val startQueue: () -> Unit = {

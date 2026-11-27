@@ -183,7 +183,8 @@ internal fun TrimesterPlanGeneratorScreen(
             modelBusy = true
             val result = runCatching { ChatGPTInference.availableModels() }
             models = result.getOrDefault(emptyList())
-            chosenModel = models.firstOrNull()?.slug.orEmpty()
+            chosenModel = models.firstOrNull { it.slug == AutoGenerationConfig.globalModel(context) }?.slug
+                ?: AutoGenerationConfig.strongestAvailableModel(models)?.slug.orEmpty()
             error = result.exceptionOrNull()?.localizedMessage.orEmpty()
             modelBusy = false
         }
